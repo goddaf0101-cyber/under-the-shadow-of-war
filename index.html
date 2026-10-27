@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="8bb32fe353";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="79d8a1237a";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -93,6 +93,7 @@ table.board td{overflow-wrap:anywhere;vertical-align:top}
 /* scene band */
 .scene{position:relative;height:clamp(190px,30vw,300px);border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#0e0e0d}
 .scene .bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:auto 100%;filter:saturate(.62) brightness(.82) contrast(1.02);transition:background-position 1.2s ease}
+.scene .bg.loc{background-size:cover}
 .scene .tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;transition:background .8s}
 .scene .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55));pointer-events:none}
 .scene .npc{position:absolute;bottom:9%;height:84%;width:auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));transition:opacity .4s}
@@ -157,6 +158,16 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .chip.down{color:var(--bad);border-color:rgba(217,100,74,.4)}
 .chip.none{color:var(--faint)}
 .foot{display:flex;justify-content:flex-end;margin-top:14px;gap:10px;flex-wrap:wrap}
+/* chapters + night (27 Oct) */
+.chap{font-size:13px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:7px 11px;margin:10px 0 0}
+.chap b{color:var(--accent)}
+.nopts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nopt{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 6px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.25}
+.nopt small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:3px}
+.nopt:hover{border-color:var(--accent)}
+.place{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin:0 0 8px;cursor:pointer}
+.place b{display:block;margin-bottom:4px}
+.tally{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin:8px 0 0}
 .log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
 .log li{color:var(--muted)}
 .log b{color:var(--fg);font-weight:500}
@@ -234,6 +245,9 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 }
 /* short phones (e.g. SE): trim spacing so the four choices always fit */
 @media (max-width:860px) and (max-height:640px){
+  .nopt small{display:none} .nopt{padding:8px 4px}
+  .chap{font-size:12px;padding:5px 9px;margin-top:6px;line-height:1.4}
+  .place{padding:8px 10px;margin-bottom:6px}
   .game{gap:7px;padding-block:6px 8px}
   .mtop{gap:5px}
   .strip{padding:6px 9px;gap:4px 9px}
@@ -524,6 +538,66 @@ window.WW3_DATA.branches = {
   "R200": {"P2": {"title": "จะช่วยฟื้นฟูหรือดูแลบ้านตัวเอง", "s": "มีโครงการฟื้นฟูหลายอย่างพร้อมกัน ชุมชนขอแรงทุกบ้าน รวมถึงบ้านคุณที่ไม่เคยร่วมงานใหญ่", "choices": {"A": {"t": "ลงแรงกับโครงการที่ช่วยคนลำบากที่สุด", "r": "สถานพยาบาลได้ซ่อมก่อน คนในซอยเห็นคุณทำงานเป็นครั้งแรก"}, "B": {"t": "เก็บแรงไว้ดูแลบ้านตัวเอง", "r": "บ้านคุณเรียบร้อย แต่โครงการขาดคนหนึ่งแรง"}, "C": {"t": "ถามว่าโครงการไหนต้องการทักษะของคุณ", "r": "ระบบน้ำต้องการคนซ่อมปั๊ม ซึ่งคุณทำเป็น คุณช่วยตรงจุด"}, "D": {"t": "รับงานโครงการที่ทำจากบ้านได้", "r": "คุณซ่อมเครื่องมือให้ทุกโครงการที่บ้าน งานเดินหน้าโดยคุณไม่ต้องทิ้งบ้าน"}}}, "P3": {"title": "ลำดับฟื้นฟูจากข้อมูล", "s": "มีโครงการฟื้นฟูหลายอย่างเสนอพร้อมกัน ชุมชนขอให้คุณช่วยจัดลำดับ เพราะคุณจดปัญหาของชุมชนมาตลอด", "choices": {"A": {"t": "ลงแรงกับโครงการที่ช่วยคนลำบากที่สุด", "r": "สถานพยาบาลได้ซ่อมก่อน คนป่วยเข้าถึงง่ายขึ้น"}, "B": {"t": "ให้ข้อมูลแล้วถอยออกมา", "r": "ชุมชนได้ข้อมูล แต่ใช้เวลาตัดสินใจอีกนาน"}, "C": {"t": "จัดลำดับจากปัญหาที่เกิดบ่อยที่สุดในบันทึก", "r": "น้ำสะอาดเป็นปัญหาอันดับหนึ่งมาตลอด โครงการจึงเริ่มจากระบบน้ำ"}, "D": {"t": "ตั้งคณะทำงานจัดลำดับและแบ่งแรงงาน", "r": "ทุกโครงการเดินหน้าทีละอย่างตามลำดับ ไม่มีใครเหนื่อยเกิน"}}}}
 };
 </script>
+<script>/* โครงเรื่อง 4 บท (ผู้กำกับอนุมัติ 27 ต.ค. แบบผสม 2+1)
+   - หมวดเดิม 20 หมวดจัดลงบทละ 5 หมวด เล่นตามบท ไม่วนซ้ำ
+   - ท้ายบท 1–3 มีจุดตัดสินใจ 1 เหตุการณ์ ใช้ตัวเลขผลตามความหมาย A–D ของหมวดใน effectsArc
+   - จบบท 4 = ฉากจบตามแนวทางที่เลือกบ่อยสุด + 1 บรรทัดตามคำตอบท้ายบท 3
+   ข้อความทั้งหมดในไฟล์นี้: ร่างโดย Claude รอทีมบทตรวจ */
+window.WW3_DATA.chapters = {
+  source: "Chapters V1-draft (Claude, pending script review) · 27 Oct",
+  list: [
+    { n: 1, title: "วันที่ทุกอย่างหยุด", arcs: ["ไฟฟ้า", "ข่าวสาร", "น้ำสะอาด", "อาหาร", "ความปลอดภัย"], decision: "C1",
+      intro: "ไฟดับ สัญญาณหาย ข่าวสับสน ทุกคนต้องเริ่มปรับตัว" },
+    { n: 2, title: "ขาดแคลน", arcs: ["เวชภัณฑ์", "ครอบครัว", "สุขภาพจิต", "การแลกเปลี่ยน", "สภาพอากาศ"], decision: "C2",
+      intro: "ร้านปิดเกือบหมด ของทุกอย่างหายากขึ้น" },
+    { n: 3, title: "อยู่หรือไป", arcs: ["การเดินทาง", "ที่พัก", "ผู้ย้ายถิ่น", "สัตว์เลี้ยง", "การปกครอง"], decision: "C3",
+      intro: "การเดินทางยากขึ้น มีคนแปลกหน้าเข้ามาในพื้นที่ทุกวัน" },
+    { n: 4, title: "ตั้งหลัก", arcs: ["ชุมชน", "เกษตร", "การศึกษา", "งานและทักษะ", "การฟื้นตัว"], decision: null,
+      intro: "ข่าวการสู้รบห่างออกไป ผู้คนเริ่มคิดถึงวันพรุ่งนี้" }
+  ],
+  decisions: [
+    { id: "C1", chapter: 1, arc: "จุดตัดสินใจ", effectsArc: "ชุมชน", title: "ไฟดับยาว ถึงเวลาต้องมีแผน",
+      s: "ไฟดับมาหลายวัน ข่าวยังสับสน น้ำและอาหารเหลือไม่มาก เพื่อนบ้านเริ่มมาเคาะประตูถามว่าจะเอายังไงต่อ",
+      choices: [
+        { k: "A", t: "แบ่งเสบียงให้บ้านข้าง ๆ", r: "บ้านข้าง ๆ มีของพอผ่านคืนนี้ไปได้ พวกเขาบอกว่าจะไม่ลืม เสบียงของคุณบางลง" },
+        { k: "B", t: "ตุนของและล็อกประตูไว้ก่อน", r: "คุณนับของ ล็อกประตู และไม่เปิดให้ใคร คืนนี้เงียบดี แต่คนข้างนอกเริ่มมองบ้านคุณต่างไป" },
+        { k: "C", t: "ออกไปหาข่าวจริงก่อนตัดสินใจ", r: "คุณเดินไปถึงศาลาและได้ประกาศฉบับจริงมา หลายข่าวลือในซอยไม่เป็นความจริง" },
+        { k: "D", t: "ชวนเพื่อนบ้านตั้งกลุ่มดูแลกัน", r: "มีห้าบ้านมาประชุมหน้าซอย ตกลงกันได้ว่าจะผลัดกันดูแล" }
+      ],
+      next: { A: "บ้านข้าง ๆ ยังจำได้ว่าคุณเคยแบ่งของให้", B: "คุณยังมีของสำรอง แต่ประตูบ้านคุณปิดอยู่เสมอ",
+              C: "คุณรู้ว่าข่าวไหนเชื่อได้ คนเริ่มมาถามคุณ", D: "กลุ่มเพื่อนบ้านที่คุณตั้งไว้เริ่มมีคนมาเพิ่ม" } },
+    { id: "C2", chapter: 2, arc: "จุดตัดสินใจ", effectsArc: "อาหาร", scene: "BG04-sala", title: "เสบียงกลางเหลือน้อย",
+      s: "คลังเสบียงที่ชุมชนรวมกันไว้เหลือไม่ถึงสัปดาห์ มีคนป่วยหลายคน และเริ่มมีเสียงทะเลาะว่าใครได้มากกว่าใคร",
+      choices: [
+        { k: "A", t: "ยกส่วนของคุณให้คนป่วย", r: "คนป่วยได้กินอิ่มขึ้นสองสามวัน คุณต้องอดบางมื้อ แต่มีคนเริ่มทำตาม" },
+        { k: "B", t: "เก็บส่วนของตัวเองไว้", r: "คุณรับส่วนของตัวเองแล้วกลับเงียบ ๆ ไม่มีใครว่า แต่ก็ไม่มีใครชวนคุยต่อ" },
+        { k: "C", t: "ขอดูบัญชีว่าของหายไปไหน", r: "บัญชีพบว่าของบางส่วนถูกจดซ้ำ ไม่ได้ถูกขโมย เสียงทะเลาะเบาลง" },
+        { k: "D", t: "เสนอกติกาแบ่งใหม่ตามความจำเป็น", r: "ที่ประชุมรับกติกาใหม่ คนป่วยและเด็กได้ก่อน ที่เหลือแบ่งเท่ากัน" }
+      ],
+      next: { A: "คนที่คุณเคยยกเสบียงให้หายป่วยแล้ว", B: "คุณยังมีเสบียงส่วนตัวเหลืออยู่บ้าง",
+              C: "บัญชีกลางที่คุณช่วยตรวจทำให้คนเชื่อใจกันขึ้น", D: "กติกาแบ่งของที่คุณเสนอยังใช้อยู่" } },
+    { id: "C3", chapter: 3, arc: "จุดตัดสินใจ", effectsArc: "การเดินทาง", scene: "BG07-checkpoint", title: "อยู่ต่อหรือไปศูนย์อพยพ",
+      s: "รถไปศูนย์อพยพจะออกเที่ยวสุดท้ายพรุ่งนี้เช้า ที่ศูนย์มีน้ำ ไฟ และหมอ แต่ต้องทิ้งบ้านกับของส่วนใหญ่ไว้",
+      choices: [
+        { k: "A", t: "ไปศูนย์ และพาคนที่เดินไม่ไหวไปด้วย", r: "คุณช่วยพยุงผู้สูงอายุสองคนขึ้นรถ ที่ศูนย์แออัด แต่ปลอดภัยกว่า" },
+        { k: "B", t: "อยู่บ้านเดิม ปิดประตูให้แน่น", r: "รถออกไปโดยไม่มีคุณ ซอยเงียบลงมาก คุณมีของเหลือ แต่ต้องดูแลตัวเองทั้งหมด" },
+        { k: "C", t: "ขอไปดูศูนย์ก่อนตัดสินใจ", r: "คุณติดรถไปดูแล้วกลับมาเล่าว่าศูนย์เป็นอย่างไรจริง ๆ หลายคนตัดสินใจได้ง่ายขึ้น" },
+        { k: "D", t: "รวมกับชุมชนตั้งที่พักร่วมแทน", r: "หลายครอบครัวย้ายมาอยู่โรงเรียนเดียวกัน แบ่งเวรน้ำ ไฟ และครัว" }
+      ],
+      next: { A: "คุณอยู่ที่ศูนย์อพยพกับคนที่คุณพามา", B: "คุณยังอยู่บ้านเดิม ซอยเงียบกว่าที่เคย",
+              C: "คุณกลับมาพร้อมข้อมูล และเลือกอยู่ใกล้ศูนย์", D: "คุณอยู่ที่พักร่วมกับชุมชน" } }
+  ],
+  endings: {
+    A: { title: "ที่พึ่งของคนอื่น", text: "คุณไม่ได้มีของมากที่สุด แต่มีคนมากมายจำชื่อคุณได้ เพราะวันที่พวกเขาไม่มีอะไร คุณยื่นมือมาก่อน" },
+    B: { title: "รอดด้วยตัวเอง", text: "คุณรอดมาได้ด้วยการระวังทุกอย่าง ยังมีของสำรองเหลือ แต่รอบตัวเงียบกว่าที่เคย" },
+    C: { title: "คนที่รู้ความจริง", text: "ข่าวลือไม่เคยหลอกคุณได้นาน ผู้คนมาถามคุณก่อนเชื่ออะไร และคำตอบของคุณช่วยให้หลายคนไม่หลงทาง" },
+    D: { title: "ผู้ร่วมสร้างชุมชน", text: "กติกาที่คุณช่วยตั้งยังใช้อยู่ เวรน้ำ ครัวกลาง และการประชุมทุกสัปดาห์ ทำให้ทุกคนผ่านมาได้ด้วยกัน" }
+  },
+  /* บรรทัดต่อท้ายฉากจบ ตามคำตอบจุดตัดสินใจท้ายบท 3 */
+  endingTail: { A: "คุณใช้ชีวิตต่อที่ศูนย์อพยพ", B: "คุณยังอยู่บ้านหลังเดิม", C: "คุณเลือกอยู่ใกล้ศูนย์ ไปมาได้ทั้งสองทาง", D: "คุณอยู่ที่พักร่วมกับชุมชน" },
+  keyNames: { A: "ช่วยเหลือ", B: "เก็บไว้เอง", C: "ตรวจสอบ", D: "ประสานงาน" }
+};
+</script>
 <script>/* อันดับออนไลน์บนเว็บสาธารณะ (Supabase) — ใส่ค่าจาก Supabase > Project Settings > API
    ว่างไว้ = ปิด (เกมใช้อันดับของ Claude ถ้าเปิดผ่าน Claude หรือใช้สถิติในเครื่องอย่างเดียว)
    anonKey เป็นคีย์สาธารณะ ใส่ในหน้าเว็บได้ ห้ามใส่ service_role key */
@@ -555,7 +629,8 @@ window.WW3_BALANCE = {
   startStats: { health: 85, fullness: 75, hydration: 75, energy: 80, mental: 70, safety: 65, clean: 70 },
 
   /* การเปลี่ยนแปลงท้ายวัน (กิน-ดื่ม-ใช้ชีวิตตามปกติ, นอน) [ร่าง] */
-  dailyChange: { fullness: -4.5, hydration: -4.5, energy: +18, mental: -6, safety: -4.5, clean: -4 } /* ผู้กำกับอนุมัติ 27 ต.ค. — .5 = สุ่มปัดเศษ ค่าเฉลี่ยตรง */,
+  /* ผู้กำกับอนุมัติ 27 ต.ค. (รอบ 2): ลดเหลือวันละ 2 เหตุการณ์ จึงลดค่าที่ลดต่อวันเหลือ 70% ของเดิม (เดิม อิ่ม −4.5 น้ำ −4.5 จิตใจ −6 ปลอดภัย −4.5 สะอาด −4) · ทศนิยม = สุ่มปัดเศษ ค่าเฉลี่ยตรง */
+  dailyChange: { fullness: -3.15, hydration: -3.15, energy: 0 /* พลังงานฟื้นจากการนอนตอนกลางคืนแทน (27 ต.ค. รอบ 3) */, mental: -4.2, safety: -3.15, clean: -2.8 },
 
   /* กฎสุขภาพท้ายวัน [ร่าง] — สุขภาพลดเมื่อค่าอื่นต่ำ ฟื้นเมื่อพื้นฐานดี */
   healthRules: {
@@ -588,7 +663,7 @@ window.WW3_BALANCE = {
 
   /* โครงสร้างวัน (เอกสาร ข้อ 4: 3 เหตุการณ์/วัน ช่วงเวลาสุ่ม) */
   day: {
-    eventsPerDay: 3,
+    eventsPerDay: 2,                    // ผู้กำกับอนุมัติ 27 ต.ค.: เกม 4 บท 100 วัน วันละ 2 เหตุการณ์
     hourMin: 6, hourMax: 23,            // ช่วงเวลาที่สุ่มเหตุการณ์ [ร่าง]
     minGapHours: 2
   },
@@ -636,253 +711,265 @@ window.WW3_BALANCE = {
      ข้อมูลต้นฉบับ: ตัวเลือก 4 แบบใช้ข้อความเดียวกันทั้ง 10 เหตุการณ์ในกลุ่ม → ร่างผลเป็นรายกลุ่ม × ตัวเลือก (80 ชุด)
      แนวคิดร่าง: A=แบ่ง/ช่วยผู้อื่น  B=เก็บไว้/ดูแลตนเอง  C=ตรวจสอบก่อน  D=จัดระบบร่วมกับชุมชน
      overrides: ใส่ผลเฉพาะรายเหตุการณ์ได้ เช่น "R001": { A: { hydration: -5, mental: 8 } } */
+  /* ผลตัวเลือก (ผู้กำกับอนุมัติแนวทาง 27 ต.ค. รอบ 3 · แนว This War of Mine: ทุกตัวเลือกมีราคา)
+     A ช่วยเหลือ: จิตใจ +7 ปลอดภัย +3 แต่เสียค่าหลักของหมวด −2 (หรืออิ่ม −2) พลังงาน −4
+     B เก็บไว้เอง: ค่าหลัก +10 ค่ารอง +2 แต่จิตใจ −3 ปลอดภัย −2 พลังงาน −2
+     C ตรวจสอบ: ค่าหลัก +5 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย)
+     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −8 (เหนื่อยมาก)
+     ค่ารองต่อหมวด: ไฟฟ้า=fullness, การแลกเปลี่ยน=fullness, เกษตร=hydration, งานและทักษะ=hydration, การปกครอง=fullness, น้ำสะอาด=clean, สภาพอากาศ=clean, ที่พัก=safety, ชุมชน=safety, อาหาร=health
+     ตัวเลขเดิมก่อนรอบนี้ดูได้ใน git history */
   choiceEffects: {
     "น้ำสะอาด": {
       "A": {
-        "hydration": 2,
-        "clean": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "clean": 3,
+        "clean": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "clean": 2,
-        "energy": -5
+        "clean": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "clean": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "clean": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "อาหาร": {
       "A": {
-        "fullness": 2,
-        "health": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "health": 3,
+        "health": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "health": 2,
-        "energy": -5
+        "health": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "health": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "health": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ที่พัก": {
       "A": {
-        "clean": 2,
-        "safety": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "safety": 1,
+        "safety": 0,
         "mental": -3,
         "energy": -2
       },
       "C": {
         "clean": 5,
-        "safety": 2,
-        "energy": -5
+        "safety": 1,
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "safety": 3,
-        "mental": 1,
-        "energy": -9
+        "clean": 8,
+        "safety": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "เวชภัณฑ์": {
       "A": {
-        "health": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "health": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "health": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "health": 7,
-        "mental": 4,
-        "energy": -9
+        "health": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ครอบครัว": {
       "A": {
-        "mental": 4,
-        "safety": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "safety": 1,
+        "mental": 10,
+        "safety": -5,
         "energy": -2
       },
       "C": {
         "mental": 5,
-        "safety": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "safety": 3,
-        "energy": -9
+        "energy": -8
       }
     },
     "ข่าวสาร": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ไฟฟ้า": {
       "A": {
-        "mental": 4,
-        "fullness": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "fullness": 3,
-        "energy": -2,
-        "safety": -2
+        "mental": 10,
+        "fullness": 2,
+        "safety": -5,
+        "energy": -2
       },
       "C": {
         "mental": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "fullness": 3,
-        "energy": -9
+        "fullness": 2,
+        "energy": -8
       }
     },
     "การเดินทาง": {
       "A": {
-        "safety": 2,
-        "energy": -5,
-        "mental": 2
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
-        "energy": 1,
-        "mental": -3
+        "safety": 10,
+        "mental": -5,
+        "energy": -2
       },
       "C": {
         "safety": 5,
         "energy": -3
       },
       "D": {
-        "safety": 7,
-        "energy": -6,
-        "mental": 1
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ชุมชน": {
       "A": {
-        "clean": 2,
-        "safety": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "safety": 1,
+        "safety": 0,
         "mental": -3,
         "energy": -2
       },
       "C": {
         "clean": 5,
-        "safety": 2,
-        "energy": -5
+        "safety": 1,
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "safety": 3,
-        "mental": 1,
-        "energy": -9
+        "clean": 8,
+        "safety": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การแลกเปลี่ยน": {
       "A": {
-        "hydration": 2,
-        "fullness": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "fullness": 3,
+        "fullness": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "fullness": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "fullness": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "สุขภาพจิต": {
       "A": {
-        "mental": 4,
-        "energy": -5
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "energy": 1,
-        "safety": -2
+        "mental": 10,
+        "safety": -5,
+        "energy": -2
       },
       "C": {
         "mental": 5,
@@ -890,221 +977,225 @@ window.WW3_BALANCE = {
       },
       "D": {
         "mental": 8,
-        "energy": -6
+        "energy": -8
       }
     },
     "สภาพอากาศ": {
       "A": {
-        "hydration": 2,
-        "clean": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "clean": 3,
+        "clean": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "clean": 2,
-        "energy": -5
+        "clean": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "clean": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "clean": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การศึกษา": {
       "A": {
-        "mental": 4,
-        "safety": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "safety": 1,
+        "mental": 10,
+        "safety": -5,
         "energy": -2
       },
       "C": {
         "mental": 5,
-        "safety": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "safety": 3,
-        "energy": -9
+        "energy": -8
       }
     },
     "เกษตร": {
       "A": {
-        "fullness": 2,
-        "hydration": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "hydration": 3,
+        "hydration": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "hydration": 2,
-        "energy": -5
+        "hydration": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "hydration": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "hydration": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "สัตว์เลี้ยง": {
       "A": {
-        "clean": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "clean": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "mental": 4,
-        "energy": -9
+        "clean": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ความปลอดภัย": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การปกครอง": {
       "A": {
-        "safety": 2,
-        "fullness": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
-        "fullness": 3,
-        "mental": -3,
+        "safety": 10,
+        "fullness": 2,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "fullness": 3,
-        "mental": 1,
-        "energy": -9
+        "safety": 8,
+        "fullness": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "งานและทักษะ": {
       "A": {
-        "fullness": 2,
-        "hydration": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "hydration": 3,
+        "hydration": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "hydration": 2,
-        "energy": -5
+        "hydration": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "hydration": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "hydration": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ผู้ย้ายถิ่น": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การฟื้นตัว": {
       "A": {
-        "health": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "health": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "health": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "health": 7,
-        "mental": 4,
-        "energy": -9
+        "health": 8,
+        "mental": 2,
+        "energy": -8
       }
     }
   },
+
   choiceOverrides: {},
 
   /* ตารางสุ่มตัวละคร [ร่าง — ยกเว้นรายชื่อ 77 จังหวัดซึ่งเป็นข้อเท็จจริง] */
@@ -1169,6 +1260,37 @@ window.WW3_BALANCE = {
   },
 
   /* การเดินทางข้ามจังหวัด — ผู้เล่นเลือกเอง ไม่บังคับ (เอกสาร ข้อ 2.1) [ร่างต้นทุน] */
+  /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
+  arcScene: {
+    "เวชภัณฑ์": "BG06-hospital",
+    "เกษตร": "BG05-rural",
+    "การเดินทาง": "BG07-checkpoint",
+    "ชุมชน": "BG04-sala",
+    "การปกครอง": "BG04-sala",
+    "ผู้ย้ายถิ่น": "BG08-relief",
+    "การฟื้นตัว": "BG08-relief",
+    "ข่าวสาร": "BG02-soi",
+    "การแลกเปลี่ยน": "BG03-shops"
+  },
+
+  /* ช่วงกลางคืน (ผู้กำกับอนุมัติ 27 ต.ค. รอบ 3 · แนว This War of Mine) — หลังสรุปวัน เลือก 1 อย่าง
+     ออกค้นหา: เลือกสถานที่ ยิ่งไกลยิ่งได้มากแต่เสี่ยงบาดเจ็บ (risk = โอกาสบาดเจ็บ × ความยากตามวัน, บาดเจ็บแล้วได้ของครึ่งเดียว)
+     เฝ้าบ้าน: ปลอดภัยขึ้น และไม่โดนปล้น · นอนพัก: พลังงานฟื้น
+     ถูกปล้น: ถ้าไม่ได้เฝ้าบ้าน และความปลอดภัยต่ำ */
+  night: {
+    defaultKey: "sleep",
+    actions: [
+      { key: "scavenge", th: "ออกค้นหา", places: [
+        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
+        { id: "depot", th: "โกดังริมถนนใหญ่", effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+      ] },
+      { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
+      { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } }
+    ],
+    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 } }
+  },
+
   travel: {
     enabled: true,
     cost: { energy: -25, safety: -10, fullness: -5, hydration: -8, mental: -3 },
@@ -1186,7 +1308,7 @@ window.WW3_BALANCE = {
    Works in browser and in Node (for automated playtests). */
 (function (root) {
   "use strict";
-  var SAVE_VERSION = 1;
+  var SAVE_VERSION = 2; /* 2 = chapter structure (27 Oct) */
 
   function Engine(data, bal, rng) {
     this.D = data; this.B = bal; this.rng = rng || Math.random;
@@ -1199,6 +1321,9 @@ window.WW3_BALANCE = {
     });
     this.arcs.forEach(function (a) { self.arcEvents[a].sort(function (x, y) { return x.id < y.id ? -1 : 1; }); });
     this.statKeys = bal.stats.map(function (s) { return s.key; });
+    /* chapters (director approved 27 Oct): arcs grouped into 4 chapters, played once, decision event at each chapter end */
+    this.CH = data.chapters || null;
+    if (this.CH) this.CH.decisions.forEach(function (d) { self.byId[d.id] = d; });
   }
 
   var P = Engine.prototype;
@@ -1226,7 +1351,7 @@ window.WW3_BALANCE = {
     var s = st.arcs[arc], evs = this.arcEvents[arc];
     while (s.ptr < evs.length && !this.eligible(st, evs[s.ptr])) s.ptr++;
     if (s.ptr < evs.length) return true;
-    if (this.B.schedule.loopAfterArcComplete) { s.ptr = 0; s.loops += 1; s.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; s.picks = []; s.path = null; }
+    if (this.B.schedule.loopAfterArcComplete && !this.CH) { s.ptr = 0; s.loops += 1; s.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; s.picks = []; s.path = null; }
     return false;
   };
   P.arcPossible = function (st, arc) {
@@ -1293,7 +1418,8 @@ window.WW3_BALANCE = {
       char: ch, stats: this.startStatsFor(ch), day: 0,
       arcs: arcs, queue: [], qi: 0, phase: "event",
       memory: [], dayLog: [], dayStartStats: null, lastResult: null, summary: null,
-      alive: true, travelledToday: false, history: []
+      alive: true, travelledToday: false, history: [],
+      chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null
     };
     this.startDay(st);
     return st;
@@ -1302,6 +1428,10 @@ window.WW3_BALANCE = {
   /* ---------- scheduling ---------- */
   P.availableArcs = function (st) {
     var self = this, sch = this.B.schedule;
+    if (this.CH) {
+      var ch = this.chapterOf(st);
+      return ch.arcs.filter(function (a) { return st.arcs[a].ptr < self.arcEvents[a].length && self.seekEligible(st, a); });
+    }
     return this.arcs.filter(function (a) {
       var s = st.arcs[a];
       var lock = sch.lockedUntilDay[a] || 0;
@@ -1317,7 +1447,62 @@ window.WW3_BALANCE = {
     return sch.baseWeight + sch.needWeight * (1 - v / 100);
   };
 
+  P.chapterOf = function (st) { return this.CH.list[(st.chapter || 1) - 1]; };
+  P.decisionOf = function (id) { return this.CH.decisions.filter(function (d) { return d.id === id; })[0]; };
+
+  /* next eligible event index of an arc at or after i (chapter mode: same arc may fill two slots in a day) */
+  P.nextIdx = function (st, arc, i) {
+    var evs = this.arcEvents[arc];
+    while (i < evs.length && !this.eligible(st, evs[i])) i++;
+    return i;
+  };
+
+  P.startDayChapters = function (st) {
+    var pool = this.availableArcs(st), ch = this.chapterOf(st), self = this;
+    if (!pool.length) {
+      if (ch.decision && !st.decisions[ch.n]) {
+        st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
+        st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
+        st.queue = [{ id: ch.decision, hour: this.rollHours(1)[0] }];
+        st.phase = "event"; st.lastResult = null; st.summary = null;
+        return;
+      }
+      /* last chapter done: ending (no new day) */
+      st.phase = "ending"; st.ending = this.endingFor(st); st.queue = []; st.lastResult = null;
+      return;
+    }
+    st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
+    st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
+    var n = this.B.day.eventsPerDay, vptr = {}, chosen = [], used = [];
+    pool.forEach(function (a) { vptr[a] = st.arcs[a].ptr; });
+    while (chosen.length < n) {
+      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
+      if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length; });
+      if (!cand.length) break;
+      var ws = cand.map(function (a) { return self.arcWeight(st, a); });
+      var tot = ws.reduce(function (x, y) { return x + y; }, 0), r = this.rng() * tot, i = 0;
+      for (; i < ws.length - 1; i++) { r -= ws[i]; if (r <= 0) break; }
+      var a = cand[i];
+      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a);
+      vptr[a] = this.nextIdx(st, a, vptr[a] + 1);
+    }
+    var hours = this.rollHours(chosen.length);
+    st.queue = chosen.map(function (id, i) { return { id: id, hour: hours[i] }; });
+    st.phase = "event"; st.lastResult = null; st.summary = null;
+  };
+
+  /* most chosen approach over the whole game; tie -> the one picked most recently */
+  P.endingFor = function (st) {
+    var t = st.tally || {}, last = {}, best = null;
+    st.memory.forEach(function (m, i) { if (m.key in t) last[m.key] = i; });
+    ["A", "B", "C", "D"].forEach(function (k) {
+      if (best === null || (t[k] || 0) > (t[best] || 0) || ((t[k] || 0) === (t[best] || 0) && (last[k] || -1) > (last[best] || -1))) best = k;
+    });
+    return { key: best, tail: st.decisions[3] || null, day: st.day };
+  };
+
   P.startDay = function (st) {
+    if (this.CH) return this.startDayChapters(st);
     st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
     st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
     var n = this.B.day.eventsPerDay, pool = this.availableArcs(st), chosen = [], self = this;
@@ -1393,7 +1578,7 @@ window.WW3_BALANCE = {
   P.effectsFor = function (ev, key) {
     var o = this.B.choiceOverrides[ev.id];
     if (o && o[key]) return o[key];
-    var a = this.B.choiceEffects[ev.arc];
+    var a = this.B.choiceEffects[ev.effectsArc || ev.arc];
     return (a && a[key]) || {};
   };
 
@@ -1428,11 +1613,21 @@ window.WW3_BALANCE = {
     var ch = ev.choices.filter(function (c) { return c.k === key; })[0];
     if (!ch) return null;
     var real = this.applyDelta(st, this.effectsFor(ev, key));
-    var arcSt = st.arcs[ev.arc];
+    if (st.tally) st.tally[key] = (st.tally[key] || 0) + 1;
+    var dec = this.CH && ev.effectsArc ? ev : null;
+    if (dec) {
+      st.decisions[dec.chapter] = key;
+      st.chapter = dec.chapter + 1;
+      st.chapterIntro = { n: st.chapter, day: st.day, from: dec.id, key: key };
+    }
+    var arcSt = dec ? null : st.arcs[ev.arc];
     var BR = this.D.branchRule;
-    if (BR && arcSt.ptr < BR.fromIndex) { arcSt.picks = arcSt.picks || []; arcSt.picks.push(key); }
-    arcSt.ptr += 1;
-    if (arcSt.ptr >= this.arcEvents[ev.arc].length && this.B.schedule.loopAfterArcComplete) {
+    if (arcSt) {
+    var idx = this.arcEvents[ev.arc].indexOf(this.byId[ev.id]);
+    if (BR && idx < BR.fromIndex) { arcSt.picks = arcSt.picks || []; arcSt.picks.push(key); }
+    arcSt.ptr = this.CH ? idx + 1 : arcSt.ptr + 1;
+    }
+    if (arcSt && arcSt.ptr >= this.arcEvents[ev.arc].length && this.B.schedule.loopAfterArcComplete && !this.CH) {
       arcSt.ptr = 0; arcSt.loops += 1; arcSt.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; arcSt.picks = []; arcSt.path = null;
     }
     var mem = { day: st.day, hour: cur.hour, id: ev.id, arc: ev.arc, title: ev.title, key: key, text: ch.t, province: st.char.province };
@@ -1506,9 +1701,43 @@ window.WW3_BALANCE = {
     return keys[0];
   };
 
+  /* ---------- night (director approved 27 Oct, This War of Mine logic): after the day summary pick one night action ---------- */
+  P.nightActions = function () { return this.B.night ? this.B.night.actions : []; };
+  P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
+  P.night = function (st, key, placeId) {
+    if (!this.canNight(st)) return null;
+    var N = this.B.night, act = N.actions.filter(function (a) { return a.key === key; })[0];
+    if (!act) return null;
+    var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
+    if (act.places && !place) return null;
+    var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
+    for (k in src.effects) delta[k] = src.effects[k];
+    var injury = 0, raid = false;
+    if (src.risk && this.rng() < src.risk * mult) {
+      injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
+      delta.health = (delta.health || 0) - injury;
+      /* hurt on the way: come back with half */
+      for (k in src.effects) if (src.effects[k] > 0) delta[k] = Math.round(src.effects[k] / 2);
+    }
+    /* raid on the home when nobody guards it */
+    var R = N.raid;
+    if (R && key !== "guard") {
+      var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
+      if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
+    }
+    var real = this.applyDelta(st, delta);
+    st.nightDone = true;
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
+    st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
+    if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
+    if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
+    else st.phase = "night";
+    return st.nightResult;
+  };
+
   P.canTravel = function (st) {
     var t = this.B.travel;
-    return t.enabled && st.phase === "summary" && !st.travelledToday && st.stats.energy >= t.minEnergy;
+    return t.enabled && st.phase === "summary" && !st.travelledToday && !st.nightDone && st.stats.energy >= t.minEnergy;
   };
 
   P.travel = function (st, province) {
@@ -1518,14 +1747,20 @@ window.WW3_BALANCE = {
     st.char.province = province; st.travelledToday = true;
     st.memory.push({ day: st.day, hour: 23, id: "TRAVEL", arc: "_travel", title: "เดินทางข้ามจังหวัด", key: "-", text: from + " → " + province, province: province });
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; }
+    else if (this.B.night) { st.nightDone = true; st.nightResult = { key: "travel", place: null, delta: real, injury: 0, raid: false, to: province }; st.phase = "night"; }
     return real;
   };
 
-  P.nextDay = function (st) { if (st.phase === "summary") this.startDay(st); };
+  P.nextDay = function (st) {
+    if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
+    if (st.phase === "summary" || st.phase === "night") { st.nightDone = false; st.nightResult = null; this.startDay(st); }
+  };
 
   /* Days survived = completed days. */
   P.daysSurvived = function (st) {
     if (st.phase === "dead") return st.deathDay - 1;
+    if (st.phase === "ending") return st.day;
+    if (st.phase === "night") return st.day;
     return st.phase === "summary" ? st.day : st.day - 1;
   };
 
@@ -1539,7 +1774,7 @@ window.WW3_BALANCE = {
   if (typeof module !== "undefined") module.exports = Engine;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
-<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp"}, "props": {"PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}};</script>
+<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp"}, "props": {"PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}};</script>
 <script>
 (function(){
 "use strict";
@@ -1670,7 +1905,7 @@ function sndSet(layer,v,tc){var g=SND.layers[layer];if(g&&SND.ctx)g.gain.setTarg
 function sndMood(){
   if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);musSet("menu");} return; }
   var cur=E.currentEvent(st), h=(st.phase==="event"&&cur)?cur.hour:21.5, ev=cur&&cur.ev;
-  var night=h>=19||h<6, rain=!!(ev&&st.phase!=="summary"&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
+  var night=h>=19||h<6, rain=!!(ev&&(st.phase==="event"||st.phase==="result")&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
   sndSet("wind",dead?0.03:(night?0.10:0.16)); sndSet("crick",night&&!dead?0.9:0); sndSet("rain",rain?0.06:0); sndSet("drone",dead?0.10:(low?0.08:0),2.5);
   musSet(dead?"dead":low?"low":night?"night":"day");
 }
@@ -1781,7 +2016,7 @@ function submitOnline(run){
     .then(function(){NET.sent=true;},function(){});
 }
 function submitBoxHTML(){
-  if(NET.provider!=="supa"||!st||st.phase!=="dead") return '<div id="submitBox"></div>';
+  if(NET.provider!=="supa"||!st||(st.phase!=="dead"&&st.phase!=="ending")) return '<div id="submitBox"></div>';
   if(NET.sent) return '<div id="submitBox"><p class="note">ส่งขึ้นอันดับแล้ว</p></div>';
   return '<div id="submitBox" class="row" style="gap:8px;margin-top:6px;align-items:center"><input id="nick" maxlength="20" placeholder="ชื่อเล่นที่จะขึ้นอันดับ" value="'+esc(load("ww3ts.nick.v1","")||"")+'" style="flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);font:inherit"><button class="btn" id="sendRun"'+(NET.sending?' disabled':'')+'>'+(NET.sending?'กำลังส่ง…':'ส่งขึ้นอันดับ')+'</button>'+(NET.err&&NET.state==="on"?'<p class="note" style="width:100%;color:var(--bad)">'+esc(NET.err)+'</p>':'')+'</div>';
 }
@@ -1791,7 +2026,7 @@ function bindSubmit(){
     var nick=(document.getElementById("nick").value||"").trim().slice(0,20);
     if(!nick){NET.err="ใส่ชื่อเล่นก่อนส่ง";refreshBoards();return;}
     save("ww3ts.nick.v1",nick); NET.sending=true; NET.err=""; refreshBoards();
-    var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
+    var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:(st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause)),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
     supaFetch("runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(body)})
       .then(function(r){NET.sending=false;if(!r.ok)throw 0;NET.sent=true;st.submitted=true;persist&&persist();supaLoad();})
       .catch(function(){NET.sending=false;NET.err="ส่งไม่สำเร็จ ลองใหม่อีกครั้งในอีกสักครู่";refreshBoards();});
@@ -1799,7 +2034,7 @@ function bindSubmit(){
 }
 
 function renderTitle(){
-  var saved=load(SAVE_KEY,null), ok=saved&&E.validateSave(saved)&&saved.alive;
+  var saved=load(SAVE_KEY,null), ok=saved&&E.validateSave(saved)&&saved.alive&&saved.phase!=="ending";
   app.innerHTML='<section class="title">'+
     '<span class="stamp">บันทึกผู้รอดชีวิต · ประเทศไทย</span>'+
     '<h1><small>สงครามโลกครั้งที่ 3</small>WW3 Thailand Survival</h1>'+
@@ -1864,7 +2099,7 @@ function petTh(c){var p=(B.character.pets||[]).filter(function(x){return x.key==
    Walk is in place; the scene moves the actor at ~184px/s per 433px of sprite height so the feet do not slide. */
 var _pre={};
 var NPC_CUT={NPC_03:"L",NPC_06:"L",NPC_07:"L",NPC_10:"L",NPC_12:"R",NPC_15:"R",NPC_18:"R"};
-function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]];
+function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]].concat(Object.keys(B.arcScene||{}).map(function(a){return A.bg[B.arcScene[a]];}));
   u.forEach(function(x){ if(x&&!_pre[x]&&x.indexOf("data:")!==0){_pre[x]=1;var im=new Image();im.src=x;} }); }
 function sideKey(){var c=st.char;return c.sex==="หญิง"?"female":("male_"+c.tier);}
 function driveWalkIn(){
@@ -1884,9 +2119,17 @@ function playerSprite(){
   var c=st.char; var key=c.sex==="หญิง"?"female":("male_"+c.tier);
   return A.player[key]||null;
 }
+/* where the scene happens: event's own scene, else its arc's scene, else night place, else home (27 Oct) */
+function sceneKey(ev){
+  if(ev) return ev.scene||(B.arcScene||{})[ev.arc]||null;
+  var nr=st.phase==="night"&&st.nightResult;
+  if(nr&&nr.place){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return pl&&pl.scene||null;}
+  return null;
+}
 function sceneHTML(ev,hour){
-  var bg=A.bg[B.character.tiers[st.char.tier].bg];
-  var x=ev?hash(ev.id)%100:50;
+  var lk=sceneKey(ev), loc=!!(lk&&A.bg[lk]);
+  var bg=loc?A.bg[lk]:A.bg[B.character.tiers[st.char.tier].bg];
+  var x=loc?50:(ev?hash(ev.id)%100:50);
   var ps=playerSprite();
   var enter=ev&&lastEnterKey!==(st.day+"-"+st.qi+"-"+ev.id); if(ev) lastEnterKey=st.day+"-"+st.qi+"-"+ev.id;
   var sk=sideKey(), sw=sk&&A.walk[sk+"_walk"], si=sk&&A.walk[sk+"_idle"];
@@ -1895,26 +2138,53 @@ function sceneHTML(ev,hour){
   var pi=E.petSpriteOf(st.char), pet=(ps&&pi&&A.pets[pi.id])?'<div class="actor pet'+(enter?((sw&&si)?' walkin':' enter-left'):'')+'" style="left:39%;height:'+(84*pi.h).toFixed(1)+'%"><div class="shadow"></div><img class="spr" alt="'+esc(petTh(st.char))+'" src="'+A.pets[pi.id]+'"></div>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  return '<div class="scene"><div class="bg" style="background-image:url('+bg+');background-position:'+x+'% 50%"></div>'+
+  return '<div class="scene"><div class="bg'+(loc?' loc':'')+'" style="background-image:url('+bg+');background-position:'+x+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
     props+'</div>';
 }
 
 function pipsHTML(){
   var n=st.queue.length,h="";
-  for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
+  for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
   return '<div class="pips" aria-label="เหตุการณ์วันนี้">'+h+'</div>';
+}
+
+/* chapters + night helpers (27 Oct) */
+var NIGHT_HINT={scavenge:"ได้ของ เสี่ยงเจ็บ",guard:"กันขโมย",sleep:"พลังงานฟื้น"};
+function chapTag(){var C=D.chapters;if(!C||!st.chapter)return "";return 'บท '+st.chapter+'/'+C.list.length+' · ';}
+function chapIntroHTML(day){
+  var ci=st.chapterIntro, C=D.chapters; if(!C||!ci||ci.day!==day) return "";
+  var ch=C.list[ci.n-1], dec=C.decisions.filter(function(d){return d.id===ci.from;})[0];
+  return '<div class="chap"><b>เข้าสู่บทที่ '+ci.n+' · '+esc(ch.title)+'</b><br>'+esc(ch.intro)+(dec&&dec.next[ci.key]?' · '+esc(dec.next[ci.key]):'')+'</div>';
+}
+function isFinalNight(){var C=D.chapters;if(!C||st.chapter<C.list.length)return false;return !E.availableArcs(st).length;}
+function nextDayLabel(){return isFinalNight()?"ดูบทสรุปชีวิต":"เช้าวันที่ "+(st.day+1);}
+function nightText(nr){
+  var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{}, pl=act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];
+  var o;
+  if(nr.key==="travel") o={tag:"เดินทาง",h:"เดินทางข้ามจังหวัด",p:"คุณใช้ทั้งคืนเดินทางจนถึง"+(nr.to||st.char.province)};
+  else if(nr.key==="scavenge") o=nr.injury?{tag:"ออกค้นหา · "+pl.th,h:"บาดเจ็บระหว่างทาง",p:"คุณพลาดล้มขณะค้น"+pl.th+" ได้ของกลับมาแค่ครึ่งเดียว"}:{tag:"ออกค้นหา · "+pl.th,h:"กลับมาพร้อมของ",p:"คุณค้น"+pl.th+"จนเกือบสว่าง ได้อาหารและน้ำกลับมา"};
+  else if(nr.key==="guard") o={tag:"เฝ้าบ้าน",h:"เฝ้าบ้านทั้งคืน",p:"คุณนั่งเฝ้าประตูจนฟ้าสาง ไม่มีใครเข้าใกล้บ้าน"};
+  else o={tag:"นอนพัก",h:"นอนพักทั้งคืน",p:"คุณได้นอนเต็มคืน ตื่นมาพร้อมแรงที่กลับมา"};
+  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยอาหารและน้ำไป";
+  return o;
+}
+function doNight(k,p){
+  E.night(st,k,p);
+  plog("night",{note:k+(p?":"+p:"")+(st.nightResult&&st.nightResult.injury?" injury -"+st.nightResult.injury:"")+(st.nightResult&&st.nightResult.raid?" raid":"")});
+  if(st.phase==="dead"){cue("death");recordDeath();}else cue(st.nightResult&&(st.nightResult.injury||st.nightResult.raid)?"hurt":"tick");
+  persist();render();focusMain();
 }
 
 function renderGame(){
   var cur=E.currentEvent(st), ev=cur&&cur.ev, hour=cur?cur.hour:21.5;
-  if(st.phase==="summary"||st.phase==="dead"){ev=null;hour=21.5;}
+  if(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"){ev=null;hour=st.phase==="night"?23.5:21.5;}
   var head='<div class="dayline"><h2>วันที่ <span class="num">'+st.day+'</span></h2><span class="meta">'+(ev?period(hour)+' · <span class="num">'+hhmm(hour)+'</span> · ':'')+esc(st.char.province)+'</span>'+pipsHTML()+'</div>';
   var body="";
   if(st.phase==="event"){
     var sk2=st.day+"-"+st.qi+"-"+ev.id; if(sk2!==shownKey){shownKey=sk2;shownAt=Date.now();}
     var rec=E.recallFor(st,ev);
-    body='<article class="card event"><div class="eyebrow">'+esc(period(hour))+' · '+esc(ev.arc)+(opts.ids?' · '+ev.id+(ev.path?' · '+ev.path+' '+D.branchRule.names[ev.path]:''):'')+'</div><h3>'+esc(ev.title)+'</h3>'+
+    body='<article class="card event"><div class="eyebrow">'+chapTag()+(ev.effectsArc?'จุดตัดสินใจท้ายบท':esc(period(hour))+' · '+esc(ev.arc))+(opts.ids?' · '+ev.id+(ev.path?' · '+ev.path+' '+D.branchRule.names[ev.path]:''):'')+'</div><h3>'+esc(ev.title)+'</h3>'+
       '<p class="scene-text">'+esc(ev.s)+(ev.sf&&ev.sf!==ev.s?' <button class="more" id="fullScene">อ่านเต็ม</button>':'')+'</p>'+
       (rec?(rec.same?'<div class="recall">เคยเจอเรื่องนี้ (วันที่ <span class="num">'+rec.day+'</span>) ครั้งก่อนคุณเลือก: <b>'+esc(rec.text)+'</b></div>':'<div class="recall">ครั้งก่อน (วันที่ <span class="num">'+rec.day+'</span> · '+esc(rec.title)+') คุณเลือก: <b>'+esc(rec.text)+'</b></div>'):'')+
       '<div class="choices">'+ev.choices.map(function(c){
@@ -1928,11 +2198,23 @@ function renderGame(){
   } else if(st.phase==="summary"){
     var s=st.summary;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
-    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>'+
+    var warn=[];if(s.accident)warn.push('เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident);if(s.lowReasons.length)warn.push('สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป');
+    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
       '<div class="chips">'+chips(s.total)+'</div>'+
-      (s.accident?'<p class="note" style="color:var(--bad);margin-top:10px">เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident+'</p>':'')+
-      (s.lowReasons.length?'<p class="note" style="color:var(--bad);margin-top:10px">สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป</p>':'')+
-      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span><button class="btn primary" id="nextday">เช้าวันที่ '+(st.day+1)+'</button></div></article>';
+      (warn.length?'<p class="note" style="color:var(--bad);margin-top:8px">'+warn.join(' · ')+'</p>':'')+
+      chapIntroHTML(s.day)+
+      (B.night?'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p><div class="nopts">'+B.night.actions.map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
+      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+  } else if(st.phase==="night"){
+    var nr=st.nightResult||{}, nt=nightText(nr);
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips">'+chips(nr.delta||{})+'</div>'+
+      '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
+  } else if(st.phase==="ending"){
+    var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
+    body='<article class="card dead"><div class="eyebrow">รอดครบ 4 บท · '+esc(st.char.name)+' · <span class="num">'+E.daysSurvived(st)+'</span> วัน</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(EN.title)+'</h3>'+
+      '<p>'+esc(EN.text)+(tl?' '+esc(tl):'')+'</p><div class="tally">'+["A","B","C","D"].map(function(k){return '<span>'+k+' '+esc(KN[k])+' <b class="num">'+(st.tally[k]||0)+'</b></span>';}).join("")+'</div>'+
+      '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
+      submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
   } else if(st.phase==="dead"){
     var days=E.daysSurvived(st);
     body='<article class="card dead"><div class="eyebrow">สิ้นสุดชีวิตรอบนี้</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(st.char.name)+' รอดชีวิตได้ <span class="num">'+days+'</span> วัน</h3>'+
@@ -1940,7 +2222,7 @@ function renderGame(){
       '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
       submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
   }
-  var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:{});
+  var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:(st.phase==="night"&&st.nightResult?st.nightResult.delta:{}));
   var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
   app.innerHTML='<div class="game">'+sideHTML()+mtop+'<main class="main">'+head+sceneHTML(ev,hour)+body+'</main></div>';
   preloadRun(); driveWalkIn(); bindSubmit(); sndMood();
@@ -1952,14 +2234,21 @@ function renderGame(){
     if(st.travelledToday)return;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
     openSheet('<div class="eyebrow">ย้ายไปจังหวัดอื่น · ไม่บังคับ</div><p class="note">'+(E.canTravel(st)?'ใช้แรงและเสี่ยง: '+Object.keys(B.travel.cost).map(function(k){return STAT[k].th+" "+B.travel.cost[k];}).join(", "):'พลังงานต้องไม่ต่ำกว่า '+B.travel.minEnergy)+'</p><select id="prov" aria-label="จังหวัดปลายทาง">'+provs.map(function(p){return '<option>'+esc(p)+'</option>';}).join("")+'</select><button class="btn primary" id="travel" '+(E.canTravel(st)?'':'disabled')+'>เดินทางคืนนี้</button>');
-    var t=document.querySelector("#bsheet #travel");if(t)t.addEventListener("click",function(){var p=document.querySelector("#bsheet #prov").value;E.travel(st,p);if(st.phase==="dead")recordDeath();persist();render();});
+    var t=document.querySelector("#bsheet #travel");if(t)t.addEventListener("click",function(){var p=document.querySelector("#bsheet #prov").value;E.travel(st,p);closeSheet();if(st.phase==="dead")recordDeath();persist();render();});
   });
   on("charSheet",function(){openSheet(sideHTML().replace('<aside class="side">','<div class="sidesheet">').replace('</aside>','</div>'),true);});
 
   app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
   on("logExport2",exportLog);
   on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});
-  on("nextday",function(){E.nextDay(st);persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
+  on("nextday",function(){E.nextDay(st);if(st.phase==="ending"){cue("day");plog("ending",{note:st.ending.key});recordDeath();}if(st.phase==="dead"){cue("death");recordDeath();}persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
+  app.querySelectorAll(".nopt").forEach(function(b){b.addEventListener("click",function(){
+    var k=b.dataset.n, act=B.night.actions.filter(function(a){return a.key===k;})[0];
+    if(act.places){
+      openSheet('<div class="eyebrow">ออกค้นหาคืนนี้ · เลือกที่จะไป</div><p class="note" style="margin:4px 0 10px">ยิ่งไกลยิ่งได้มาก แต่เสี่ยงบาดเจ็บมากขึ้น ถ้าบาดเจ็บจะได้ของกลับมาครึ่งเดียว</p>'+act.places.map(function(p){return '<button class="place" data-p="'+p.id+'"><b>'+esc(p.th)+' · เสี่ยงบาดเจ็บ <span class="num">'+Math.round(p.risk*E.difficulty(st.day)*100)+'%</span></b><span class="chips">'+chips(p.effects)+'</span></button>';}).join(""));
+      document.querySelectorAll("#bsheet .place").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();doNight(k,pb.dataset.p);});});
+    } else doNight(k,null);
+  });});
   on("home",function(){view="title";render();});
   on("home2",function(){view="title";render();});
   on("again",function(){pendingChar=E.rollCharacter();view="newchar";render();});
@@ -1986,9 +2275,10 @@ function closeSheet(){["bscrim","bsheet"].forEach(function(id){var e=document.ge
 function recordDeath(){
   if(st.recorded) return; st.recorded=true;
   var b=load(BOARD_KEY,[]);
-  b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  var cz=st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause);
+  b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});
   b.sort(function(x,y){return y.days-x.days;}); save(BOARD_KEY,b.slice(0,10));
-  submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});
   try{localStorage.removeItem(SAVE_KEY);}catch(e){}
 }
 
@@ -2027,7 +2317,7 @@ function renderDraft(){
       '<tr><td>เริ่มต้น</td>'+sk.map(function(k){return '<td class="num">'+B.startStats[k]+'</td>';}).join("")+'</tr>'+
       '<tr><td>ท้ายวัน</td>'+sk.map(function(k){var v=B.dailyChange[k];return '<td class="num">'+(v==null?"–":(v>0?"+":"")+v)+'</td>';}).join("")+'</tr>'+
       '<tr><td>สุขภาพลดเมื่อค่านี้ &lt; '+B.healthRules.lowThreshold+'</td>'+sk.map(function(k){var v=B.healthRules.penalties[k];return '<td class="num">'+(v==null?"–":v)+'</td>';}).join("")+'</tr></table></div>'+
-      '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · กลุ่ม “การฟื้นตัว” เริ่มวันที่ '+B.schedule.lockedUntilDay["การฟื้นตัว"]+' · เล่นครบกลุ่มแล้ววนใหม่หลังพัก '+B.schedule.arcCooldownDays+' วัน</p></div>'+
+      '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · เล่นเป็น 4 บท บทละ 5 กลุ่ม ไม่วนซ้ำ · วันละ '+B.day.eventsPerDay+' เหตุการณ์ + เลือกทำ 1 อย่างตอนกลางคืน</p></div>'+
     '<div><h4>ผลของตัวเลือก (20 กลุ่ม × 4)</h4><div class="tbl"><table><tr><th>กลุ่ม</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>'+arcRows+'</table></div></div>'+
     '<div><h4>ทดสอบจำลองอัตโนมัติ (300 รอบต่อแบบ, สูงสุด 365 วัน)</h4><p class="note" style="margin:0">เลือกสุ่ม: มัธยฐาน ~67 วัน · เลือก A ตลอด ~32 · B ตลอด ~65 · C ตลอด ~52 · D ตลอด ~113 · เลือกตามสถานะที่ต่ำ: มัธยฐาน 365 (ถึง 365 วัน ~71%) ไม่มีตัวเลือกเดียวที่ชนะตลอด</p></div>'+
   '</div>';
