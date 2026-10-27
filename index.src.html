@@ -257,6 +257,11 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
   .chip{font-size:13px;padding:2px 10px}
   .foot .btn{padding:11px 20px;font-size:15.5px}
 }
+.updbar{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);transform:translateX(-50%);z-index:60;display:flex;width:max-content;box-sizing:border-box;gap:10px;align-items:center;
+  max-width:calc(100vw - 24px);padding:8px 10px 8px 14px;background:#2a261c;border:1px solid #d6a63a;border-radius:10px;color:var(--fg);font:500 14px/1.3 "IBM Plex Sans Thai",sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.5)}
+.updbar span{white-space:nowrap}
+.updbar button{flex:none;white-space:nowrap;background:#d6a63a;color:#141413;border:0;border-radius:7px;padding:7px 12px;font:600 14px "IBM Plex Sans Thai",sans-serif;cursor:pointer}
+.updbar .updx{background:transparent;color:var(--fg);padding:7px 6px}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -333,19 +338,74 @@ function sndInit(){
   var cg=c.createGain();cg.gain.value=0;cg.connect(SND.master);
   SND.layers={wind:wg,rain:rg,drone:dg,crick:cg};
   SND.timer=setInterval(cricket,900);
+  musInit();
   sndMood();
 }
 function cricket(){ var c=SND.ctx; if(!c||SND.layers.crick.gain.value<0.01||Math.random()<0.35) return;
   var t=c.currentTime, f=4200+Math.random()*600;
   for(var i=0;i<3;i++){var o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t+i*0.07);g.gain.linearRampToValueAtTime(0.05,t+i*0.07+0.01);g.gain.linearRampToValueAtTime(0,t+i*0.07+0.05);o.connect(g);g.connect(SND.layers.crick);o.start(t+i*0.07);o.stop(t+i*0.07+0.06);}
 }
+/* ---- music (director approved 27 Oct: synthesized, no files). Slow A-minor pad + sparse plucked notes with echo.
+   Mood follows the scene: day = fuller · night = lower and sparser · health < 30 = dark pad, no melody · dead = fades out. */
+var MUS={bus:null,pad:null,mel:null,lp:null,next:0,chord:0,noteAt:0,mode:"",timer:null};
+var MUS_CHORDS=[[110,130.81,164.81],[87.31,110,130.81],[73.42,87.31,110],[82.41,103.83,123.47]];   /* Am · F · Dm · E */
+var MUS_SCALE=[220,261.63,293.66,329.63,392,440,523.25,587.33,659.25];                              /* A-minor pentatonic */
+var MUS_MOOD={menu:{pad:0.050,mel:0.040,rate:0.45,oct:1,cut:900},day:{pad:0.050,mel:0.045,rate:0.55,oct:1,cut:1000},
+  night:{pad:0.042,mel:0.032,rate:0.32,oct:0.5,cut:650},low:{pad:0.040,mel:0,rate:0,oct:0.5,cut:380},dead:{pad:0,mel:0,rate:0,oct:0.5,cut:300}};
+function musInit(){
+  var c=SND.ctx; if(!c||MUS.bus) return;
+  MUS.bus=c.createGain(); MUS.bus.gain.value=1; MUS.bus.connect(SND.master);
+  MUS.lp=c.createBiquadFilter(); MUS.lp.type="lowpass"; MUS.lp.frequency.value=900; MUS.lp.Q.value=0.4;
+  MUS.pad=c.createGain(); MUS.pad.gain.value=0; MUS.pad.connect(MUS.lp); MUS.lp.connect(MUS.bus);
+  MUS.mel=c.createGain(); MUS.mel.gain.value=0; MUS.mel.connect(MUS.bus);
+  var dl=c.createDelay(1.5), fb=c.createGain(), dlf=c.createBiquadFilter(); dl.delayTime.value=0.42; fb.gain.value=0.34; dlf.type="lowpass"; dlf.frequency.value=2200;
+  MUS.mel.connect(dl); dl.connect(dlf); dlf.connect(fb); fb.connect(dl); dlf.connect(MUS.bus);
+  MUS.next=c.currentTime+0.2; MUS.noteAt=c.currentTime+2.5;
+  MUS.timer=setInterval(musTick,250);
+}
+function musChord(t,freqs,len){
+  var c=SND.ctx;
+  freqs.forEach(function(f,i){
+    [0,4].forEach(function(cent,j){
+      var o=c.createOscillator(), g=c.createGain(); o.type=j?"triangle":"sine";
+      o.frequency.value=f*Math.pow(2,cent/1200);
+      var v=(j?0.45:1)/freqs.length;
+      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(v,t+3.2); g.gain.setValueAtTime(v,t+len-0.4); g.gain.linearRampToValueAtTime(0,t+len+3.2);
+      o.connect(g); g.connect(MUS.pad); o.start(t); o.stop(t+len+3.4);
+    });
+  });
+}
+function musNote(t,f){
+  var c=SND.ctx;
+  [[1,"sine",1],[2,"sine",0.22],[3,"triangle",0.06]].forEach(function(h){
+    var o=c.createOscillator(), g=c.createGain(); o.type=h[1]; o.frequency.value=f*h[0];
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(h[2],t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+2.4/h[0]);
+    o.connect(g); g.connect(MUS.mel); o.start(t); o.stop(t+2.6);
+  });
+}
+function musTick(){
+  var c=SND.ctx; if(!c||!MUS.bus||c.state!=="running") return;
+  var m=MUS_MOOD[MUS.mode]||MUS_MOOD.menu, now=c.currentTime, len=9;
+  if(MUS.next<now+0.6){ if(m.pad>0) musChord(MUS.next,MUS_CHORDS[MUS.chord%4],len); MUS.chord++; MUS.next+=len; }
+  if(m.rate>0&&MUS.noteAt<now+0.4){
+    if(Math.random()<m.rate){ var ch=MUS_CHORDS[(MUS.chord+3)%4], pool=MUS_SCALE.slice(0,7);
+      var f=Math.random()<0.5? ch[Math.floor(Math.random()*3)]*4 : pool[Math.floor(Math.random()*pool.length)];
+      musNote(MUS.noteAt,f*(m.oct<1?0.5:1)); }
+    MUS.noteAt+=1.3+Math.random()*2.2;
+  }
+}
+function musSet(mode){
+  if(!MUS.bus||MUS.mode===mode) return; MUS.mode=mode; var m=MUS_MOOD[mode], t=SND.ctx.currentTime;
+  MUS.pad.gain.setTargetAtTime(m.pad,t,2.5); MUS.mel.gain.setTargetAtTime(m.mel,t,2.0); MUS.lp.frequency.setTargetAtTime(m.cut,t,3);
+}
 function sndSet(layer,v,tc){var g=SND.layers[layer];if(g&&SND.ctx)g.gain.setTargetAtTime(v,SND.ctx.currentTime,tc||1.5);}
 /* pick layers from the current scene: hour, weather arc, health */
 function sndMood(){
-  if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);} return; }
+  if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);musSet("menu");} return; }
   var cur=E.currentEvent(st), h=(st.phase==="event"&&cur)?cur.hour:21.5, ev=cur&&cur.ev;
   var night=h>=19||h<6, rain=!!(ev&&st.phase!=="summary"&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
   sndSet("wind",dead?0.03:(night?0.10:0.16)); sndSet("crick",night&&!dead?0.9:0); sndSet("rain",rain?0.06:0); sndSet("drone",dead?0.10:(low?0.08:0),2.5);
+  musSet(dead?"dead":low?"low":night?"night":"day");
 }
 function cue(kind){
   var c=SND.ctx; if(!c||!SND.on) return; var t=c.currentTime;
@@ -717,6 +777,24 @@ function on(id,fn){var el=document.getElementById(id);if(el)el.addEventListener(
 function start(){ render(); initOnline(); }
 if(window.claude&&window.claude.hot){window.claude.hot.snapshot&&window.claude.hot.snapshot(function(){return {};});}
 start();
-window.__ww3={get state(){return st;},engine:E,render:function(){render();},snd:SND};
+/* ---- update notice (director approved 27 Oct): the web build ships version.json; when a newer build is live,
+   show a bar "มีอัปเดตใหม่ — แตะเพื่อโหลด". Checks every 5 min and when the app comes back to the screen. Save is in localStorage, so reload keeps progress. */
+var UPD={shown:false,dismissed:""};
+function updCheck(){
+  var mine=window.WW3_BUILD; if(!mine||UPD.shown||!window.fetch||!/^https?:$/.test(location.protocol)) return;
+  fetch("version.json?t="+Date.now(),{cache:"no-store"}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    if(!j||!j.build||j.build===mine||j.build===UPD.dismissed) return;
+    UPD.shown=true; var bar=document.createElement("div"); bar.className="updbar"; bar.setAttribute("role","status");
+    bar.innerHTML='<span>มีอัปเดตใหม่ของเกม</span><button class="updgo">แตะเพื่อโหลด</button><button class="updx" aria-label="ปิด">✕</button>';
+    document.body.appendChild(bar);
+    bar.querySelector(".updgo").onclick=function(){ try{persist();}catch(e){}
+      var go=function(){location.reload();};
+      if(navigator.serviceWorker&&navigator.serviceWorker.getRegistration){navigator.serviceWorker.getRegistration().then(function(rg){return rg&&rg.update();}).then(go,go);} else go(); };
+    bar.querySelector(".updx").onclick=function(){UPD.dismissed=j.build;UPD.shown=false;bar.remove();};
+  }).catch(function(){});
+}
+setInterval(updCheck,5*60*1000); setTimeout(updCheck,20000);
+document.addEventListener("visibilitychange",function(){ if(!document.hidden) updCheck(); });
+window.__ww3={get state(){return st;},engine:E,render:function(){render();},snd:SND,mus:MUS,upd:UPD,updCheck:updCheck};
 })();
 </script>

@@ -46,7 +46,9 @@ head=('<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="vi
  '<meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3">'
  '<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style>')
 reg='<script>if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost")){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>'
-html=head+s+reg; open(W+'index.html','w',encoding='utf-8').write(html)
+build=hashlib.sha1((s+''.join(files)).encode()).hexdigest()[:10]   # identity of this build, shown to running pages via version.json
+html=head+'<script>window.WW3_BUILD="%s";</script>'%build+s+reg; open(W+'index.html','w',encoding='utf-8').write(html)
+json.dump({'build':build},open(W+'version.json','w'))
 files=['./','index.html','manifest.webmanifest']+files
 ver=hashlib.sha1(html.encode()+''.join(files).encode()).hexdigest()[:10]
 json.dump({"name":title,"short_name":"WW3 TH","lang":"th","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"#141412","theme_color":"#141412",
@@ -59,9 +61,10 @@ self.addEventListener('fetch',e=>{
   const r=e.request; if(r.method!=='GET') return;
   const u=new URL(r.url);
   if(u.hostname.endsWith('supabase.co')) return;
+  if(u.pathname.endsWith('/version.json')) return;   /* always from the network: update notice */
   if(r.mode==='navigate'){ e.respondWith(fetch(r).then(res=>{caches.open(V).then(c=>c.put('index.html',res.clone()));return res;}).catch(()=>caches.match('index.html'))); return; }
   e.respondWith(caches.match(r).then(hit=>hit||fetch(r).then(res=>{ if(res.ok||res.type==='opaque'){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp));} return res; })));
 });
 """%(ver,json.dumps(files)))
 open(W+'.nojekyll','w').write('')
-print('web/index.html %.0f KB · cache %s'%(os.path.getsize(W+'index.html')/1024,ver))
+print('web/index.html %.0f KB · cache %s · build %s'%(os.path.getsize(W+'index.html')/1024,ver,build))
