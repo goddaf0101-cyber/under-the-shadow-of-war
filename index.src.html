@@ -157,6 +157,16 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .chip.down{color:var(--bad);border-color:rgba(217,100,74,.4)}
 .chip.none{color:var(--faint)}
 .foot{display:flex;justify-content:flex-end;margin-top:14px;gap:10px;flex-wrap:wrap}
+/* chapters + night (27 Oct) */
+.chap{font-size:13px;background:var(--panel-2);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:7px 11px;margin:10px 0 0}
+.chap b{color:var(--accent)}
+.nopts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nopt{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:9px 6px;cursor:pointer;font-weight:600;font-size:14px;line-height:1.25}
+.nopt small{display:block;font-weight:400;font-size:11.5px;color:var(--muted);margin-top:3px}
+.nopt:hover{border-color:var(--accent)}
+.place{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin:0 0 8px;cursor:pointer}
+.place b{display:block;margin-bottom:4px}
+.tally{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin:8px 0 0}
 .log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
 .log li{color:var(--muted)}
 .log b{color:var(--fg);font-weight:500}
@@ -234,6 +244,9 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 }
 /* short phones (e.g. SE): trim spacing so the four choices always fit */
 @media (max-width:860px) and (max-height:640px){
+  .nopt small{display:none} .nopt{padding:8px 4px}
+  .chap{font-size:12px;padding:5px 9px;margin-top:6px;line-height:1.4}
+  .place{padding:8px 10px;margin-bottom:6px}
   .game{gap:7px;padding-block:6px 8px}
   .mtop{gap:5px}
   .strip{padding:6px 9px;gap:4px 9px}
@@ -272,6 +285,7 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 <script>/*INLINE:data/events.js*/</script>
 <script>/*INLINE:data/life_variants.js*/</script>
 <script>/*INLINE:data/branches.js*/</script>
+<script>/*INLINE:data/chapters.js*/</script>
 <script>/*INLINE:online/config.js*/</script>
 <script>/*INLINE:config/balance_draft.js*/</script>
 <script>/*INLINE:engine.js*/</script>
@@ -406,7 +420,7 @@ function sndSet(layer,v,tc){var g=SND.layers[layer];if(g&&SND.ctx)g.gain.setTarg
 function sndMood(){
   if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);musSet("menu");} return; }
   var cur=E.currentEvent(st), h=(st.phase==="event"&&cur)?cur.hour:21.5, ev=cur&&cur.ev;
-  var night=h>=19||h<6, rain=!!(ev&&st.phase!=="summary"&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
+  var night=h>=19||h<6, rain=!!(ev&&(st.phase==="event"||st.phase==="result")&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
   sndSet("wind",dead?0.03:(night?0.10:0.16)); sndSet("crick",night&&!dead?0.9:0); sndSet("rain",rain?0.06:0); sndSet("drone",dead?0.10:(low?0.08:0),2.5);
   musSet(dead?"dead":low?"low":night?"night":"day");
 }
@@ -517,7 +531,7 @@ function submitOnline(run){
     .then(function(){NET.sent=true;},function(){});
 }
 function submitBoxHTML(){
-  if(NET.provider!=="supa"||!st||st.phase!=="dead") return '<div id="submitBox"></div>';
+  if(NET.provider!=="supa"||!st||(st.phase!=="dead"&&st.phase!=="ending")) return '<div id="submitBox"></div>';
   if(NET.sent) return '<div id="submitBox"><p class="note">ส่งขึ้นอันดับแล้ว</p></div>';
   return '<div id="submitBox" class="row" style="gap:8px;margin-top:6px;align-items:center"><input id="nick" maxlength="20" placeholder="ชื่อเล่นที่จะขึ้นอันดับ" value="'+esc(load("ww3ts.nick.v1","")||"")+'" style="flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);font:inherit"><button class="btn" id="sendRun"'+(NET.sending?' disabled':'')+'>'+(NET.sending?'กำลังส่ง…':'ส่งขึ้นอันดับ')+'</button>'+(NET.err&&NET.state==="on"?'<p class="note" style="width:100%;color:var(--bad)">'+esc(NET.err)+'</p>':'')+'</div>';
 }
@@ -527,7 +541,7 @@ function bindSubmit(){
     var nick=(document.getElementById("nick").value||"").trim().slice(0,20);
     if(!nick){NET.err="ใส่ชื่อเล่นก่อนส่ง";refreshBoards();return;}
     save("ww3ts.nick.v1",nick); NET.sending=true; NET.err=""; refreshBoards();
-    var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
+    var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:(st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause)),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
     supaFetch("runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(body)})
       .then(function(r){NET.sending=false;if(!r.ok)throw 0;NET.sent=true;st.submitted=true;persist&&persist();supaLoad();})
       .catch(function(){NET.sending=false;NET.err="ส่งไม่สำเร็จ ลองใหม่อีกครั้งในอีกสักครู่";refreshBoards();});
@@ -535,7 +549,7 @@ function bindSubmit(){
 }
 
 function renderTitle(){
-  var saved=load(SAVE_KEY,null), ok=saved&&E.validateSave(saved)&&saved.alive;
+  var saved=load(SAVE_KEY,null), ok=saved&&E.validateSave(saved)&&saved.alive&&saved.phase!=="ending";
   app.innerHTML='<section class="title">'+
     '<span class="stamp">บันทึกผู้รอดชีวิต · ประเทศไทย</span>'+
     '<h1><small>สงครามโลกครั้งที่ 3</small>WW3 Thailand Survival</h1>'+
@@ -638,19 +652,46 @@ function sceneHTML(ev,hour){
 
 function pipsHTML(){
   var n=st.queue.length,h="";
-  for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
+  for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
   return '<div class="pips" aria-label="เหตุการณ์วันนี้">'+h+'</div>';
+}
+
+/* chapters + night helpers (27 Oct) */
+var NIGHT_HINT={scavenge:"ได้ของ เสี่ยงเจ็บ",guard:"กันขโมย",sleep:"พลังงานฟื้น"};
+function chapTag(){var C=D.chapters;if(!C||!st.chapter)return "";return 'บท '+st.chapter+'/'+C.list.length+' · ';}
+function chapIntroHTML(day){
+  var ci=st.chapterIntro, C=D.chapters; if(!C||!ci||ci.day!==day) return "";
+  var ch=C.list[ci.n-1], dec=C.decisions.filter(function(d){return d.id===ci.from;})[0];
+  return '<div class="chap"><b>เข้าสู่บทที่ '+ci.n+' · '+esc(ch.title)+'</b><br>'+esc(ch.intro)+(dec&&dec.next[ci.key]?' · '+esc(dec.next[ci.key]):'')+'</div>';
+}
+function isFinalNight(){var C=D.chapters;if(!C||st.chapter<C.list.length)return false;return !E.availableArcs(st).length;}
+function nextDayLabel(){return isFinalNight()?"ดูบทสรุปชีวิต":"เช้าวันที่ "+(st.day+1);}
+function nightText(nr){
+  var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{}, pl=act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];
+  var o;
+  if(nr.key==="travel") o={tag:"เดินทาง",h:"เดินทางข้ามจังหวัด",p:"คุณใช้ทั้งคืนเดินทางจนถึง"+(nr.to||st.char.province)};
+  else if(nr.key==="scavenge") o=nr.injury?{tag:"ออกค้นหา · "+pl.th,h:"บาดเจ็บระหว่างทาง",p:"คุณพลาดล้มขณะค้น"+pl.th+" ได้ของกลับมาแค่ครึ่งเดียว"}:{tag:"ออกค้นหา · "+pl.th,h:"กลับมาพร้อมของ",p:"คุณค้น"+pl.th+"จนเกือบสว่าง ได้อาหารและน้ำกลับมา"};
+  else if(nr.key==="guard") o={tag:"เฝ้าบ้าน",h:"เฝ้าบ้านทั้งคืน",p:"คุณนั่งเฝ้าประตูจนฟ้าสาง ไม่มีใครเข้าใกล้บ้าน"};
+  else o={tag:"นอนพัก",h:"นอนพักทั้งคืน",p:"คุณได้นอนเต็มคืน ตื่นมาพร้อมแรงที่กลับมา"};
+  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยอาหารและน้ำไป";
+  return o;
+}
+function doNight(k,p){
+  E.night(st,k,p);
+  plog("night",{note:k+(p?":"+p:"")+(st.nightResult&&st.nightResult.injury?" injury -"+st.nightResult.injury:"")+(st.nightResult&&st.nightResult.raid?" raid":"")});
+  if(st.phase==="dead"){cue("death");recordDeath();}else cue(st.nightResult&&(st.nightResult.injury||st.nightResult.raid)?"hurt":"tick");
+  persist();render();focusMain();
 }
 
 function renderGame(){
   var cur=E.currentEvent(st), ev=cur&&cur.ev, hour=cur?cur.hour:21.5;
-  if(st.phase==="summary"||st.phase==="dead"){ev=null;hour=21.5;}
+  if(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"){ev=null;hour=st.phase==="night"?23.5:21.5;}
   var head='<div class="dayline"><h2>วันที่ <span class="num">'+st.day+'</span></h2><span class="meta">'+(ev?period(hour)+' · <span class="num">'+hhmm(hour)+'</span> · ':'')+esc(st.char.province)+'</span>'+pipsHTML()+'</div>';
   var body="";
   if(st.phase==="event"){
     var sk2=st.day+"-"+st.qi+"-"+ev.id; if(sk2!==shownKey){shownKey=sk2;shownAt=Date.now();}
     var rec=E.recallFor(st,ev);
-    body='<article class="card event"><div class="eyebrow">'+esc(period(hour))+' · '+esc(ev.arc)+(opts.ids?' · '+ev.id+(ev.path?' · '+ev.path+' '+D.branchRule.names[ev.path]:''):'')+'</div><h3>'+esc(ev.title)+'</h3>'+
+    body='<article class="card event"><div class="eyebrow">'+chapTag()+(ev.effectsArc?'จุดตัดสินใจท้ายบท':esc(period(hour))+' · '+esc(ev.arc))+(opts.ids?' · '+ev.id+(ev.path?' · '+ev.path+' '+D.branchRule.names[ev.path]:''):'')+'</div><h3>'+esc(ev.title)+'</h3>'+
       '<p class="scene-text">'+esc(ev.s)+(ev.sf&&ev.sf!==ev.s?' <button class="more" id="fullScene">อ่านเต็ม</button>':'')+'</p>'+
       (rec?(rec.same?'<div class="recall">เคยเจอเรื่องนี้ (วันที่ <span class="num">'+rec.day+'</span>) ครั้งก่อนคุณเลือก: <b>'+esc(rec.text)+'</b></div>':'<div class="recall">ครั้งก่อน (วันที่ <span class="num">'+rec.day+'</span> · '+esc(rec.title)+') คุณเลือก: <b>'+esc(rec.text)+'</b></div>'):'')+
       '<div class="choices">'+ev.choices.map(function(c){
@@ -664,11 +705,23 @@ function renderGame(){
   } else if(st.phase==="summary"){
     var s=st.summary;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
-    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>'+
+    var warn=[];if(s.accident)warn.push('เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident);if(s.lowReasons.length)warn.push('สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป');
+    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
       '<div class="chips">'+chips(s.total)+'</div>'+
-      (s.accident?'<p class="note" style="color:var(--bad);margin-top:10px">เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident+'</p>':'')+
-      (s.lowReasons.length?'<p class="note" style="color:var(--bad);margin-top:10px">สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป</p>':'')+
-      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span><button class="btn primary" id="nextday">เช้าวันที่ '+(st.day+1)+'</button></div></article>';
+      (warn.length?'<p class="note" style="color:var(--bad);margin-top:8px">'+warn.join(' · ')+'</p>':'')+
+      chapIntroHTML(s.day)+
+      (B.night?'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p><div class="nopts">'+B.night.actions.map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
+      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+  } else if(st.phase==="night"){
+    var nr=st.nightResult||{}, nt=nightText(nr);
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips">'+chips(nr.delta||{})+'</div>'+
+      '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
+  } else if(st.phase==="ending"){
+    var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
+    body='<article class="card dead"><div class="eyebrow">รอดครบ 4 บท · '+esc(st.char.name)+' · <span class="num">'+E.daysSurvived(st)+'</span> วัน</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(EN.title)+'</h3>'+
+      '<p>'+esc(EN.text)+(tl?' '+esc(tl):'')+'</p><div class="tally">'+["A","B","C","D"].map(function(k){return '<span>'+k+' '+esc(KN[k])+' <b class="num">'+(st.tally[k]||0)+'</b></span>';}).join("")+'</div>'+
+      '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
+      submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
   } else if(st.phase==="dead"){
     var days=E.daysSurvived(st);
     body='<article class="card dead"><div class="eyebrow">สิ้นสุดชีวิตรอบนี้</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(st.char.name)+' รอดชีวิตได้ <span class="num">'+days+'</span> วัน</h3>'+
@@ -676,7 +729,7 @@ function renderGame(){
       '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
       submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
   }
-  var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:{});
+  var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:(st.phase==="night"&&st.nightResult?st.nightResult.delta:{}));
   var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
   app.innerHTML='<div class="game">'+sideHTML()+mtop+'<main class="main">'+head+sceneHTML(ev,hour)+body+'</main></div>';
   preloadRun(); driveWalkIn(); bindSubmit(); sndMood();
@@ -688,14 +741,21 @@ function renderGame(){
     if(st.travelledToday)return;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
     openSheet('<div class="eyebrow">ย้ายไปจังหวัดอื่น · ไม่บังคับ</div><p class="note">'+(E.canTravel(st)?'ใช้แรงและเสี่ยง: '+Object.keys(B.travel.cost).map(function(k){return STAT[k].th+" "+B.travel.cost[k];}).join(", "):'พลังงานต้องไม่ต่ำกว่า '+B.travel.minEnergy)+'</p><select id="prov" aria-label="จังหวัดปลายทาง">'+provs.map(function(p){return '<option>'+esc(p)+'</option>';}).join("")+'</select><button class="btn primary" id="travel" '+(E.canTravel(st)?'':'disabled')+'>เดินทางคืนนี้</button>');
-    var t=document.querySelector("#bsheet #travel");if(t)t.addEventListener("click",function(){var p=document.querySelector("#bsheet #prov").value;E.travel(st,p);if(st.phase==="dead")recordDeath();persist();render();});
+    var t=document.querySelector("#bsheet #travel");if(t)t.addEventListener("click",function(){var p=document.querySelector("#bsheet #prov").value;E.travel(st,p);closeSheet();if(st.phase==="dead")recordDeath();persist();render();});
   });
   on("charSheet",function(){openSheet(sideHTML().replace('<aside class="side">','<div class="sidesheet">').replace('</aside>','</div>'),true);});
 
   app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
   on("logExport2",exportLog);
   on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});
-  on("nextday",function(){E.nextDay(st);persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
+  on("nextday",function(){E.nextDay(st);if(st.phase==="ending"){cue("day");plog("ending",{note:st.ending.key});recordDeath();}if(st.phase==="dead"){cue("death");recordDeath();}persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
+  app.querySelectorAll(".nopt").forEach(function(b){b.addEventListener("click",function(){
+    var k=b.dataset.n, act=B.night.actions.filter(function(a){return a.key===k;})[0];
+    if(act.places){
+      openSheet('<div class="eyebrow">ออกค้นหาคืนนี้ · เลือกที่จะไป</div><p class="note" style="margin:4px 0 10px">ยิ่งไกลยิ่งได้มาก แต่เสี่ยงบาดเจ็บมากขึ้น ถ้าบาดเจ็บจะได้ของกลับมาครึ่งเดียว</p>'+act.places.map(function(p){return '<button class="place" data-p="'+p.id+'"><b>'+esc(p.th)+' · เสี่ยงบาดเจ็บ <span class="num">'+Math.round(p.risk*E.difficulty(st.day)*100)+'%</span></b><span class="chips">'+chips(p.effects)+'</span></button>';}).join(""));
+      document.querySelectorAll("#bsheet .place").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();doNight(k,pb.dataset.p);});});
+    } else doNight(k,null);
+  });});
   on("home",function(){view="title";render();});
   on("home2",function(){view="title";render();});
   on("again",function(){pendingChar=E.rollCharacter();view="newchar";render();});
@@ -722,9 +782,10 @@ function closeSheet(){["bscrim","bsheet"].forEach(function(id){var e=document.ge
 function recordDeath(){
   if(st.recorded) return; st.recorded=true;
   var b=load(BOARD_KEY,[]);
-  b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  var cz=st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause);
+  b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});
   b.sort(function(x,y){return y.days-x.days;}); save(BOARD_KEY,b.slice(0,10));
-  submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});
   try{localStorage.removeItem(SAVE_KEY);}catch(e){}
 }
 
@@ -763,7 +824,7 @@ function renderDraft(){
       '<tr><td>เริ่มต้น</td>'+sk.map(function(k){return '<td class="num">'+B.startStats[k]+'</td>';}).join("")+'</tr>'+
       '<tr><td>ท้ายวัน</td>'+sk.map(function(k){var v=B.dailyChange[k];return '<td class="num">'+(v==null?"–":(v>0?"+":"")+v)+'</td>';}).join("")+'</tr>'+
       '<tr><td>สุขภาพลดเมื่อค่านี้ &lt; '+B.healthRules.lowThreshold+'</td>'+sk.map(function(k){var v=B.healthRules.penalties[k];return '<td class="num">'+(v==null?"–":v)+'</td>';}).join("")+'</tr></table></div>'+
-      '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · กลุ่ม “การฟื้นตัว” เริ่มวันที่ '+B.schedule.lockedUntilDay["การฟื้นตัว"]+' · เล่นครบกลุ่มแล้ววนใหม่หลังพัก '+B.schedule.arcCooldownDays+' วัน</p></div>'+
+      '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · เล่นเป็น 4 บท บทละ 5 กลุ่ม ไม่วนซ้ำ · วันละ '+B.day.eventsPerDay+' เหตุการณ์ + เลือกทำ 1 อย่างตอนกลางคืน</p></div>'+
     '<div><h4>ผลของตัวเลือก (20 กลุ่ม × 4)</h4><div class="tbl"><table><tr><th>กลุ่ม</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>'+arcRows+'</table></div></div>'+
     '<div><h4>ทดสอบจำลองอัตโนมัติ (300 รอบต่อแบบ, สูงสุด 365 วัน)</h4><p class="note" style="margin:0">เลือกสุ่ม: มัธยฐาน ~67 วัน · เลือก A ตลอด ~32 · B ตลอด ~65 · C ตลอด ~52 · D ตลอด ~113 · เลือกตามสถานะที่ต่ำ: มัธยฐาน 365 (ถึง 365 วัน ~71%) ไม่มีตัวเลือกเดียวที่ชนะตลอด</p></div>'+
   '</div>';

@@ -396,9 +396,43 @@
     return keys[0];
   };
 
+  /* ---------- night (director approved 27 Oct, This War of Mine logic): after the day summary pick one night action ---------- */
+  P.nightActions = function () { return this.B.night ? this.B.night.actions : []; };
+  P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
+  P.night = function (st, key, placeId) {
+    if (!this.canNight(st)) return null;
+    var N = this.B.night, act = N.actions.filter(function (a) { return a.key === key; })[0];
+    if (!act) return null;
+    var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
+    if (act.places && !place) return null;
+    var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
+    for (k in src.effects) delta[k] = src.effects[k];
+    var injury = 0, raid = false;
+    if (src.risk && this.rng() < src.risk * mult) {
+      injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
+      delta.health = (delta.health || 0) - injury;
+      /* hurt on the way: come back with half */
+      for (k in src.effects) if (src.effects[k] > 0) delta[k] = Math.round(src.effects[k] / 2);
+    }
+    /* raid on the home when nobody guards it */
+    var R = N.raid;
+    if (R && key !== "guard") {
+      var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
+      if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
+    }
+    var real = this.applyDelta(st, delta);
+    st.nightDone = true;
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
+    st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
+    if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
+    if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
+    else st.phase = "night";
+    return st.nightResult;
+  };
+
   P.canTravel = function (st) {
     var t = this.B.travel;
-    return t.enabled && st.phase === "summary" && !st.travelledToday && st.stats.energy >= t.minEnergy;
+    return t.enabled && st.phase === "summary" && !st.travelledToday && !st.nightDone && st.stats.energy >= t.minEnergy;
   };
 
   P.travel = function (st, province) {
@@ -408,15 +442,20 @@
     st.char.province = province; st.travelledToday = true;
     st.memory.push({ day: st.day, hour: 23, id: "TRAVEL", arc: "_travel", title: "เดินทางข้ามจังหวัด", key: "-", text: from + " → " + province, province: province });
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; }
+    else if (this.B.night) { st.nightDone = true; st.nightResult = { key: "travel", place: null, delta: real, injury: 0, raid: false, to: province }; st.phase = "night"; }
     return real;
   };
 
-  P.nextDay = function (st) { if (st.phase === "summary") this.startDay(st); };
+  P.nextDay = function (st) {
+    if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
+    if (st.phase === "summary" || st.phase === "night") { st.nightDone = false; st.nightResult = null; this.startDay(st); }
+  };
 
   /* Days survived = completed days. */
   P.daysSurvived = function (st) {
     if (st.phase === "dead") return st.deathDay - 1;
     if (st.phase === "ending") return st.day;
+    if (st.phase === "night") return st.day;
     return st.phase === "summary" ? st.day : st.day - 1;
   };
 
