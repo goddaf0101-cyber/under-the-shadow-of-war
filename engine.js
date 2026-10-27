@@ -3,7 +3,7 @@
    Works in browser and in Node (for automated playtests). */
 (function (root) {
   "use strict";
-  var SAVE_VERSION = 1;
+  var SAVE_VERSION = 2; /* 2 = chapter structure (27 Oct) */
 
   function Engine(data, bal, rng) {
     this.D = data; this.B = bal; this.rng = rng || Math.random;
@@ -16,6 +16,9 @@
     });
     this.arcs.forEach(function (a) { self.arcEvents[a].sort(function (x, y) { return x.id < y.id ? -1 : 1; }); });
     this.statKeys = bal.stats.map(function (s) { return s.key; });
+    /* chapters (director approved 27 Oct): arcs grouped into 4 chapters, played once, decision event at each chapter end */
+    this.CH = data.chapters || null;
+    if (this.CH) this.CH.decisions.forEach(function (d) { self.byId[d.id] = d; });
   }
 
   var P = Engine.prototype;
@@ -43,7 +46,7 @@
     var s = st.arcs[arc], evs = this.arcEvents[arc];
     while (s.ptr < evs.length && !this.eligible(st, evs[s.ptr])) s.ptr++;
     if (s.ptr < evs.length) return true;
-    if (this.B.schedule.loopAfterArcComplete) { s.ptr = 0; s.loops += 1; s.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; s.picks = []; s.path = null; }
+    if (this.B.schedule.loopAfterArcComplete && !this.CH) { s.ptr = 0; s.loops += 1; s.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; s.picks = []; s.path = null; }
     return false;
   };
   P.arcPossible = function (st, arc) {
@@ -110,7 +113,8 @@
       char: ch, stats: this.startStatsFor(ch), day: 0,
       arcs: arcs, queue: [], qi: 0, phase: "event",
       memory: [], dayLog: [], dayStartStats: null, lastResult: null, summary: null,
-      alive: true, travelledToday: false, history: []
+      alive: true, travelledToday: false, history: [],
+      chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null
     };
     this.startDay(st);
     return st;
@@ -119,6 +123,10 @@
   /* ---------- scheduling ---------- */
   P.availableArcs = function (st) {
     var self = this, sch = this.B.schedule;
+    if (this.CH) {
+      var ch = this.chapterOf(st);
+      return ch.arcs.filter(function (a) { return st.arcs[a].ptr < self.arcEvents[a].length && self.seekEligible(st, a); });
+    }
     return this.arcs.filter(function (a) {
       var s = st.arcs[a];
       var lock = sch.lockedUntilDay[a] || 0;
@@ -134,7 +142,62 @@
     return sch.baseWeight + sch.needWeight * (1 - v / 100);
   };
 
+  P.chapterOf = function (st) { return this.CH.list[(st.chapter || 1) - 1]; };
+  P.decisionOf = function (id) { return this.CH.decisions.filter(function (d) { return d.id === id; })[0]; };
+
+  /* next eligible event index of an arc at or after i (chapter mode: same arc may fill two slots in a day) */
+  P.nextIdx = function (st, arc, i) {
+    var evs = this.arcEvents[arc];
+    while (i < evs.length && !this.eligible(st, evs[i])) i++;
+    return i;
+  };
+
+  P.startDayChapters = function (st) {
+    var pool = this.availableArcs(st), ch = this.chapterOf(st), self = this;
+    if (!pool.length) {
+      if (ch.decision && !st.decisions[ch.n]) {
+        st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
+        st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
+        st.queue = [{ id: ch.decision, hour: this.rollHours(1)[0] }];
+        st.phase = "event"; st.lastResult = null; st.summary = null;
+        return;
+      }
+      /* last chapter done: ending (no new day) */
+      st.phase = "ending"; st.ending = this.endingFor(st); st.queue = []; st.lastResult = null;
+      return;
+    }
+    st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
+    st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
+    var n = this.B.day.eventsPerDay, vptr = {}, chosen = [], used = [];
+    pool.forEach(function (a) { vptr[a] = st.arcs[a].ptr; });
+    while (chosen.length < n) {
+      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
+      if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length; });
+      if (!cand.length) break;
+      var ws = cand.map(function (a) { return self.arcWeight(st, a); });
+      var tot = ws.reduce(function (x, y) { return x + y; }, 0), r = this.rng() * tot, i = 0;
+      for (; i < ws.length - 1; i++) { r -= ws[i]; if (r <= 0) break; }
+      var a = cand[i];
+      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a);
+      vptr[a] = this.nextIdx(st, a, vptr[a] + 1);
+    }
+    var hours = this.rollHours(chosen.length);
+    st.queue = chosen.map(function (id, i) { return { id: id, hour: hours[i] }; });
+    st.phase = "event"; st.lastResult = null; st.summary = null;
+  };
+
+  /* most chosen approach over the whole game; tie -> the one picked most recently */
+  P.endingFor = function (st) {
+    var t = st.tally || {}, last = {}, best = null;
+    st.memory.forEach(function (m, i) { if (m.key in t) last[m.key] = i; });
+    ["A", "B", "C", "D"].forEach(function (k) {
+      if (best === null || (t[k] || 0) > (t[best] || 0) || ((t[k] || 0) === (t[best] || 0) && (last[k] || -1) > (last[best] || -1))) best = k;
+    });
+    return { key: best, tail: st.decisions[3] || null, day: st.day };
+  };
+
   P.startDay = function (st) {
+    if (this.CH) return this.startDayChapters(st);
     st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
     st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
     var n = this.B.day.eventsPerDay, pool = this.availableArcs(st), chosen = [], self = this;
@@ -210,7 +273,7 @@
   P.effectsFor = function (ev, key) {
     var o = this.B.choiceOverrides[ev.id];
     if (o && o[key]) return o[key];
-    var a = this.B.choiceEffects[ev.arc];
+    var a = this.B.choiceEffects[ev.effectsArc || ev.arc];
     return (a && a[key]) || {};
   };
 
@@ -245,11 +308,21 @@
     var ch = ev.choices.filter(function (c) { return c.k === key; })[0];
     if (!ch) return null;
     var real = this.applyDelta(st, this.effectsFor(ev, key));
-    var arcSt = st.arcs[ev.arc];
+    if (st.tally) st.tally[key] = (st.tally[key] || 0) + 1;
+    var dec = this.CH && ev.effectsArc ? ev : null;
+    if (dec) {
+      st.decisions[dec.chapter] = key;
+      st.chapter = dec.chapter + 1;
+      st.chapterIntro = { n: st.chapter, day: st.day, from: dec.id, key: key };
+    }
+    var arcSt = dec ? null : st.arcs[ev.arc];
     var BR = this.D.branchRule;
-    if (BR && arcSt.ptr < BR.fromIndex) { arcSt.picks = arcSt.picks || []; arcSt.picks.push(key); }
-    arcSt.ptr += 1;
-    if (arcSt.ptr >= this.arcEvents[ev.arc].length && this.B.schedule.loopAfterArcComplete) {
+    if (arcSt) {
+    var idx = this.arcEvents[ev.arc].indexOf(this.byId[ev.id]);
+    if (BR && idx < BR.fromIndex) { arcSt.picks = arcSt.picks || []; arcSt.picks.push(key); }
+    arcSt.ptr = this.CH ? idx + 1 : arcSt.ptr + 1;
+    }
+    if (arcSt && arcSt.ptr >= this.arcEvents[ev.arc].length && this.B.schedule.loopAfterArcComplete && !this.CH) {
       arcSt.ptr = 0; arcSt.loops += 1; arcSt.cooldownUntil = st.day + this.B.schedule.arcCooldownDays; arcSt.picks = []; arcSt.path = null;
     }
     var mem = { day: st.day, hour: cur.hour, id: ev.id, arc: ev.arc, title: ev.title, key: key, text: ch.t, province: st.char.province };
@@ -323,9 +396,43 @@
     return keys[0];
   };
 
+  /* ---------- night (director approved 27 Oct, This War of Mine logic): after the day summary pick one night action ---------- */
+  P.nightActions = function () { return this.B.night ? this.B.night.actions : []; };
+  P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
+  P.night = function (st, key, placeId) {
+    if (!this.canNight(st)) return null;
+    var N = this.B.night, act = N.actions.filter(function (a) { return a.key === key; })[0];
+    if (!act) return null;
+    var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
+    if (act.places && !place) return null;
+    var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
+    for (k in src.effects) delta[k] = src.effects[k];
+    var injury = 0, raid = false;
+    if (src.risk && this.rng() < src.risk * mult) {
+      injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
+      delta.health = (delta.health || 0) - injury;
+      /* hurt on the way: come back with half */
+      for (k in src.effects) if (src.effects[k] > 0) delta[k] = Math.round(src.effects[k] / 2);
+    }
+    /* raid on the home when nobody guards it */
+    var R = N.raid;
+    if (R && key !== "guard") {
+      var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
+      if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
+    }
+    var real = this.applyDelta(st, delta);
+    st.nightDone = true;
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
+    st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
+    if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
+    if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
+    else st.phase = "night";
+    return st.nightResult;
+  };
+
   P.canTravel = function (st) {
     var t = this.B.travel;
-    return t.enabled && st.phase === "summary" && !st.travelledToday && st.stats.energy >= t.minEnergy;
+    return t.enabled && st.phase === "summary" && !st.travelledToday && !st.nightDone && st.stats.energy >= t.minEnergy;
   };
 
   P.travel = function (st, province) {
@@ -335,14 +442,20 @@
     st.char.province = province; st.travelledToday = true;
     st.memory.push({ day: st.day, hour: 23, id: "TRAVEL", arc: "_travel", title: "เดินทางข้ามจังหวัด", key: "-", text: from + " → " + province, province: province });
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; }
+    else if (this.B.night) { st.nightDone = true; st.nightResult = { key: "travel", place: null, delta: real, injury: 0, raid: false, to: province }; st.phase = "night"; }
     return real;
   };
 
-  P.nextDay = function (st) { if (st.phase === "summary") this.startDay(st); };
+  P.nextDay = function (st) {
+    if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
+    if (st.phase === "summary" || st.phase === "night") { st.nightDone = false; st.nightResult = null; this.startDay(st); }
+  };
 
   /* Days survived = completed days. */
   P.daysSurvived = function (st) {
     if (st.phase === "dead") return st.deathDay - 1;
+    if (st.phase === "ending") return st.day;
+    if (st.phase === "night") return st.day;
     return st.phase === "summary" ? st.day : st.day - 1;
   };
 

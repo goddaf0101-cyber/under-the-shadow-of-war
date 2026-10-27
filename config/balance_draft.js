@@ -24,7 +24,8 @@ window.WW3_BALANCE = {
   startStats: { health: 85, fullness: 75, hydration: 75, energy: 80, mental: 70, safety: 65, clean: 70 },
 
   /* การเปลี่ยนแปลงท้ายวัน (กิน-ดื่ม-ใช้ชีวิตตามปกติ, นอน) [ร่าง] */
-  dailyChange: { fullness: -4.5, hydration: -4.5, energy: +18, mental: -6, safety: -4.5, clean: -4 } /* ผู้กำกับอนุมัติ 27 ต.ค. — .5 = สุ่มปัดเศษ ค่าเฉลี่ยตรง */,
+  /* ผู้กำกับอนุมัติ 27 ต.ค. (รอบ 2): ลดเหลือวันละ 2 เหตุการณ์ จึงลดค่าที่ลดต่อวันเหลือ 70% ของเดิม (เดิม อิ่ม −4.5 น้ำ −4.5 จิตใจ −6 ปลอดภัย −4.5 สะอาด −4) · ทศนิยม = สุ่มปัดเศษ ค่าเฉลี่ยตรง */
+  dailyChange: { fullness: -3.15, hydration: -3.15, energy: 0 /* พลังงานฟื้นจากการนอนตอนกลางคืนแทน (27 ต.ค. รอบ 3) */, mental: -4.2, safety: -3.15, clean: -2.8 },
 
   /* กฎสุขภาพท้ายวัน [ร่าง] — สุขภาพลดเมื่อค่าอื่นต่ำ ฟื้นเมื่อพื้นฐานดี */
   healthRules: {
@@ -57,7 +58,7 @@ window.WW3_BALANCE = {
 
   /* โครงสร้างวัน (เอกสาร ข้อ 4: 3 เหตุการณ์/วัน ช่วงเวลาสุ่ม) */
   day: {
-    eventsPerDay: 3,
+    eventsPerDay: 2,                    // ผู้กำกับอนุมัติ 27 ต.ค.: เกม 4 บท 100 วัน วันละ 2 เหตุการณ์
     hourMin: 6, hourMax: 23,            // ช่วงเวลาที่สุ่มเหตุการณ์ [ร่าง]
     minGapHours: 2
   },
@@ -105,253 +106,265 @@ window.WW3_BALANCE = {
      ข้อมูลต้นฉบับ: ตัวเลือก 4 แบบใช้ข้อความเดียวกันทั้ง 10 เหตุการณ์ในกลุ่ม → ร่างผลเป็นรายกลุ่ม × ตัวเลือก (80 ชุด)
      แนวคิดร่าง: A=แบ่ง/ช่วยผู้อื่น  B=เก็บไว้/ดูแลตนเอง  C=ตรวจสอบก่อน  D=จัดระบบร่วมกับชุมชน
      overrides: ใส่ผลเฉพาะรายเหตุการณ์ได้ เช่น "R001": { A: { hydration: -5, mental: 8 } } */
+  /* ผลตัวเลือก (ผู้กำกับอนุมัติแนวทาง 27 ต.ค. รอบ 3 · แนว This War of Mine: ทุกตัวเลือกมีราคา)
+     A ช่วยเหลือ: จิตใจ +7 ปลอดภัย +3 แต่เสียค่าหลักของหมวด −2 (หรืออิ่ม −2) พลังงาน −4
+     B เก็บไว้เอง: ค่าหลัก +10 ค่ารอง +2 แต่จิตใจ −3 ปลอดภัย −2 พลังงาน −2
+     C ตรวจสอบ: ค่าหลัก +5 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย)
+     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −8 (เหนื่อยมาก)
+     ค่ารองต่อหมวด: ไฟฟ้า=fullness, การแลกเปลี่ยน=fullness, เกษตร=hydration, งานและทักษะ=hydration, การปกครอง=fullness, น้ำสะอาด=clean, สภาพอากาศ=clean, ที่พัก=safety, ชุมชน=safety, อาหาร=health
+     ตัวเลขเดิมก่อนรอบนี้ดูได้ใน git history */
   choiceEffects: {
     "น้ำสะอาด": {
       "A": {
-        "hydration": 2,
-        "clean": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "clean": 3,
+        "clean": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "clean": 2,
-        "energy": -5
+        "clean": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "clean": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "clean": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "อาหาร": {
       "A": {
-        "fullness": 2,
-        "health": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "health": 3,
+        "health": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "health": 2,
-        "energy": -5
+        "health": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "health": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "health": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ที่พัก": {
       "A": {
-        "clean": 2,
-        "safety": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "safety": 1,
+        "safety": 0,
         "mental": -3,
         "energy": -2
       },
       "C": {
         "clean": 5,
-        "safety": 2,
-        "energy": -5
+        "safety": 1,
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "safety": 3,
-        "mental": 1,
-        "energy": -9
+        "clean": 8,
+        "safety": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "เวชภัณฑ์": {
       "A": {
-        "health": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "health": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "health": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "health": 7,
-        "mental": 4,
-        "energy": -9
+        "health": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ครอบครัว": {
       "A": {
-        "mental": 4,
-        "safety": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "safety": 1,
+        "mental": 10,
+        "safety": -5,
         "energy": -2
       },
       "C": {
         "mental": 5,
-        "safety": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "safety": 3,
-        "energy": -9
+        "energy": -8
       }
     },
     "ข่าวสาร": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ไฟฟ้า": {
       "A": {
-        "mental": 4,
-        "fullness": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "fullness": 3,
-        "energy": -2,
-        "safety": -2
+        "mental": 10,
+        "fullness": 2,
+        "safety": -5,
+        "energy": -2
       },
       "C": {
         "mental": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "fullness": 3,
-        "energy": -9
+        "fullness": 2,
+        "energy": -8
       }
     },
     "การเดินทาง": {
       "A": {
-        "safety": 2,
-        "energy": -5,
-        "mental": 2
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
-        "energy": 1,
-        "mental": -3
+        "safety": 10,
+        "mental": -5,
+        "energy": -2
       },
       "C": {
         "safety": 5,
         "energy": -3
       },
       "D": {
-        "safety": 7,
-        "energy": -6,
-        "mental": 1
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ชุมชน": {
       "A": {
-        "clean": 2,
-        "safety": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "safety": 1,
+        "safety": 0,
         "mental": -3,
         "energy": -2
       },
       "C": {
         "clean": 5,
-        "safety": 2,
-        "energy": -5
+        "safety": 1,
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "safety": 3,
-        "mental": 1,
-        "energy": -9
+        "clean": 8,
+        "safety": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การแลกเปลี่ยน": {
       "A": {
-        "hydration": 2,
-        "fullness": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "fullness": 3,
+        "fullness": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "fullness": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "fullness": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "สุขภาพจิต": {
       "A": {
-        "mental": 4,
-        "energy": -5
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "energy": 1,
-        "safety": -2
+        "mental": 10,
+        "safety": -5,
+        "energy": -2
       },
       "C": {
         "mental": 5,
@@ -359,221 +372,225 @@ window.WW3_BALANCE = {
       },
       "D": {
         "mental": 8,
-        "energy": -6
+        "energy": -8
       }
     },
     "สภาพอากาศ": {
       "A": {
-        "hydration": 2,
-        "clean": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "hydration": -2
       },
       "B": {
         "hydration": 10,
-        "clean": 3,
+        "clean": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "hydration": 5,
-        "clean": 2,
-        "energy": -5
+        "clean": 1,
+        "energy": -3
       },
       "D": {
-        "hydration": 7,
-        "clean": 3,
-        "mental": 1,
-        "energy": -9
+        "hydration": 8,
+        "clean": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การศึกษา": {
       "A": {
-        "mental": 4,
-        "safety": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "mental": 7,
-        "safety": 1,
+        "mental": 10,
+        "safety": -5,
         "energy": -2
       },
       "C": {
         "mental": 5,
-        "safety": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
         "mental": 8,
-        "safety": 3,
-        "energy": -9
+        "energy": -8
       }
     },
     "เกษตร": {
       "A": {
-        "fullness": 2,
-        "hydration": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "hydration": 3,
+        "hydration": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "hydration": 2,
-        "energy": -5
+        "hydration": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "hydration": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "hydration": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "สัตว์เลี้ยง": {
       "A": {
-        "clean": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "clean": -2
       },
       "B": {
         "clean": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "clean": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "clean": 7,
-        "mental": 4,
-        "energy": -9
+        "clean": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ความปลอดภัย": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การปกครอง": {
       "A": {
-        "safety": 2,
-        "fullness": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
-        "fullness": 3,
-        "mental": -3,
+        "safety": 10,
+        "fullness": 2,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "fullness": 2,
-        "energy": -5
+        "fullness": 1,
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "fullness": 3,
-        "mental": 1,
-        "energy": -9
+        "safety": 8,
+        "fullness": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "งานและทักษะ": {
       "A": {
-        "fullness": 2,
-        "hydration": 2,
-        "mental": 2,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "fullness": 10,
-        "hydration": 3,
+        "hydration": 2,
         "mental": -3,
-        "energy": -2,
-        "safety": -2
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "fullness": 5,
-        "hydration": 2,
-        "energy": -5
+        "hydration": 1,
+        "energy": -3
       },
       "D": {
-        "fullness": 7,
-        "hydration": 3,
-        "mental": 1,
-        "energy": -9
+        "fullness": 8,
+        "hydration": 2,
+        "mental": 2,
+        "energy": -8
       }
     },
     "ผู้ย้ายถิ่น": {
       "A": {
-        "safety": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
-        "safety": 8,
+        "safety": 10,
+        "mental": -5,
         "energy": -2
       },
       "C": {
         "safety": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "safety": 7,
-        "mental": 4,
-        "energy": -9
+        "safety": 8,
+        "mental": 2,
+        "energy": -8
       }
     },
     "การฟื้นตัว": {
       "A": {
-        "health": 2,
-        "mental": 4,
-        "energy": -7
+        "mental": 7,
+        "safety": 3,
+        "energy": -4,
+        "fullness": -2
       },
       "B": {
         "health": 10,
-        "energy": -2,
-        "safety": -2
+        "mental": -3,
+        "safety": -2,
+        "energy": -2
       },
       "C": {
         "health": 5,
-        "mental": 2,
-        "energy": -5
+        "energy": -3
       },
       "D": {
-        "health": 7,
-        "mental": 4,
-        "energy": -9
+        "health": 8,
+        "mental": 2,
+        "energy": -8
       }
     }
   },
+
   choiceOverrides: {},
 
   /* ตารางสุ่มตัวละคร [ร่าง — ยกเว้นรายชื่อ 77 จังหวัดซึ่งเป็นข้อเท็จจริง] */
@@ -638,6 +655,37 @@ window.WW3_BALANCE = {
   },
 
   /* การเดินทางข้ามจังหวัด — ผู้เล่นเลือกเอง ไม่บังคับ (เอกสาร ข้อ 2.1) [ร่างต้นทุน] */
+  /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
+  arcScene: {
+    "เวชภัณฑ์": "BG06-hospital",
+    "เกษตร": "BG05-rural",
+    "การเดินทาง": "BG07-checkpoint",
+    "ชุมชน": "BG04-sala",
+    "การปกครอง": "BG04-sala",
+    "ผู้ย้ายถิ่น": "BG08-relief",
+    "การฟื้นตัว": "BG08-relief",
+    "ข่าวสาร": "BG02-soi",
+    "การแลกเปลี่ยน": "BG03-shops"
+  },
+
+  /* ช่วงกลางคืน (ผู้กำกับอนุมัติ 27 ต.ค. รอบ 3 · แนว This War of Mine) — หลังสรุปวัน เลือก 1 อย่าง
+     ออกค้นหา: เลือกสถานที่ ยิ่งไกลยิ่งได้มากแต่เสี่ยงบาดเจ็บ (risk = โอกาสบาดเจ็บ × ความยากตามวัน, บาดเจ็บแล้วได้ของครึ่งเดียว)
+     เฝ้าบ้าน: ปลอดภัยขึ้น และไม่โดนปล้น · นอนพัก: พลังงานฟื้น
+     ถูกปล้น: ถ้าไม่ได้เฝ้าบ้าน และความปลอดภัยต่ำ */
+  night: {
+    defaultKey: "sleep",
+    actions: [
+      { key: "scavenge", th: "ออกค้นหา", places: [
+        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
+        { id: "depot", th: "โกดังริมถนนใหญ่", effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+      ] },
+      { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
+      { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } }
+    ],
+    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 } }
+  },
+
   travel: {
     enabled: true,
     cost: { energy: -25, safety: -10, fullness: -5, hydration: -8, mental: -3 },
