@@ -554,10 +554,10 @@ function renderTitle(){
   app.innerHTML='<section class="title">'+
     '<span class="stamp">บันทึกผู้รอดชีวิต · ประเทศไทย</span>'+
     '<h1><small>สงครามโลกครั้งที่ 3</small>WW3 Thailand Survival</h1>'+
-    '<p>คุณคือคนธรรมดาคนหนึ่ง ใช้ชีวิตต่อไปให้นานที่สุดท่ามกลางสงคราม วันละสามเหตุการณ์ ไม่มีวันสุดท้ายที่เกมกำหนด ทุกการตัดสินใจจะถูกจดจำ</p>'+
+    '<p>คุณคือคนธรรมดาคนหนึ่ง ใช้ชีวิตให้รอดท่ามกลางสงคราม 4 บท กลางวันตัดสินใจ กลางคืนเลือกว่าจะออกค้นหา เฝ้าบ้าน หรือพักผ่อน ทุกการตัดสินใจจะถูกจดจำ และพาคุณไปสู่ตอนจบของตัวเอง</p>'+
     '<div class="row">'+(ok?'<button class="btn primary" id="cont">เล่นต่อ · วันที่ <span class="num">'+saved.day+'</span> · '+esc(saved.char.name)+'</button>':'')+
     '<button class="btn '+(ok?"":"primary")+'" id="new">เริ่มชีวิตใหม่</button>'+
-    '<button class="btn ghost" id="draft">ค่าร่างที่รออนุมัติ</button>'+sndBtn().replace('class="sndbtn"','class="btn ghost sndbtn"')+'</div>'+
+    (opts.test?'<button class="btn ghost" id="draft">ค่าร่างที่รออนุมัติ</button>':'')+sndBtn().replace('class="sndbtn"','class="btn ghost sndbtn"')+'</div>'+
     (storageOK?'':'<p class="note">เบราว์เซอร์นี้ไม่อนุญาตให้บันทึก ความคืบหน้าจะหายเมื่อปิดหน้า</p>')+
     '<div class="card"><p class="sec-h">อันดับออนไลน์ · รอดนานที่สุด</p><div data-online-board="20">'+onlineBoardHTML(20)+'</div></div>'+
     '<div class="card"><p class="sec-h">สถิติวันที่รอดชีวิต (เครื่องนี้)</p>'+boardHTML()+'</div>'+
@@ -605,7 +605,7 @@ function sideHTML(){
     '<div class="card"><p class="sec-h">ความทรงจำ</p><div class="mem">'+
       (mem.length?mem.map(function(m){return '<div>วันที่ <span class="num">'+m.day+'</span> · <b>'+esc(m.title)+'</b><br>'+esc(m.text)+'</div>';}).join(""):'<span class="note">ยังไม่มีการตัดสินใจ</span>')+
     '</div></div>'+
-    '<div class="row"><button class="btn" id="home">หน้าแรก</button><button class="btn ghost" id="draft">ค่าร่าง</button></div>'+
+    '<div class="row"><button class="btn" id="home">หน้าแรก</button>'+(opts.test?'<button class="btn ghost" id="draft">ค่าร่าง</button>':'')+'</div>'+
     '<p class="note">บันทึกอัตโนมัติทุกการเลือก การออกจากเกมเป็นการพักเท่านั้น</p></aside>';
 }
 
@@ -835,7 +835,7 @@ function renderDraft(){
       '<tr><td>สุขภาพลดเมื่อค่านี้ &lt; '+B.healthRules.lowThreshold+'</td>'+sk.map(function(k){var v=B.healthRules.penalties[k];return '<td class="num">'+(v==null?"–":v)+'</td>';}).join("")+'</tr></table></div>'+
       '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · เล่นเป็น 4 บท บทละ 5 กลุ่ม ไม่วนซ้ำ · วันละ '+B.day.eventsPerDay+' เหตุการณ์ + เลือกทำ 1 อย่างตอนกลางคืน</p></div>'+
     '<div><h4>ผลของตัวเลือก (20 กลุ่ม × 4)</h4><div class="tbl"><table><tr><th>กลุ่ม</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>'+arcRows+'</table></div></div>'+
-    '<div><h4>ทดสอบจำลองอัตโนมัติ (300 รอบต่อแบบ, สูงสุด 365 วัน)</h4><p class="note" style="margin:0">เลือกสุ่ม: มัธยฐาน ~67 วัน · เลือก A ตลอด ~32 · B ตลอด ~65 · C ตลอด ~52 · D ตลอด ~113 · เลือกตามสถานะที่ต่ำ: มัธยฐาน 365 (ถึง 365 วัน ~71%) ไม่มีตัวเลือกเดียวที่ชนะตลอด</p></div>'+
+    '<div><h4>ทดสอบจำลองอัตโนมัติ (400 รอบต่อแบบ · 4 บท · 27 ต.ค.)</h4><p class="note" style="margin:0">เลือกตามสถานการณ์: ถึงฉากจบ 100% · A ตลอด 0% · B ตลอด 0% · C ตลอด 16% · D ตลอด 4% · เลือกสุ่ม: รอดมัธยฐาน 48 วัน · ไม่มีตัวเลือกเดียวที่ชนะตลอด (รัน <code>node tests/sim.js</code> เพื่อดูค่าล่าสุด)</p></div>'+
   '</div>';
   document.body.appendChild(ov);
   ov.addEventListener("click",function(e){if(e.target===ov)closeD();});
