@@ -93,6 +93,7 @@ table.board td{overflow-wrap:anywhere;vertical-align:top}
 /* scene band */
 .scene{position:relative;height:clamp(190px,30vw,300px);border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#0e0e0d}
 .scene .bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:auto 100%;filter:saturate(.62) brightness(.82) contrast(1.02);transition:background-position 1.2s ease}
+.scene .bg.loc{background-size:cover}
 .scene .tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;transition:background .8s}
 .scene .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55));pointer-events:none}
 .scene .npc{position:absolute;bottom:9%;height:84%;width:auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));transition:opacity .4s}
@@ -614,7 +615,7 @@ function petTh(c){var p=(B.character.pets||[]).filter(function(x){return x.key==
    Walk is in place; the scene moves the actor at ~184px/s per 433px of sprite height so the feet do not slide. */
 var _pre={};
 var NPC_CUT={NPC_03:"L",NPC_06:"L",NPC_07:"L",NPC_10:"L",NPC_12:"R",NPC_15:"R",NPC_18:"R"};
-function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]];
+function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]].concat(Object.keys(B.arcScene||{}).map(function(a){return A.bg[B.arcScene[a]];}));
   u.forEach(function(x){ if(x&&!_pre[x]&&x.indexOf("data:")!==0){_pre[x]=1;var im=new Image();im.src=x;} }); }
 function sideKey(){var c=st.char;return c.sex==="หญิง"?"female":("male_"+c.tier);}
 function driveWalkIn(){
@@ -634,9 +635,17 @@ function playerSprite(){
   var c=st.char; var key=c.sex==="หญิง"?"female":("male_"+c.tier);
   return A.player[key]||null;
 }
+/* where the scene happens: event's own scene, else its arc's scene, else night place, else home (27 Oct) */
+function sceneKey(ev){
+  if(ev) return ev.scene||(B.arcScene||{})[ev.arc]||null;
+  var nr=st.phase==="night"&&st.nightResult;
+  if(nr&&nr.place){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return pl&&pl.scene||null;}
+  return null;
+}
 function sceneHTML(ev,hour){
-  var bg=A.bg[B.character.tiers[st.char.tier].bg];
-  var x=ev?hash(ev.id)%100:50;
+  var lk=sceneKey(ev), loc=!!(lk&&A.bg[lk]);
+  var bg=loc?A.bg[lk]:A.bg[B.character.tiers[st.char.tier].bg];
+  var x=loc?50:(ev?hash(ev.id)%100:50);
   var ps=playerSprite();
   var enter=ev&&lastEnterKey!==(st.day+"-"+st.qi+"-"+ev.id); if(ev) lastEnterKey=st.day+"-"+st.qi+"-"+ev.id;
   var sk=sideKey(), sw=sk&&A.walk[sk+"_walk"], si=sk&&A.walk[sk+"_idle"];
@@ -645,7 +654,7 @@ function sceneHTML(ev,hour){
   var pi=E.petSpriteOf(st.char), pet=(ps&&pi&&A.pets[pi.id])?'<div class="actor pet'+(enter?((sw&&si)?' walkin':' enter-left'):'')+'" style="left:39%;height:'+(84*pi.h).toFixed(1)+'%"><div class="shadow"></div><img class="spr" alt="'+esc(petTh(st.char))+'" src="'+A.pets[pi.id]+'"></div>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  return '<div class="scene"><div class="bg" style="background-image:url('+bg+');background-position:'+x+'% 50%"></div>'+
+  return '<div class="scene"><div class="bg'+(loc?' loc':'')+'" style="background-image:url('+bg+');background-position:'+x+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
     props+'</div>';
 }

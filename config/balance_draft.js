@@ -655,6 +655,19 @@ window.WW3_BALANCE = {
   },
 
   /* การเดินทางข้ามจังหวัด — ผู้เล่นเลือกเอง ไม่บังคับ (เอกสาร ข้อ 2.1) [ร่างต้นทุน] */
+  /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
+  arcScene: {
+    "เวชภัณฑ์": "BG06-hospital",
+    "เกษตร": "BG05-rural",
+    "การเดินทาง": "BG07-checkpoint",
+    "ชุมชน": "BG04-sala",
+    "การปกครอง": "BG04-sala",
+    "ผู้ย้ายถิ่น": "BG08-relief",
+    "การฟื้นตัว": "BG08-relief",
+    "ข่าวสาร": "BG02-soi",
+    "การแลกเปลี่ยน": "BG03-shops"
+  },
+
   /* ช่วงกลางคืน (ผู้กำกับอนุมัติ 27 ต.ค. รอบ 3 · แนว This War of Mine) — หลังสรุปวัน เลือก 1 อย่าง
      ออกค้นหา: เลือกสถานที่ ยิ่งไกลยิ่งได้มากแต่เสี่ยงบาดเจ็บ (risk = โอกาสบาดเจ็บ × ความยากตามวัน, บาดเจ็บแล้วได้ของครึ่งเดียว)
      เฝ้าบ้าน: ปลอดภัยขึ้น และไม่โดนปล้น · นอนพัก: พลังงานฟื้น
@@ -663,8 +676,8 @@ window.WW3_BALANCE = {
     defaultKey: "sleep",
     actions: [
       { key: "scavenge", th: "ออกค้นหา", places: [
-        { id: "near", th: "บ้านร้างในซอย", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
-        { id: "market", th: "ตลาดที่ถูกทิ้ง", effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
+        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
         { id: "depot", th: "โกดังริมถนนใหญ่", effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
