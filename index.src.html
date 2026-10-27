@@ -99,6 +99,9 @@ table.board td{overflow-wrap:anywhere;vertical-align:top}
 .scene .shadow{position:absolute;bottom:8%;height:14px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px)}
 .scene .actor{position:absolute;bottom:9%;height:84%;width:0;z-index:1}
 .scene .actor .spr{position:absolute;bottom:0;left:0;height:100%;width:auto;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+/* NPC art cropped flat at the file edge: fade that edge so the cut is not a hard line (approved 27 Oct, option 2) */
+.scene .actor .spr.fadeL{-webkit-mask-image:linear-gradient(to right,transparent 1%,#000 9%);mask-image:linear-gradient(to right,transparent 1%,#000 9%)}
+.scene .actor .spr.fadeR{-webkit-mask-image:linear-gradient(to left,transparent 1%,#000 9%);mask-image:linear-gradient(to left,transparent 1%,#000 9%)}
 .scene .actor .shadow{position:absolute;bottom:-1.5%;left:0;width:72px;max-width:14vw;height:12px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px)}
 @media (prefers-reduced-motion:no-preference){
   .scene .actor .spr{animation:breathe 3.4s ease-in-out infinite alternate}
@@ -596,6 +599,7 @@ function petTh(c){var p=(B.character.pets||[]).filter(function(x){return x.key==
 /* side walk/idle sheets from Blender delivery (director approved option 1, 27 Oct): 8-frame walk, 4-frame idle, facing right.
    Walk is in place; the scene moves the actor at ~184px/s per 433px of sprite height so the feet do not slide. */
 var _pre={};
+var NPC_CUT={NPC_03:"L",NPC_06:"L",NPC_07:"L",NPC_10:"L",NPC_12:"R",NPC_15:"R",NPC_18:"R"};
 function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]];
   u.forEach(function(x){ if(x&&!_pre[x]&&x.indexOf("data:")!==0){_pre[x]=1;var im=new Image();im.src=x;} }); }
 function sideKey(){var c=st.char;return c.sex==="หญิง"?"female":("male_"+c.tier);}
@@ -625,7 +629,7 @@ function sceneHTML(ev,hour){
   var player=(sw&&si)?'<div class="actor me sidewalk'+(enter?' walkin':'')+'" style="left:22%"><div class="shadow"></div><div class="wsheet '+(enter?'walking':'idle')+'" role="img" aria-label="'+esc(st.char.name)+' (คุณ)" style="background-image:url('+(enter?sw:si)+')"></div></div><span class="who-tag me" style="left:22%">คุณ · '+esc(st.char.name)+'</span>'
     :(ps?'<div class="actor me'+(enter?' enter-left':'')+'" style="left:22%"><div class="shadow"></div><img class="spr" alt="'+esc(st.char.name)+' (คุณ)" src="'+ps+'"></div><span class="who-tag me" style="left:22%">คุณ · '+esc(st.char.name)+'</span>':"");
   var pi=E.petSpriteOf(st.char), pet=(ps&&pi&&A.pets[pi.id])?'<div class="actor pet'+(enter?((sw&&si)?' walkin':' enter-left'):'')+'" style="left:39%;height:'+(84*pi.h).toFixed(1)+'%"><div class="shadow"></div><img class="spr" alt="'+esc(petTh(st.char))+'" src="'+A.pets[pi.id]+'"></div>':"";
-  var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
+  var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
   return '<div class="scene"><div class="bg" style="background-image:url('+bg+');background-position:'+x+'% 50%"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
