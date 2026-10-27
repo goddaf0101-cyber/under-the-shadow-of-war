@@ -1,0 +1,722 @@
+<title>WW3 Thailand Survival</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: status ledger on the left, scene band + event card on the right; stacks to one column on phones (scene → card → ledger).
+   Single dark look by choice (wartime night-shift console), so only bare :root carries the palette. */
+:root{
+  --bg:#141413; --panel:#1c1c1a; --panel-2:#232320; --line:#33322d; --line-2:#45433b;
+  --fg:#ece8dd; --muted:#9d988a; --faint:#6d695e;
+  --accent:#d6a63a; --accent-ink:#1b1606; --accent-soft:rgba(214,166,58,.12);
+  --good:#7fb069; --bad:#d9644a; --warn:#d6a63a;
+  --bar:#cfc8b6; --bar-track:#2c2b27;
+  --f-display:"Chakra Petch","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:12px;
+  color-scheme:dark;
+}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--f-body);font-size:15px;line-height:1.65;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ---------- title screen ---------- */
+.title{max-width:640px;margin:6vh auto 0;display:grid;gap:22px}
+.title h1{font-family:var(--f-display);font-weight:700;font-size:clamp(34px,7vw,56px);line-height:1.02;letter-spacing:.01em;margin:0;text-wrap:balance}
+.title h1 small{display:block;font-size:.36em;letter-spacing:.32em;color:var(--accent);font-weight:600;margin-bottom:10px}
+.title p{margin:0;color:var(--muted);max-width:60ch}
+.stamp{display:inline-flex;gap:8px;align-items:center;font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--accent);border:1px dashed var(--line-2);border-radius:999px;padding:3px 12px;width:fit-content}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 18px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.charcard{display:grid;grid-template-columns:auto 1fr;gap:6px 16px}
+.charcard dt{color:var(--muted)}
+.charcard dd{margin:0;font-weight:500}
+.board{width:100%;border-collapse:collapse;font-size:14px}
+.board td,.board th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+table.board,.tbl table.board{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;font-size:13px}
+table.board th:nth-child(1),table.board td:nth-child(1){width:26px;padding-inline:4px}
+table.board th:nth-child(3),table.board td:nth-child(3){width:58px;text-align:right}
+table.board th:nth-child(4),table.board td:nth-child(4){width:31%}
+table.board td{overflow-wrap:anywhere;vertical-align:top}
+.board th{color:var(--muted);font-weight:500;font-size:12px;letter-spacing:.06em}
+
+/* ---------- game layout ---------- */
+.game{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}
+.side{position:sticky;top:12px;display:grid;gap:16px}
+.main{display:grid;gap:16px;min-width:0}
+@media (max-width:860px){
+  .game{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;order:2}
+}
+.who{display:flex;gap:12px;align-items:center}
+.badge{width:46px;height:46px;border-radius:10px;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:20px;background:var(--panel-2);border:1px solid var(--line-2);color:var(--accent);flex:none}
+.who b{display:block;font-size:16px;line-height:1.3}
+.who span{color:var(--muted);font-size:13px}
+.facts{display:grid;gap:2px;font-size:13px;color:var(--muted);margin-top:10px}
+.facts b{color:var(--fg);font-weight:500}
+.stats{display:grid;gap:7px;margin-top:14px}
+.stat{display:grid;grid-template-columns:22px 92px minmax(0,1fr) 34px;align-items:center;gap:8px;font-size:13.5px}
+.stat .ic{font-size:14px;text-align:center}
+.track{height:7px;background:var(--bar-track);border-radius:4px;overflow:hidden}
+.fill{height:100%;background:var(--bar);border-radius:4px;transition:width .5s ease}
+.stat.mid .fill{background:var(--warn)}
+.stat.low .fill{background:var(--bad)}
+.stat.low .v{color:var(--bad)}
+.stat .v{text-align:right;font-size:13px}
+.sec-h{font-family:var(--f-display);font-weight:600;font-size:13px;letter-spacing:.14em;color:var(--muted);margin:0 0 8px}
+.mem{display:grid;gap:8px;font-size:13px;max-height:260px;overflow:auto}
+.mem div{border-left:2px solid var(--line-2);padding-left:10px;color:var(--muted)}
+.mem b{color:var(--fg);font-weight:500}
+.side .row .btn{padding:7px 12px;font-size:13px}
+
+/* header */
+.dayline{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}
+.dayline h2{font-family:var(--f-display);font-weight:700;font-size:24px;margin:0}
+.dayline .meta{color:var(--muted);font-size:14px}
+.pips{display:flex;gap:6px;margin-left:auto}
+.pip{width:26px;height:6px;border-radius:3px;background:var(--line-2)}
+.pip.done{background:var(--muted)}
+.pip.now{background:var(--accent)}
+
+/* scene band */
+.scene{position:relative;height:clamp(190px,30vw,300px);border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:#0e0e0d}
+.scene .bg{position:absolute;inset:0;background-repeat:no-repeat;background-size:auto 100%;filter:saturate(.62) brightness(.82) contrast(1.02);transition:background-position 1.2s ease}
+.scene .tint{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;transition:background .8s}
+.scene .vig{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 40%,transparent 55%,rgba(0,0,0,.55));pointer-events:none}
+.scene .npc{position:absolute;bottom:9%;height:84%;width:auto;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45));transition:opacity .4s}
+.scene .shadow{position:absolute;bottom:8%;height:14px;border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px)}
+.scene .actor{position:absolute;bottom:9%;height:84%;width:0;z-index:1}
+.scene .actor .spr{position:absolute;bottom:0;left:0;height:100%;width:auto;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+.scene .actor .shadow{position:absolute;bottom:-1.5%;left:0;width:72px;max-width:14vw;height:12px;transform:translateX(-50%);border-radius:50%;background:rgba(0,0,0,.45);filter:blur(4px)}
+@media (prefers-reduced-motion:no-preference){
+  .scene .actor .spr{animation:breathe 3.4s ease-in-out infinite alternate}
+  .scene .actor.enter-left{animation:walkInL 1.3s cubic-bezier(.25,.7,.35,1) both}
+  .scene .actor.enter-right{animation:walkInR 1.3s cubic-bezier(.25,.7,.35,1) .15s both}
+  .scene .actor.enter-left .spr{animation:bob .32s ease-in-out 4,breathe 3.4s ease-in-out 1.3s infinite alternate}
+  .scene .actor.enter-right .spr{animation:bob .32s ease-in-out .15s 4,breathe 3.4s ease-in-out 1.45s infinite alternate}
+}
+.sndbtn{font:inherit;font-size:12px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;margin-right:6px;cursor:pointer}
+.sndbtn[aria-pressed="true"]{color:var(--accent);border-color:rgba(214,166,58,.45)}
+table.board tr.me td{background:rgba(214,166,58,.12)}
+.you{color:var(--accent);font-size:11px;font-weight:600}
+.scene .actor .wsheet{position:absolute;bottom:0;left:0;height:100%;aspect-ratio:168/433;transform:translateX(-50%);background-repeat:no-repeat;background-size:400% 100%;background-position:0 0;filter:drop-shadow(0 6px 6px rgba(0,0,0,.45))}
+.scene .actor .wsheet.walking{background-size:800% 100%}
+@media (prefers-reduced-motion:no-preference){
+  .scene .actor .wsheet.idle{animation:idle4 2.4s steps(4,end) infinite}
+  .scene .actor .wsheet.walking{animation:walk8 1s steps(8,end) infinite}
+}
+@keyframes walk8{from{background-position:0 0}to{background-position:114.2857% 0}}
+@keyframes idle4{from{background-position:0 0}to{background-position:133.3333% 0}}
+@keyframes walkInL{from{transform:translateX(-46vw)}to{transform:translateX(0)}}
+@keyframes walkInR{from{transform:translateX(46vw)}to{transform:translateX(0)}}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3%)}}
+@keyframes breathe{from{transform:translateX(-50%) scaleY(1)}to{transform:translateX(-50%) scaleY(1.012)}}
+.scene .foot-band{position:absolute;left:0;right:0;bottom:0;height:17%;min-height:26px;background:linear-gradient(180deg,rgba(12,12,11,0),rgba(12,12,11,.78) 45%);z-index:2;pointer-events:none}
+.scene .who-tag{position:absolute;bottom:5px;transform:translateX(-50%);font-size:11.5px;line-height:1.5;color:var(--fg);padding:1px 9px;border-radius:999px;background:rgba(12,12,11,.6);border:1px solid rgba(255,255,255,.12);white-space:nowrap;z-index:3;max-width:46%;overflow:hidden;text-overflow:ellipsis}
+.scene .who-tag.me{color:var(--accent);font-weight:600;border-color:rgba(214,166,58,.45)}
+.scene .npc.player{z-index:1}
+.scene .actor.pet{z-index:2}
+.scene .actor.pet .shadow{width:48px;height:8px}
+.scene .tag{position:absolute;right:10px;top:8px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;background:rgba(10,10,9,.66);color:var(--fg);padding:3px 9px;border-radius:999px}
+.scene .props{position:absolute;right:10px;top:10px;display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.scene .props img{width:40px;height:40px;background:rgba(10,10,9,.6);border-radius:8px;padding:3px;border:1px dashed var(--accent)}
+@media (prefers-reduced-motion:no-preference){ .scene .bg{animation:drift 40s ease-in-out infinite alternate} }
+@keyframes drift{from{transform:scale(1.04) translateX(-1%)}to{transform:scale(1.04) translateX(1%)}}
+
+/* event card */
+.event{border-left:3px solid var(--accent)}
+.eyebrow{font-family:var(--f-display);font-size:13px;letter-spacing:.16em;color:var(--accent);font-weight:600}
+.event h3{font-family:var(--f-display);font-size:22px;font-weight:600;margin:2px 0 8px;text-wrap:balance}
+.event p.scene-text{margin:0 0 14px;max-width:68ch}
+.recall{font-size:13px;color:var(--muted);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:14px}
+.recall b{color:var(--fg);font-weight:500}
+.choices{display:grid;gap:10px}
+.choice{display:grid;grid-template-columns:30px minmax(0,1fr);gap:10px;align-items:start;text-align:left;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.choice:hover{border-color:var(--accent);background:var(--accent-soft)}
+.choice .k{font-family:var(--f-display);font-weight:700;color:var(--accent);font-size:16px;line-height:1.5}
+.choice .peek{display:block;margin-top:4px}
+.result p{margin:0 0 12px;max-width:68ch}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;border:1px solid var(--line-2);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.chip.up{color:var(--good);border-color:rgba(127,176,105,.4)}
+.chip.down{color:var(--bad);border-color:rgba(217,100,74,.4)}
+.chip.none{color:var(--faint)}
+.foot{display:flex;justify-content:flex-end;margin-top:14px;gap:10px;flex-wrap:wrap}
+.log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
+.log li{color:var(--muted)}
+.log b{color:var(--fg);font-weight:500}
+.travel{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line-2);font-size:14px}
+select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
+.note{font-size:12.5px;color:var(--faint)}
+.dead h3{color:var(--bad)}
+
+/* draft review panel */
+.overlay{position:fixed;inset:0;background:rgba(5,5,4,.7);z-index:20;display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--panel);border:1px solid var(--line-2);border-radius:var(--r);max-width:980px;width:100%;padding:20px;display:grid;gap:18px}
+.sheet h2{font-family:var(--f-display);margin:0;font-size:22px}
+.sheet h4{margin:0 0 6px;font-family:var(--f-display);letter-spacing:.06em}
+.tbl{overflow-x:auto}
+.tbl table{border-collapse:collapse;font-size:13px;min-width:640px;width:100%}
+.tbl td,.tbl th{border-bottom:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.tbl th{color:var(--muted);font-weight:500}
+.tbl td:first-child{white-space:nowrap} .st-done{color:var(--good)} .st-dev{color:var(--warn)} .st-un{color:var(--bad)}
+.toggles{display:grid;gap:8px;font-size:14px}
+.toggles label{display:flex;gap:8px;align-items:center;cursor:pointer}
+
+/* ---------- compact status strip + read-full + sheets (all sizes) ---------- */
+.more{background:none;border:0;padding:0;color:var(--accent);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.recall{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mtop{display:none}
+.strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px 10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.s{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 4px;font-size:12px}
+.s .i{font-size:13px;line-height:1}
+.s .v{text-align:right;font-family:var(--f-mono);font-size:13px;transition:color .3s}
+.s .t{grid-column:1/-1;height:4px;background:var(--bar-track);border-radius:3px;overflow:hidden}
+.s .t div{height:100%;background:var(--bar);transition:width .5s}
+.s.mid .t div{background:var(--warn)} .s.low .v{color:var(--bad)} .s.low .t div{background:var(--bad)}
+.s.flash-up .v{color:var(--good)} .s.flash-down .v{color:var(--bad)}
+.s .d{font-size:10px;font-family:var(--f-mono);margin-left:2px}
+.s.flash-up .d{color:var(--good)} .s.flash-down .d{color:var(--bad)}
+.wmini{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);min-width:0}
+.wmini .badge{width:28px;height:28px;font-size:14px;border-radius:7px}
+.wmini span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.wmini b{color:var(--fg);font-weight:600}
+.wmini button{margin-left:auto;flex:none;background:var(--panel-2);border:1px solid var(--line-2);border-radius:8px;padding:3px 10px;font-size:12.5px;cursor:pointer}
+.bsheet{position:fixed;inset:auto 0 0 0;z-index:30;background:var(--panel);border-top:1px solid var(--line-2);border-radius:18px 18px 0 0;padding:12px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));max-height:82vh;overflow:auto;display:grid;gap:12px;max-width:720px;margin:0 auto}
+.bscrim{position:fixed;inset:0;z-index:29;background:rgba(0,0,0,.55)}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line-2);margin:0 auto}
+.bsheet p{margin:0}
+.bsheet .closer{justify-self:end}
+
+/* ---------- phone: everything on one screen ---------- */
+@media (max-width:860px){
+  body.ingame{padding-block:0}
+  body.ingame .wrap{max-width:none}
+  .game{display:flex;flex-direction:column;align-items:stretch;gap:10px;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));padding-block:8px 10px}
+  .mtop,.main,.main > *{width:100%}
+  .side{display:none}
+  .mtop{display:grid;gap:7px;flex:none}
+  .mtop .dayline h2{font-size:20px}
+  .mtop .dayline .meta{font-size:12.5px}
+  .mtop .pip{width:18px;height:5px}
+  .main{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0}
+  .main > .dayline{display:none}
+  .scene{flex:1 20 150px;height:auto;min-height:84px;max-height:52vh}
+  .main > .card{flex:0 0 auto;min-height:0;max-height:calc(100% - 92px);overflow:auto;padding:12px 14px}
+  .eyebrow{font-size:11.5px}
+  .event h3{font-size:18px;margin:1px 0 4px}
+  .event p.scene-text{margin:0 0 8px;font-size:14px;line-height:1.55}
+  .recall{font-size:12px;padding:5px 9px;margin-bottom:8px}
+  .choices{gap:6px}
+  .choice{padding:8px 11px;grid-template-columns:22px minmax(0,1fr);gap:6px;font-size:14px;line-height:1.45}
+  .choice .k{font-size:14px}
+  .result p{font-size:14px;line-height:1.55;margin:0 0 8px}
+  .chip{font-size:12px;padding:1px 8px}
+  .foot{margin-top:8px}
+  .foot .btn{padding:8px 16px}
+  .log{font-size:13px;gap:3px;margin-top:8px}
+  .travel{margin-top:8px;padding-top:8px;font-size:13px}
+}
+/* short phones (e.g. SE): trim spacing so the four choices always fit */
+@media (max-width:860px) and (max-height:640px){
+  .game{gap:7px;padding-block:6px 8px}
+  .mtop{gap:5px}
+  .strip{padding:6px 9px;gap:4px 9px}
+  .main{gap:7px}
+  .main > .card{padding:10px 12px}
+  .event h3{font-size:17px;margin:0 0 3px}
+  .recall{-webkit-line-clamp:1;margin-bottom:6px}
+  .event p.scene-text{font-size:13.5px;line-height:1.5;margin:0 0 6px}
+  .choices{gap:5px}
+  .choice{padding:7px 10px;font-size:13.5px;line-height:1.4}
+}
+/* taller phones: spend spare height on bigger art, type and tap targets */
+@media (max-width:860px) and (min-height:720px){
+  .mtop .dayline h2{font-size:22px}
+  .strip{padding:10px 12px;gap:8px 12px}
+  .s{font-size:13px} .s .i{font-size:15px} .s .v{font-size:14.5px} .s .t{height:5px}
+  .main > .card{padding:16px 16px}
+  .eyebrow{font-size:12.5px}
+  .event h3{font-size:21px;margin:2px 0 6px}
+  .event p.scene-text,.result p{font-size:15.5px;line-height:1.6}
+  .choices{gap:9px}
+  .choice{padding:13px 14px;font-size:15.5px}
+  .choice .k{font-size:16px}
+  .chip{font-size:13px;padding:2px 10px}
+  .foot .btn{padding:11px 20px;font-size:15.5px}
+}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>/*INLINE:data/events.js*/</script>
+<script>/*INLINE:data/life_variants.js*/</script>
+<script>/*INLINE:data/branches.js*/</script>
+<script>/*INLINE:online/config.js*/</script>
+<script>/*INLINE:config/balance_draft.js*/</script>
+<script>/*INLINE:engine.js*/</script>
+<script>window.WW3_ASSETS=/*INLINE:ASSETS*/;</script>
+<script>
+(function(){
+"use strict";
+var D=window.WW3_DATA, B=window.WW3_BALANCE, A=window.WW3_ASSETS;
+var E=new WW3Engine(D,B);
+var SAVE_KEY="ww3ts.save.v1", BOARD_KEY="ww3ts.board.v1", OPT_KEY="ww3ts.opts.v1";
+var app=document.getElementById("app");
+var st=null, pendingChar=null, view="title", showDraft=false, lastEnterKey=null;
+var STAT={}; B.stats.forEach(function(s){STAT[s.key]=s;});
+
+function load(k,def){try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){return false;}}
+var opts=Object.assign({npc:true,ids:false,peek:false,props:false},load(OPT_KEY,{}));
+/* playtest log (director approved 27 Oct): opt-in via ?test=1 or the draft panel; stays in this browser until exported */
+try{var _q=new URLSearchParams(location.search);if(_q.get("test")==="1"){opts.test=true;save(OPT_KEY,opts);}if(_q.get("test")==="0"){opts.test=false;save(OPT_KEY,opts);}}catch(e){}
+var LOG_KEY="ww3ts.playlog.v1", shownAt=0, shownKey="";
+function plog(type,extra){
+  if(!opts.test||!st) return;
+  var L=load(LOG_KEY,[]); var s=st.stats||{};
+  L.push(Object.assign({t:Date.now(),run:st.runId||"",type:type,day:st.day,health:s.health,fullness:s.fullness,hydration:s.hydration,energy:s.energy,mental:s.mental,safety:s.safety,clean:s.clean},extra||{}));
+  if(L.length>5000) L=L.slice(-5000); save(LOG_KEY,L);
+}
+function logCSV(){
+  var L=load(LOG_KEY,[]), cols=["time","run","type","day","event_id","arc","path","choice","ms_on_event","health","fullness","hydration","energy","mental","safety","clean","note"];
+  var q=function(v){v=v==null?"":String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;};
+  return "﻿"+cols.join(",")+"\n"+L.map(function(r){return [new Date(r.t).toISOString(),r.run,r.type,r.day,r.id,r.arc,r.path,r.key,r.ms,r.health,r.fullness,r.hydration,r.energy,r.mental,r.safety,r.clean,r.note].map(q).join(",");}).join("\n");
+}
+function exportLog(){
+  var csv=logCSV(), name="playtest_"+new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")+".csv";
+  if(window.claude&&claude.use){claude.use("downloads").then(function(dl){
+    if(dl) dl.save({filename:name,data:new Blob([csv],{type:"text/csv"})}).catch(function(){});
+  }).catch(function(){});}
+  else try{var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}catch(e){}
+  openSheet('<div class="eyebrow">บันทึกการเล่น</div><p class="note">ถ้าไฟล์ไม่ดาวน์โหลดเอง ให้คัดลอกข้อความด้านล่างไปวางในไฟล์ .csv</p><textarea readonly style="width:100%;height:40vh;font:12px var(--f-mono)">'+esc(csv)+'</textarea>');
+}
+function logCount(){return load(LOG_KEY,[]).length;}
+var storageOK=save("ww3ts.probe",1);
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function hhmm(h){var H=Math.floor(h),M=Math.round((h-H)*60);return (H<10?"0":"")+H+":"+(M<10?"0":"")+M;}
+/* ---- sound (director approved 27 Oct): no music files — ambience and cues synthesized with Web Audio, so no licensing.
+   Layers: wind (all day) · crickets (evening/night) · rain (weather arc) · low drone when health < 30.
+   Cues: choice tick · day-end bell · accident thud · death fade. Starts on the first tap (browser rule); toggle remembered. */
+var SND={ctx:null,on:load("ww3ts.sound.v1",true)!==false,master:null,layers:{},timer:null,mood:""};
+function sndInit(){
+  if(SND.ctx||!SND.on) return;
+  var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+  try{SND.ctx=new AC();}catch(e){return;}
+  var c=SND.ctx; SND.master=c.createGain(); SND.master.gain.value=0.0001; SND.master.connect(c.destination);
+  SND.master.gain.setTargetAtTime(0.55,c.currentTime,1.2);
+  var buf=c.createBuffer(1,c.sampleRate*3,c.sampleRate),d=buf.getChannelData(0),last=0;
+  for(var i=0;i<d.length;i++){var w=Math.random()*2-1;last=(last+0.02*w)/1.02;d[i]=last*3.5;}           /* brown noise */
+  function loopNoise(){var s=c.createBufferSource();s.buffer=buf;s.loop=true;s.start();return s;}
+  /* wind: brown noise through a slowly moving band-pass */
+  var wf=c.createBiquadFilter();wf.type="bandpass";wf.frequency.value=380;wf.Q.value=0.7;var wg=c.createGain();wg.gain.value=0;
+  loopNoise().connect(wf);wf.connect(wg);wg.connect(SND.master);
+  var lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=0.07;lg.gain.value=180;lfo.connect(lg);lg.connect(wf.frequency);lfo.start();
+  /* rain: white-ish noise, high-passed */
+  var rb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),rd=rb.getChannelData(0);for(i=0;i<rd.length;i++)rd[i]=(Math.random()*2-1)*(Math.random()<0.03?1:0.25);
+  var rs=c.createBufferSource();rs.buffer=rb;rs.loop=true;rs.start();var rf=c.createBiquadFilter();rf.type="highpass";rf.frequency.value=1800;var rg=c.createGain();rg.gain.value=0;rs.connect(rf);rf.connect(rg);rg.connect(SND.master);
+  /* drone: two detuned low sines */
+  var dg=c.createGain();dg.gain.value=0;[55,55.6].forEach(function(f){var o=c.createOscillator();o.type="sine";o.frequency.value=f;o.connect(dg);o.start();});dg.connect(SND.master);
+  var cg=c.createGain();cg.gain.value=0;cg.connect(SND.master);
+  SND.layers={wind:wg,rain:rg,drone:dg,crick:cg};
+  SND.timer=setInterval(cricket,900);
+  sndMood();
+}
+function cricket(){ var c=SND.ctx; if(!c||SND.layers.crick.gain.value<0.01||Math.random()<0.35) return;
+  var t=c.currentTime, f=4200+Math.random()*600;
+  for(var i=0;i<3;i++){var o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0,t+i*0.07);g.gain.linearRampToValueAtTime(0.05,t+i*0.07+0.01);g.gain.linearRampToValueAtTime(0,t+i*0.07+0.05);o.connect(g);g.connect(SND.layers.crick);o.start(t+i*0.07);o.stop(t+i*0.07+0.06);}
+}
+function sndSet(layer,v,tc){var g=SND.layers[layer];if(g&&SND.ctx)g.gain.setTargetAtTime(v,SND.ctx.currentTime,tc||1.5);}
+/* pick layers from the current scene: hour, weather arc, health */
+function sndMood(){
+  if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);} return; }
+  var cur=E.currentEvent(st), h=(st.phase==="event"&&cur)?cur.hour:21.5, ev=cur&&cur.ev;
+  var night=h>=19||h<6, rain=!!(ev&&st.phase!=="summary"&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
+  sndSet("wind",dead?0.03:(night?0.10:0.16)); sndSet("crick",night&&!dead?0.9:0); sndSet("rain",rain?0.06:0); sndSet("drone",dead?0.10:(low?0.08:0),2.5);
+}
+function cue(kind){
+  var c=SND.ctx; if(!c||!SND.on) return; var t=c.currentTime;
+  function tone(f,dur,vol,type,at){var o=c.createOscillator(),g=c.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.setValueAtTime(0,t+(at||0));g.gain.linearRampToValueAtTime(vol,t+(at||0)+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+(at||0)+dur);o.connect(g);g.connect(SND.master);o.start(t+(at||0));o.stop(t+(at||0)+dur+0.05);}
+  if(kind==="tick") tone(880,0.08,0.05,"triangle");
+  else if(kind==="day"){tone(196,1.6,0.08);tone(294,1.4,0.04,"sine",0.02);}
+  else if(kind==="hurt"){tone(70,0.5,0.25,"sine");tone(110,0.25,0.08,"square");}
+  else if(kind==="death"){tone(110,3,0.10);tone(82,3.5,0.08,"sine",0.4);}
+}
+function sndToggle(){
+  SND.on=!SND.on; save("ww3ts.sound.v1",SND.on);
+  if(SND.on){ if(!SND.ctx) sndInit(); else {SND.ctx.resume();SND.master.gain.setTargetAtTime(0.55,SND.ctx.currentTime,0.4);} }
+  else if(SND.ctx){SND.master.gain.setTargetAtTime(0.0001,SND.ctx.currentTime,0.2);}
+  document.querySelectorAll(".sndbtn").forEach(function(b){b.textContent=SND.on?"เสียง: เปิด":"เสียง: ปิด";b.setAttribute("aria-pressed",SND.on?"true":"false");});
+}
+function sndBtn(){return '<button class="sndbtn" aria-pressed="'+(SND.on?"true":"false")+'">'+(SND.on?"เสียง: เปิด":"เสียง: ปิด")+'</button>';}
+document.addEventListener("pointerdown",function(){ if(SND.on){ if(!SND.ctx) sndInit(); else if(SND.ctx.state==="suspended") SND.ctx.resume(); } },{capture:true});
+document.addEventListener("click",function(e){ if(e.target.closest&&e.target.closest(".sndbtn")) sndToggle(); });
+document.addEventListener("visibilitychange",function(){ if(!SND.ctx) return; if(document.hidden) SND.ctx.suspend(); else if(SND.on) SND.ctx.resume(); });
+
+function period(h){return h<9?"ช่วงเช้า":h<12?"ช่วงสาย":h<16?"ช่วงบ่าย":h<19?"ช่วงเย็น":h<22?"ช่วงค่ำ":"กลางดึก";}
+function tint(h){
+  if(h<9) return "linear-gradient(180deg,rgba(255,214,160,.25),rgba(120,110,90,.15))";
+  if(h<16) return "linear-gradient(180deg,rgba(255,255,255,0),rgba(90,90,80,.12))";
+  if(h<19) return "linear-gradient(180deg,rgba(230,150,90,.38),rgba(80,60,50,.25))";
+  if(h<22) return "linear-gradient(180deg,rgba(60,70,120,.62),rgba(30,30,50,.55))";
+  return "linear-gradient(180deg,rgba(20,26,60,.82),rgba(10,10,25,.75))";
+}
+function hash(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
+function chip(k,v){var s=STAT[k];return '<span class="chip num '+(v>0?"up":"down")+'">'+esc(s?s.th:k)+" "+(v>0?"+":"")+v+"</span>";}
+function chips(d){var keys=Object.keys(d);return keys.length?keys.map(function(k){return chip(k,d[k]);}).join(""):'<span class="chip none">ไม่มีการเปลี่ยนแปลงต่อสถานะ</span>';}
+function persist(){ if(st) save(SAVE_KEY,st); }
+
+/* ---------------- views ---------------- */
+function render(){
+  closeSheet();
+  document.body.classList.toggle("ingame",view==="game");
+  if(view==="title") renderTitle();
+  else if(view==="newchar") renderNewChar();
+  else renderGame();
+  if(showDraft) renderDraft();
+  sndMood();
+}
+
+function boardHTML(){
+  var b=load(BOARD_KEY,[]);
+  if(!b.length) return '<p class="note">ยังไม่มีสถิติ ชีวิตรอบแรกจะเริ่มบันทึกที่นี่</p>';
+  return '<div class="tbl" style="overflow-x:auto"><table class="board"><tr><th>#</th><th>ตัวละคร</th><th>รอด (วัน)</th><th>สาเหตุ</th></tr>'+
+    b.map(function(r,i){return '<tr><td class="num">'+(i+1)+'</td><td>'+esc(r.name)+' · '+esc(r.occ)+'<br><span class="note">'+esc(r.province)+'</span></td><td class="num">'+r.days+'</td><td>'+esc(r.cause||"–")+'</td></tr>';}).join("")+'</table></div>';
+}
+
+/* ---- online leaderboard (director approved 27 Oct): artifact db, one best run per player ----
+   board/<viewer id> = {name, occ, province, days, cause, at}. Everyone who can open the page reads;
+   each player (Contributor and up) writes only their own document. Works without it (local board stays). */
+var NET={provider:null,db:null,uid:null,rows:null,state:"off",unsub:null,sent:false,sending:false,err:""};
+var CFG=window.WW3_ONLINE||{};
+function supaOn(){return !!(CFG.supabaseUrl&&CFG.anonKey);}
+function clientId(){var id=load("ww3ts.client.v1",null);if(!id){id=(crypto&&crypto.randomUUID)?crypto.randomUUID():"10000000-1000-4000-8000-100000000000".replace(/[018]/g,function(c){return (c^Math.random()*16>>c/4).toString(16);});save("ww3ts.client.v1",id);}return id;}
+function supaFetch(path,opt){opt=opt||{};var h={apikey:CFG.anonKey,Authorization:"Bearer "+CFG.anonKey,"Content-Type":"application/json"};
+  for(var k in (opt.headers||{}))h[k]=opt.headers[k];
+  return fetch(CFG.supabaseUrl.replace(/\/$/,"")+"/rest/v1/"+path,{method:opt.method||"GET",headers:h,body:opt.body});}
+function supaLoad(){
+  NET.state="loading";refreshBoards();
+  supaFetch("runs?select=nickname,char_name,occupation,province,days,cause,client_id&order=days.desc,created_at.asc&limit=20")
+    .then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(a){var me=clientId();NET.rows=a.map(function(x){return {nick:String(x.nickname||""),name:String(x.char_name||""),occ:String(x.occupation||""),province:String(x.province||""),days:+x.days||0,cause:String(x.cause||""),mine:x.client_id===me};});NET.state="on";refreshBoards();})
+    .catch(function(){NET.state="off";NET.err="โหลดอันดับไม่ได้";refreshBoards();});
+}
+function initOnline(){
+  if(supaOn()){NET.provider="supa";supaLoad();return;}
+  if(!(window.claude&&claude.use)) return;
+  NET.provider="claude"; NET.state="loading";
+  Promise.all([claude.use("db"),claude.use("user")]).then(function(r){
+    NET.db=r[0]; var u=r[1];
+    if(!NET.db){NET.state="off";refreshBoards();return;}
+    return (u?u.id():Promise.resolve(null)).then(function(id){
+      NET.uid=id||null; NET.state="on";
+      try{
+        NET.unsub=NET.db.collection("board").orderBy("days","desc").limit(20).onSnapshot(function(s){
+          NET.rows=s.docs.map(function(d){var x=d.data()||{};return {name:String(x.name||""),occ:String(x.occ||""),province:String(x.province||""),days:+x.days||0,cause:String(x.cause||""),mine:!!NET.uid&&d.id===NET.uid};});
+          refreshBoards();
+        },function(){NET.state="off";refreshBoards();});
+      }catch(e){NET.state="off";}
+      refreshBoards();
+    });
+  }).catch(function(){NET.state="off";refreshBoards();});
+}
+function onlineBoardHTML(n){
+  if(NET.state==="loading"||(NET.state==="on"&&!NET.rows)) return '<p class="note">กำลังโหลดอันดับ…</p>';
+  if(NET.state!=="on") return '<p class="note">'+(NET.err?esc(NET.err)+' · ':'')+'อันดับออนไลน์ยังไม่เปิดในหน้านี้ ตอนนี้แสดงเฉพาะสถิติในเครื่อง</p>';
+  var rows=NET.rows.slice(0,n||20);
+  if(!rows.length) return '<p class="note">ยังไม่มีใครส่งสถิติ ชีวิตแรกที่จบลงจะขึ้นอันดับที่นี่</p>';
+  return '<div class="tbl" style="overflow-x:auto"><table class="board"><tr><th>#</th><th>ผู้เล่น · ตัวละคร</th><th>รอด (วัน)</th><th>สาเหตุ</th></tr>'+
+    rows.map(function(r,i){return '<tr'+(r.mine?' class="me"':'')+'><td class="num">'+(i+1)+'</td><td>'+(r.nick?'<b>'+esc(r.nick)+'</b> · ':'')+esc(r.name)+' · '+esc(r.occ)+(r.mine?' <b class="you">คุณ</b>':'')+'<br><span class="note">'+esc(r.province)+'</span></td><td class="num">'+r.days+'</td><td>'+esc(r.cause||"–")+'</td></tr>';}).join("")+'</table></div>';
+}
+function refreshBoards(){
+  document.querySelectorAll("[data-online-board]").forEach(function(el){el.innerHTML=onlineBoardHTML(+el.getAttribute("data-online-board")||20);});
+  var f=document.getElementById("submitBox"); if(f) f.outerHTML=submitBoxHTML();
+  bindSubmit();
+}
+/* Claude provider: auto-submit own best (unchanged). Supabase provider: player types a nickname and presses send. */
+function submitOnline(run){
+  if(NET.provider!=="claude"||!NET.db||!NET.uid) return;
+  var ref; try{ref=NET.db.collection("board").doc(NET.uid);}catch(e){return;}
+  ref.get().then(function(s){var cur=s.exists?(+(s.data()||{}).days||0):-1;if(run.days>cur) return ref.set(run);})
+    .then(function(){NET.sent=true;},function(){});
+}
+function submitBoxHTML(){
+  if(NET.provider!=="supa"||!st||st.phase!=="dead") return '<div id="submitBox"></div>';
+  if(NET.sent) return '<div id="submitBox"><p class="note">ส่งขึ้นอันดับแล้ว</p></div>';
+  return '<div id="submitBox" class="row" style="gap:8px;margin-top:6px;align-items:center"><input id="nick" maxlength="20" placeholder="ชื่อเล่นที่จะขึ้นอันดับ" value="'+esc(load("ww3ts.nick.v1","")||"")+'" style="flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);font:inherit"><button class="btn" id="sendRun"'+(NET.sending?' disabled':'')+'>'+(NET.sending?'กำลังส่ง…':'ส่งขึ้นอันดับ')+'</button>'+(NET.err&&NET.state==="on"?'<p class="note" style="width:100%;color:var(--bad)">'+esc(NET.err)+'</p>':'')+'</div>';
+}
+function bindSubmit(){
+  var b=document.getElementById("sendRun"); if(!b||b._bound) return; b._bound=true;
+  b.addEventListener("click",function(){
+    var nick=(document.getElementById("nick").value||"").trim().slice(0,20);
+    if(!nick){NET.err="ใส่ชื่อเล่นก่อนส่ง";refreshBoards();return;}
+    save("ww3ts.nick.v1",nick); NET.sending=true; NET.err=""; refreshBoards();
+    var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
+    supaFetch("runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(body)})
+      .then(function(r){NET.sending=false;if(!r.ok)throw 0;NET.sent=true;st.submitted=true;persist&&persist();supaLoad();})
+      .catch(function(){NET.sending=false;NET.err="ส่งไม่สำเร็จ ลองใหม่อีกครั้งในอีกสักครู่";refreshBoards();});
+  });
+}
+
+function renderTitle(){
+  var saved=load(SAVE_KEY,null), ok=saved&&E.validateSave(saved)&&saved.alive;
+  app.innerHTML='<section class="title">'+
+    '<span class="stamp">บันทึกผู้รอดชีวิต · ประเทศไทย</span>'+
+    '<h1><small>สงครามโลกครั้งที่ 3</small>WW3 Thailand Survival</h1>'+
+    '<p>คุณคือคนธรรมดาคนหนึ่ง ใช้ชีวิตต่อไปให้นานที่สุดท่ามกลางสงคราม วันละสามเหตุการณ์ ไม่มีวันสุดท้ายที่เกมกำหนด ทุกการตัดสินใจจะถูกจดจำ</p>'+
+    '<div class="row">'+(ok?'<button class="btn primary" id="cont">เล่นต่อ · วันที่ <span class="num">'+saved.day+'</span> · '+esc(saved.char.name)+'</button>':'')+
+    '<button class="btn '+(ok?"":"primary")+'" id="new">เริ่มชีวิตใหม่</button>'+
+    '<button class="btn ghost" id="draft">ค่าร่างที่รออนุมัติ</button>'+sndBtn().replace('class="sndbtn"','class="btn ghost sndbtn"')+'</div>'+
+    (storageOK?'':'<p class="note">เบราว์เซอร์นี้ไม่อนุญาตให้บันทึก ความคืบหน้าจะหายเมื่อปิดหน้า</p>')+
+    '<div class="card"><p class="sec-h">อันดับออนไลน์ · รอดนานที่สุด</p><div data-online-board="20">'+onlineBoardHTML(20)+'</div></div>'+
+    '<div class="card"><p class="sec-h">สถิติวันที่รอดชีวิต (เครื่องนี้)</p>'+boardHTML()+'</div>'+
+    '<p class="note">ต้นแบบที่เล่นได้ · ตัวเลขสมดุลทั้งหมดเป็นร่างรออนุมัติ · บทฉบับกระชับ V5.0 (ร่างรอทีมบทตรวจ) · ภาพ NPC V10 / BG01</p>'+
+  '</section>';
+  if(ok) on("cont",function(){st=saved;view="game";render();});
+  on("new",function(){pendingChar=E.rollCharacter();view="newchar";render();});
+  on("draft",function(){showDraft=true;render();});
+}
+
+function renderNewChar(){
+  var c=pendingChar, s=E.startStatsFor(c), tier=B.character.tiers[c.tier];
+  var pk=c.sex==="หญิง"?"female":("male_"+c.tier), psrc=A.player[pk];
+  app.innerHTML='<section class="title"><p class="sec-h">ชีวิตที่สุ่มได้</p>'+
+    '<div class="card" style="position:relative"><div class="who"><div class="badge">'+esc(c.name.charAt(0))+'</div><div><b>'+esc(c.name)+'</b><span>'+esc(c.occupation)+' · <span class="num">'+c.age+'</span> ปี · '+esc(c.sex)+'</span></div></div>'+
+    '<dl class="charcard" style="margin:16px 0 0">'+
+      '<dt>จังหวัดเริ่มต้น</dt><dd>'+esc(c.province)+'</dd>'+
+      '<dt>รายได้</dt><dd>'+esc(tier.th)+'</dd>'+
+      '<dt>ครอบครัว</dt><dd>'+esc(c.family)+'</dd>'+
+      '<dt>สุขภาพ</dt><dd>'+esc(c.healthBg)+'</dd>'+
+      '<dt>สัตว์เลี้ยง</dt><dd>'+esc(petTh(c))+'</dd></dl>'+
+    '<div class="stats">'+statRows(s)+'</div>'+(psrc?'<img src="'+psrc+'" alt="" style="position:absolute;right:14px;top:14px;height:150px;width:auto;opacity:.95">':'')+(function(){var pi=E.petSpriteOf(c);return (psrc&&pi&&A.pets[pi.id])?'<img src="'+A.pets[pi.id]+'" alt="" style="position:absolute;right:70px;top:'+(14+150*(1-pi.h)).toFixed(0)+'px;height:'+(150*pi.h).toFixed(0)+'px;width:auto">':'';})()+'</div>'+
+    '<div class="row"><button class="btn primary" id="go">เริ่มชีวิตนี้</button><button class="btn" id="re">สุ่มใหม่</button><button class="btn ghost" id="back">กลับ</button></div></section>';
+  on("go",function(){
+    st=E.newGame(pendingChar);
+    NET.sent=false; NET.err="";
+    plog("start",{note:st.char.sex+" "+st.char.age+" · "+st.char.occupation+" · "+st.char.family+" · "+st.char.province+" · pet:"+(st.char.pet||"none")});
+    persist(); view="game"; render();
+  });
+  on("re",function(){pendingChar=E.rollCharacter();render();});
+  on("back",function(){view="title";render();});
+}
+
+function statRows(s){
+  return B.stats.map(function(m){var v=s[m.key],cls=v<B.warnAt?"low":v<50?"mid":"";
+    return '<div class="stat '+cls+'"><span class="ic" aria-hidden="true">'+m.icon+'</span><span>'+esc(m.th)+'</span><div class="track"><div class="fill" style="width:'+v+'%"></div></div><span class="v num">'+v+'</span></div>';}).join("");
+}
+
+function sideHTML(){
+  var c=st.char, mem=st.memory.slice(-8).reverse();
+  return '<aside class="side"><div class="card">'+
+    '<div class="who"><div class="badge">'+esc(c.name.charAt(0))+'</div><div><b>'+esc(c.name)+'</b><span>'+esc(c.occupation)+' · <span class="num">'+c.age+'</span> ปี</span></div></div>'+
+    '<div class="facts"><span>จังหวัด <b>'+esc(c.province)+'</b></span><span>'+esc(B.character.tiers[c.tier].th)+' · '+esc(c.family)+'</span><span>'+esc(c.healthBg)+' · '+esc(petTh(c))+'</span></div>'+
+    '<div class="stats">'+statRows(st.stats)+'</div></div>'+
+    '<div class="card"><p class="sec-h">ความทรงจำ</p><div class="mem">'+
+      (mem.length?mem.map(function(m){return '<div>วันที่ <span class="num">'+m.day+'</span> · <b>'+esc(m.title)+'</b><br>'+esc(m.text)+'</div>';}).join(""):'<span class="note">ยังไม่มีการตัดสินใจ</span>')+
+    '</div></div>'+
+    '<div class="row"><button class="btn" id="home">หน้าแรก</button><button class="btn ghost" id="draft">ค่าร่าง</button></div>'+
+    '<p class="note">บันทึกอัตโนมัติทุกการเลือก การออกจากเกมเป็นการพักเท่านั้น</p></aside>';
+}
+
+function causeTh(k){var m=B.deathCauses||{};return m[k]||m.other||"สุขภาพทรุดลง";}
+function petTh(c){var p=(B.character.pets||[]).filter(function(x){return x.key===(c.pet||"none");})[0];return p?p.th:"ไม่มีสัตว์เลี้ยง";}
+/* side walk/idle sheets from Blender delivery (director approved option 1, 27 Oct): 8-frame walk, 4-frame idle, facing right.
+   Walk is in place; the scene moves the actor at ~184px/s per 433px of sprite height so the feet do not slide. */
+var _pre={};
+function preloadRun(){ if(!st||!st.char) return; var k=sideKey(), pi=E.petSpriteOf(st.char), u=[A.walk[k+"_walk"],A.walk[k+"_idle"],pi&&A.pets[pi.id],A.bg[B.character.tiers[st.char.tier].bg]];
+  u.forEach(function(x){ if(x&&!_pre[x]&&x.indexOf("data:")!==0){_pre[x]=1;var im=new Image();im.src=x;} }); }
+function sideKey(){var c=st.char;return c.sex==="หญิง"?"female":("male_"+c.tier);}
+function driveWalkIn(){
+  var me=document.querySelector(".scene .actor.me.sidewalk.walkin"); if(!me) return;
+  var sh=me.querySelector(".wsheet"), scene=me.closest(".scene");
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function toIdle(){sh.classList.remove("walking");sh.classList.add("idle");sh.style.backgroundImage="url("+A.walk[sideKey()+"_idle"]+")";}
+  if(reduce||!me.animate){toIdle();return;}
+  var h=sh.getBoundingClientRect().height, w=h*168/433, W=scene.getBoundingClientRect().width;
+  var d=0.22*W+w*0.6+8, v=h*184/433, dur=Math.max(700,Math.min(3200,d/v*1000));
+  var kf=[{transform:"translateX("+(-d)+"px)"},{transform:"translateX(0)"}];
+  var an=me.animate(kf,{duration:dur,easing:"linear"});
+  document.querySelectorAll(".scene .actor.pet.walkin").forEach(function(p){p.animate(kf,{duration:dur,easing:"linear",delay:0});});
+  an.onfinish=toIdle;
+}
+function playerSprite(){
+  var c=st.char; var key=c.sex==="หญิง"?"female":("male_"+c.tier);
+  return A.player[key]||null;
+}
+function sceneHTML(ev,hour){
+  var bg=A.bg[B.character.tiers[st.char.tier].bg];
+  var x=ev?hash(ev.id)%100:50;
+  var ps=playerSprite();
+  var enter=ev&&lastEnterKey!==(st.day+"-"+st.qi+"-"+ev.id); if(ev) lastEnterKey=st.day+"-"+st.qi+"-"+ev.id;
+  var sk=sideKey(), sw=sk&&A.walk[sk+"_walk"], si=sk&&A.walk[sk+"_idle"];
+  var player=(sw&&si)?'<div class="actor me sidewalk'+(enter?' walkin':'')+'" style="left:22%"><div class="shadow"></div><div class="wsheet '+(enter?'walking':'idle')+'" role="img" aria-label="'+esc(st.char.name)+' (คุณ)" style="background-image:url('+(enter?sw:si)+')"></div></div><span class="who-tag me" style="left:22%">คุณ · '+esc(st.char.name)+'</span>'
+    :(ps?'<div class="actor me'+(enter?' enter-left':'')+'" style="left:22%"><div class="shadow"></div><img class="spr" alt="'+esc(st.char.name)+' (คุณ)" src="'+ps+'"></div><span class="who-tag me" style="left:22%">คุณ · '+esc(st.char.name)+'</span>':"");
+  var pi=E.petSpriteOf(st.char), pet=(ps&&pi&&A.pets[pi.id])?'<div class="actor pet'+(enter?((sw&&si)?' walkin':' enter-left'):'')+'" style="left:39%;height:'+(84*pi.h).toFixed(1)+'%"><div class="shadow"></div><img class="spr" alt="'+esc(petTh(st.char))+'" src="'+A.pets[pi.id]+'"></div>':"";
+  var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
+  var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
+  return '<div class="scene"><div class="bg" style="background-image:url('+bg+');background-position:'+x+'% 50%"></div>'+
+    '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
+    props+'</div>';
+}
+
+function pipsHTML(){
+  var n=st.queue.length,h="";
+  for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
+  return '<div class="pips" aria-label="เหตุการณ์วันนี้">'+h+'</div>';
+}
+
+function renderGame(){
+  var cur=E.currentEvent(st), ev=cur&&cur.ev, hour=cur?cur.hour:21.5;
+  if(st.phase==="summary"||st.phase==="dead"){ev=null;hour=21.5;}
+  var head='<div class="dayline"><h2>วันที่ <span class="num">'+st.day+'</span></h2><span class="meta">'+(ev?period(hour)+' · <span class="num">'+hhmm(hour)+'</span> · ':'')+esc(st.char.province)+'</span>'+pipsHTML()+'</div>';
+  var body="";
+  if(st.phase==="event"){
+    var sk2=st.day+"-"+st.qi+"-"+ev.id; if(sk2!==shownKey){shownKey=sk2;shownAt=Date.now();}
+    var rec=E.recallFor(st,ev);
+    body='<article class="card event"><div class="eyebrow">'+esc(period(hour))+' · '+esc(ev.arc)+(opts.ids?' · '+ev.id+(ev.path?' · '+ev.path+' '+D.branchRule.names[ev.path]:''):'')+'</div><h3>'+esc(ev.title)+'</h3>'+
+      '<p class="scene-text">'+esc(ev.s)+(ev.sf&&ev.sf!==ev.s?' <button class="more" id="fullScene">อ่านเต็ม</button>':'')+'</p>'+
+      (rec?(rec.same?'<div class="recall">เคยเจอเรื่องนี้ (วันที่ <span class="num">'+rec.day+'</span>) ครั้งก่อนคุณเลือก: <b>'+esc(rec.text)+'</b></div>':'<div class="recall">ครั้งก่อน (วันที่ <span class="num">'+rec.day+'</span> · '+esc(rec.title)+') คุณเลือก: <b>'+esc(rec.text)+'</b></div>'):'')+
+      '<div class="choices">'+ev.choices.map(function(c){
+        var peek=opts.peek?'<span class="peek chips">'+chips(E.effectsFor(ev,c.k))+'</span>':'';
+        return '<button class="choice" data-k="'+c.k+'"><span class="k">'+c.k+'</span><span>'+esc(c.t)+peek+'</span></button>';}).join("")+'</div></article>';
+  } else if(st.phase==="result"){
+    var r=st.lastResult;
+    body='<article class="card event result"><div class="eyebrow">ผลการตัดสินใจ · '+esc(ev.title)+'</div><h3>'+esc(r.key)+' · '+esc(r.text)+'</h3>'+
+      '<p>'+esc(r.result)+(r.resultFull&&r.resultFull!==r.result?' <button class="more" id="fullResult">อ่านเต็ม</button>':'')+'</p><div class="chips">'+chips(r.delta)+'</div>'+
+      '<div class="foot"><button class="btn primary" id="next">'+(st.qi+1<st.queue.length?"เหตุการณ์ถัดไป":"จบวัน")+'</button></div></article>';
+  } else if(st.phase==="summary"){
+    var s=st.summary;
+    var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
+    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>'+
+      '<div class="chips">'+chips(s.total)+'</div>'+
+      (s.accident?'<p class="note" style="color:var(--bad);margin-top:10px">เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident+'</p>':'')+
+      (s.lowReasons.length?'<p class="note" style="color:var(--bad);margin-top:10px">สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป</p>':'')+
+      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span><button class="btn primary" id="nextday">เช้าวันที่ '+(st.day+1)+'</button></div></article>';
+  } else if(st.phase==="dead"){
+    var days=E.daysSurvived(st);
+    body='<article class="card dead"><div class="eyebrow">สิ้นสุดชีวิตรอบนี้</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(st.char.name)+' รอดชีวิตได้ <span class="num">'+days+'</span> วัน</h3>'+
+      '<p>เสียชีวิตจาก<b>'+esc(causeTh(st.deathCause))+'</b> คืนวันที่ '+st.deathDay+' ที่'+esc(st.char.province)+'</p>'+
+      '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
+      submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
+  }
+  var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:{});
+  var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
+  app.innerHTML='<div class="game">'+sideHTML()+mtop+'<main class="main">'+head+sceneHTML(ev,hour)+body+'</main></div>';
+  preloadRun(); driveWalkIn(); bindSubmit(); sndMood();
+  setTimeout(function(){app.querySelectorAll(".s.flash-up,.s.flash-down").forEach(function(c){c.classList.remove("flash-up","flash-down");var d=c.querySelector(".d");if(d)d.remove();});},2200);
+  on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
+  on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
+  on("dayLog",function(){var s=st.summary;openSheet('<div class="eyebrow">สรุปวันที่ '+s.day+'</div><ul class="log">'+s.log.map(function(l){return '<li><b>'+esc(l.title)+'</b> → '+esc(l.key)+' · '+esc(l.text)+'</li>';}).join("")+'</ul>');});
+  on("travelOpen",function(){
+    if(st.travelledToday)return;
+    var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
+    openSheet('<div class="eyebrow">ย้ายไปจังหวัดอื่น · ไม่บังคับ</div><p class="note">'+(E.canTravel(st)?'ใช้แรงและเสี่ยง: '+Object.keys(B.travel.cost).map(function(k){return STAT[k].th+" "+B.travel.cost[k];}).join(", "):'พลังงานต้องไม่ต่ำกว่า '+B.travel.minEnergy)+'</p><select id="prov" aria-label="จังหวัดปลายทาง">'+provs.map(function(p){return '<option>'+esc(p)+'</option>';}).join("")+'</select><button class="btn primary" id="travel" '+(E.canTravel(st)?'':'disabled')+'>เดินทางคืนนี้</button>');
+    var t=document.querySelector("#bsheet #travel");if(t)t.addEventListener("click",function(){var p=document.querySelector("#bsheet #prov").value;E.travel(st,p);if(st.phase==="dead")recordDeath();persist();render();});
+  });
+  on("charSheet",function(){openSheet(sideHTML().replace('<aside class="side">','<div class="sidesheet">').replace('</aside>','</div>'),true);});
+
+  app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
+  on("logExport2",exportLog);
+  on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});
+  on("nextday",function(){E.nextDay(st);persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
+  on("home",function(){view="title";render();});
+  on("home2",function(){view="title";render();});
+  on("again",function(){pendingChar=E.rollCharacter();view="newchar";render();});
+  on("draft",function(){showDraft=true;render();});
+}
+function focusMain(){var c=app.querySelector(".main > .card");if(c)c.scrollTop=0;}
+function stripHTML(s,flash){
+  return '<div class="strip" role="group" aria-label="สถานะ">'+B.stats.map(function(m){var v=s[m.key],cls=v<B.warnAt?"low":v<50?"mid":"",d=flash&&flash[m.key];
+    return '<div class="s '+cls+(d?(d>0?" flash-up":" flash-down"):"")+'" title="'+esc(m.th)+'"><span class="i" aria-hidden="true">'+m.icon+'</span><span class="v">'+v+(d?'<span class="d">'+(d>0?"+":"")+d+'</span>':'')+'</span><div class="t"><div style="width:'+v+'%"></div></div></div>';}).join("")+'</div>';
+}
+function openSheet(html,isChar){
+  closeSheet();
+  var sc=document.createElement("div");sc.className="bscrim";sc.id="bscrim";
+  var sh=document.createElement("div");sh.className="bsheet";sh.id="bsheet";sh.setAttribute("role","dialog");
+  sh.innerHTML='<div class="grab"></div>'+html+'<button class="btn closer" id="closeSheet">ปิด</button>';
+  document.body.appendChild(sc);document.body.appendChild(sh);
+  sc.addEventListener("click",closeSheet);document.getElementById("closeSheet").addEventListener("click",closeSheet);
+  if(isChar){var h=sh.querySelector("#home"),d=sh.querySelector("#draft");
+    if(h)h.addEventListener("click",function(){closeSheet();view="title";render();});
+    if(d)d.addEventListener("click",function(){closeSheet();showDraft=true;render();});}
+}
+function closeSheet(){["bscrim","bsheet"].forEach(function(id){var e=document.getElementById(id);if(e)e.remove();});}
+
+function recordDeath(){
+  if(st.recorded) return; st.recorded=true;
+  var b=load(BOARD_KEY,[]);
+  b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  b.sort(function(x,y){return y.days-x.days;}); save(BOARD_KEY,b.slice(0,10));
+  submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:causeTh(st.deathCause),at:Date.now()});
+  try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+}
+
+/* ---------------- draft review panel ---------------- */
+function renderDraft(){
+  var keys=["A","B","C","D"], sk=B.stats.map(function(s){return s.key;});
+  function eff(o){return Object.keys(o).map(function(k){return STAT[k].th+" "+(o[k]>0?"+":"")+o[k];}).join(", ")||"–";}
+  var arcRows=Object.keys(B.choiceEffects).map(function(a){
+    var ev=E.arcEvents[a][0];
+    return '<tr><td><b>'+esc(a)+'</b><br><span class="note">หลัก: '+STAT[B.arcPrimary[a]].th+'</span></td>'+keys.map(function(k){
+      var t=ev.choices.filter(function(c){return c.k===k;})[0].t;
+      return '<td>'+esc(t)+'<br><span class="num" style="color:var(--accent)">'+esc(eff(B.choiceEffects[a][k]))+'</span></td>';}).join("")+'</tr>';}).join("");
+  var status=[
+    ["done","ระบบเริ่มเกม สุ่มตัวละคร และวันละ 3 เหตุการณ์ในเวลาสุ่ม","ทดสอบอัตโนมัติแล้ว"],
+    ["done","โครง 200 เหตุการณ์ / 20 กลุ่ม / รหัสเดิมจาก V4.9","ทดสอบอัตโนมัติแล้ว"],
+    ["done","เชื่อมตัวเลือก A–D กับสถานะ 7 ค่า สรุปท้ายวัน เงื่อนไขแพ้","ทำงานแล้ว · ตัวเลขเป็นร่าง"],
+    ["dev","บทฉบับกระชับ V5.0 ครบ 200 เหตุการณ์ / 800 ตัวเลือก","ร่างโดย Claude รอทีมบทตรวจ · ยังไม่แตกกิ่ง"],
+    ["done","บันทึก/โหลดอัตโนมัติ ออกจากเกม = พัก, สถิติวันที่รอดชีวิตในเครื่อง","ทดสอบแล้ว"],
+    ["dev","คัดเหตุการณ์ตามชีวิตตัวละคร (อยู่คนเดียว / มีเด็ก / สัตว์เลี้ยง)","ร่าง: รายการเงื่อนไข 27 เหตุการณ์ใน config"],
+    ["dev","Story Memory: จดทุกการตัดสินใจและแสดงย้อนหลังในเรื่องเดียวกัน","ยังไม่มีกฎแตกแขนง (รอแปลงเงื่อนไข 250 รายการในบท)"],
+    ["dev","การเดินทางข้ามจังหวัด (ผู้เล่นเลือกเอง)","ต้นทุนเป็นร่าง ยังไม่มีเนื้อหาเฉพาะจังหวัด"],
+    ["dev","ฉาก: ใช้ BG01-A/B/C ตามระดับรายได้ทุกเหตุการณ์","ยังไม่มี BG02–06"],
+    ["un","NPC แสดงตาม route_role ของกลุ่มเหตุการณ์","ทะเบียน NPC ระบุ on-screen = undecided"],
+    ["un","Props V24 ซ่อนไว้ (เปิดได้เพื่อทดสอบ)","V24 auto_render_approved = false"],
+    ["un","ตัวละครหลัก (Male V11 / Female V9) ยังไม่ใส่ในฉาก","rig_ready = false"],
+    ["un","Leaderboard ออนไลน์","ตอนนี้เก็บเฉพาะในเครื่อง"]
+  ];
+  var lbl={done:["st-done","ทำเสร็จแล้ว"],dev:["st-dev","กำลังพัฒนา"],un:["st-un","ยังไม่ได้ตรวจสอบ"]};
+  var ov=document.createElement("div"); ov.className="overlay";
+  ov.innerHTML='<div class="sheet" role="dialog" aria-label="ค่าร่างรออนุมัติ"><div class="row" style="justify-content:space-between;align-items:center"><h2>ค่าร่างรออนุมัติ</h2><button class="btn" id="closeDraft">ปิด</button></div>'+
+    '<p class="note" style="margin:0">ทุกตัวเลขในหน้านี้มาจาก config/balance_draft.js สถานะ: '+esc(B.status)+' · '+esc(B.version)+'</p>'+
+    '<div><h4>สถานะงาน</h4><div class="tbl"><table><tr><th>สถานะ</th><th>ส่วนงาน</th><th>หมายเหตุ</th></tr>'+status.map(function(s){return '<tr><td class="'+lbl[s[0]][0]+'">'+lbl[s[0]][1]+'</td><td>'+esc(s[1])+'</td><td>'+esc(s[2])+'</td></tr>';}).join("")+'</table></div></div>'+
+    '<div><h4>ตัวเลือกสำหรับทดสอบ</h4><div class="toggles">'+
+      tog("npc","แสดง NPC ในฉาก")+tog("props","แสดง Props ที่เป็นตัวเลือก (ยังไม่อนุมัติ)")+tog("peek","แสดงผลตัวเลขก่อนเลือก (สำหรับตรวจสมดุล)")+tog("ids","แสดงรหัสเหตุการณ์")+tog("test","บันทึกการเล่นสำหรับทดสอบ (เก็บในเครื่องนี้)")+'</div><div class="row" style="margin-top:8px"><button class="btn" id="logExport">ดาวน์โหลดบันทึก ('+logCount()+' แถว)</button><button class="btn ghost" id="logClear">ล้างบันทึก</button></div></div>'+
+    '<div><h4>ค่าเริ่มต้น / ท้ายวัน</h4><div class="tbl"><table><tr><th></th>'+sk.map(function(k){return '<th>'+STAT[k].th+'</th>';}).join("")+'</tr>'+
+      '<tr><td>เริ่มต้น</td>'+sk.map(function(k){return '<td class="num">'+B.startStats[k]+'</td>';}).join("")+'</tr>'+
+      '<tr><td>ท้ายวัน</td>'+sk.map(function(k){var v=B.dailyChange[k];return '<td class="num">'+(v==null?"–":(v>0?"+":"")+v)+'</td>';}).join("")+'</tr>'+
+      '<tr><td>สุขภาพลดเมื่อค่านี้ &lt; '+B.healthRules.lowThreshold+'</td>'+sk.map(function(k){var v=B.healthRules.penalties[k];return '<td class="num">'+(v==null?"–":v)+'</td>';}).join("")+'</tr></table></div>'+
+      '<p class="note">สุขภาพฟื้น +'+B.healthRules.recover.amount+'/วัน เมื่อความอิ่ม ≥ 40, น้ำ ≥ 40, ความสะอาด ≥ 30 · แพ้เมื่อสุขภาพ = 0 · ค่าเริ่มต่ำสุด '+B.character.minStartStat+' · กลุ่ม “การฟื้นตัว” เริ่มวันที่ '+B.schedule.lockedUntilDay["การฟื้นตัว"]+' · เล่นครบกลุ่มแล้ววนใหม่หลังพัก '+B.schedule.arcCooldownDays+' วัน</p></div>'+
+    '<div><h4>ผลของตัวเลือก (20 กลุ่ม × 4)</h4><div class="tbl"><table><tr><th>กลุ่ม</th><th>A</th><th>B</th><th>C</th><th>D</th></tr>'+arcRows+'</table></div></div>'+
+    '<div><h4>ทดสอบจำลองอัตโนมัติ (300 รอบต่อแบบ, สูงสุด 365 วัน)</h4><p class="note" style="margin:0">เลือกสุ่ม: มัธยฐาน ~67 วัน · เลือก A ตลอด ~32 · B ตลอด ~65 · C ตลอด ~52 · D ตลอด ~113 · เลือกตามสถานะที่ต่ำ: มัธยฐาน 365 (ถึง 365 วัน ~71%) ไม่มีตัวเลือกเดียวที่ชนะตลอด</p></div>'+
+  '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener("click",function(e){if(e.target===ov)closeD();});
+  document.getElementById("closeDraft").addEventListener("click",closeD);
+  ov.querySelectorAll("input[type=checkbox]").forEach(function(i){i.addEventListener("change",function(){opts[i.dataset.o]=i.checked;save(OPT_KEY,opts);});});
+  var le=ov.querySelector("#logExport"); if(le) le.addEventListener("click",function(){closeD();exportLog();});
+  var lc=ov.querySelector("#logClear"); if(lc) lc.addEventListener("click",function(){try{localStorage.removeItem(LOG_KEY);}catch(e){} le.textContent="ดาวน์โหลดบันทึก (0 แถว)";});
+}
+function tog(k,t){return '<label><input type="checkbox" id="opt-'+k+'" data-o="'+k+'" '+(opts[k]?"checked":"")+'> '+esc(t)+'</label>';}
+function closeD(){showDraft=false;var o=document.querySelector(".overlay");if(o)o.remove();render();}
+function on(id,fn){var el=document.getElementById(id);if(el)el.addEventListener("click",fn);}
+
+function start(){ render(); initOnline(); }
+if(window.claude&&window.claude.hot){window.claude.hot.snapshot&&window.claude.hot.snapshot(function(){return {};});}
+start();
+window.__ww3={get state(){return st;},engine:E,render:function(){render();},snd:SND};
+})();
+</script>
