@@ -19,6 +19,9 @@
     /* chapters (director approved 27 Oct): arcs grouped into 4 chapters, played once, decision event at each chapter end */
     this.CH = data.chapters || null;
     if (this.CH) this.CH.decisions.forEach(function (d) { self.byId[d.id] = d; });
+    /* twists (director approved 28 Oct): hand-written dilemmas, choices remembered as flags */
+    this.TW = data.twists || null;
+    if (this.TW) this.TW.list.forEach(function (t) { t.twist = true; t.arc = t.arc || "_twist"; self.byId[t.id] = t; });
   }
 
   var P = Engine.prototype;
@@ -114,7 +117,8 @@
       arcs: arcs, queue: [], qi: 0, phase: "event",
       memory: [], dayLog: [], dayStartStats: null, lastResult: null, summary: null,
       alive: true, travelledToday: false, history: [],
-      chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null
+      chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null,
+      flags: {}, twistsDone: {}, chDone: 0
     };
     this.startDay(st);
     return st;
@@ -152,8 +156,37 @@
     return i;
   };
 
+  /* ---------- flags + twists ---------- */
+  P.flagOk = function (st, req, not) {
+    var f = st.flags || {};
+    if (req) {
+      if (req.flag && !f[req.flag]) return false;
+      if (req.pet && (st.char.pet || "none") !== req.pet) return false;
+    }
+    if (not) for (var i = 0; i < not.length; i++) if (f[not[i]]) return false;
+    return true;
+  };
+  /* events in this chapter this character can meet (for twist timing) */
+  P.chapterTotal = function (st) {
+    var self = this, n = 0;
+    this.chapterOf(st).arcs.forEach(function (a) { self.arcEvents[a].forEach(function (ev) { if (self.eligible(st, ev)) n++; }); });
+    return n;
+  };
+  P.dueTwist = function (st) {
+    if (!this.TW) return null;
+    var self = this, total = this.chapterTotal(st), at = this.TW.at, out = null;
+    this.TW.list.forEach(function (t) {
+      if (out || t.chapter !== st.chapter || st.twistsDone[t.id]) return;
+      if (st.chDone < Math.floor(total * at[t.slot])) return;
+      if (!self.flagOk(st, t.requires, t.notFlags)) { st.twistsDone[t.id] = "skipped"; return; }
+      out = t;
+    });
+    return out;
+  };
+
   P.startDayChapters = function (st) {
     var pool = this.availableArcs(st), ch = this.chapterOf(st), self = this;
+    st.flags = st.flags || {}; st.twistsDone = st.twistsDone || {}; st.chDone = st.chDone || 0;
     if (!pool.length) {
       if (ch.decision && !st.decisions[ch.n]) {
         st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
@@ -169,6 +202,8 @@
     st.day += 1; st.qi = 0; st.dayLog = []; st.travelledToday = false;
     st.dayStartStats = JSON.parse(JSON.stringify(st.stats));
     var n = this.B.day.eventsPerDay, vptr = {}, chosen = [], used = [];
+    var tw = this.dueTwist(st);
+    if (tw) { chosen.push(tw.id); st.twistsDone[tw.id] = "queued"; }
     pool.forEach(function (a) { vptr[a] = st.arcs[a].ptr; });
     while (chosen.length < n) {
       var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
@@ -186,6 +221,20 @@
     st.phase = "event"; st.lastResult = null; st.summary = null;
   };
 
+  /* lines (and small effects) carried into a new chapter by earlier twist choices */
+  P.followLines = function (st, decId, key) {
+    if (!this.TW) return [];
+    var f = st.flags || {}, out = [], self = this, toCh = st.chapter;
+    this.TW.follow.forEach(function (r) {
+      var hit = (r.toChapter && r.toChapter === toCh) || (r.decision && r.decision === decId && r.key === key);
+      if (!hit || !self.flagOk(st, null, r.notFlags)) return;
+      var v = f[r.flag]; if (v === undefined || !r.lines[v]) return;
+      out.push(r.lines[v]);
+      if (r.eff && r.eff[v]) self.applyDelta(st, r.eff[v]);
+    });
+    return out;
+  };
+
   /* most chosen approach over the whole game; tie -> the one picked most recently */
   P.endingFor = function (st) {
     var t = st.tally || {}, last = {}, best = null;
@@ -193,7 +242,9 @@
     ["A", "B", "C", "D"].forEach(function (k) {
       if (best === null || (t[k] || 0) > (t[best] || 0) || ((t[k] || 0) === (t[best] || 0) && (last[k] || -1) > (last[best] || -1))) best = k;
     });
-    return { key: best, tail: st.decisions[3] || null, day: st.day };
+    var f = st.flags || {}, lines = [];
+    if (this.TW) this.TW.endingLines.forEach(function (r) { if (f[r.flag] === r.eq && (!r.ending || r.ending === best)) lines.push(r.line); });
+    return { key: best, tail: st.decisions[3] || null, day: st.day, lines: lines };
   };
 
   P.startDay = function (st) {
@@ -248,6 +299,7 @@
   };
 
   P.viewFor = function (st, ev) {
+    if (ev.twist) return this.twistView(st, ev);
     var Bv = (this.D.branches || {})[ev.id], path = Bv ? this.pathFor(st, ev.arc) : null;
     if (Bv && path && Bv[path]) {
       var b = Bv[path], out0 = Object.assign({}, ev, { title: b.title || ev.title, s: b.s || ev.s, sf: b.s || ev.sf, path: path });
@@ -270,7 +322,27 @@
     return out;
   };
 
+  P.twistView = function (st, t) {
+    var f = st.flags || {}, out = Object.assign({}, t), v = null;
+    if (t.variants) {
+      var vk = String(f[t.variantKey[0]] || "");
+      if (t.variantKey[1] && f[t.variantKey[1]] && t.variants[vk + "_helped"]) vk += "_helped";
+      v = t.variants[vk] || t.variants[Object.keys(t.variants)[0]];
+      Object.keys(v).forEach(function (k) { out[k] = v[k]; });
+    }
+    if (t.sIf && f[t.sIf.flag] === t.sIf.eq) out.s = t.sIf.s;
+    out.sf = out.s;
+    out.choices = out.choices.map(function (c) {
+      var n = Object.assign({}, c);
+      if (c.tIf && f[c.tIf.flag]) n.t = c.tIf.t;
+      if (c.rIf && f[c.rIf.flag]) n.r = c.rIf.r;
+      n.rf = n.r; return n;
+    });
+    return out;
+  };
+
   P.effectsFor = function (ev, key) {
+    if (ev.twist) { var c = ev.choices.filter(function (x) { return x.k === key; })[0]; return (c && c.eff) || {}; }
     var o = this.B.choiceOverrides[ev.id];
     if (o && o[key]) return o[key];
     var a = this.B.choiceEffects[ev.effectsArc || ev.arc];
@@ -278,7 +350,7 @@
   };
 
   P.recallFor = function (st, ev) {
-    if (!this.B.memory.showPreviousInArc) return null;
+    if (!this.B.memory.showPreviousInArc || ev.twist || ev.effectsArc) return null;
     /* repeat of an event already met: show what was chosen that time (director approved 27 Oct) */
     for (var j = st.memory.length - 1; j >= 0; j--) {
       if (st.memory[j].id === ev.id) return Object.assign({ same: true }, st.memory[j]);
@@ -307,13 +379,29 @@
     var cur = this.currentEvent(st), ev = cur.ev;
     var ch = ev.choices.filter(function (c) { return c.k === key; })[0];
     if (!ch) return null;
-    var real = this.applyDelta(st, this.effectsFor(ev, key));
-    if (st.tally) st.tally[key] = (st.tally[key] || 0) + 1;
+    var delta = Object.assign({}, this.effectsFor(ev, key)), hurt = 0;
+    if (ev.twist && ch.risk && this.rng() < ch.risk) { hurt = this.randInt(5, 15); delta.health = (delta.health || 0) - hurt; }
+    var real = this.applyDelta(st, delta);
+    var tagK = ev.twist ? ch.tag : key;
+    if (st.tally && tagK) st.tally[tagK] = (st.tally[tagK] || 0) + 1;
+    if (ev.twist) {
+      st.flags = st.flags || {}; st.twistsDone = st.twistsDone || {};
+      st.twistsDone[ev.id] = key;
+      if (ch.set) Object.keys(ch.set).forEach(function (k) { st.flags[k] = ch.set[k]; });
+      if (ch.noFuelNights) st.flags.noFuelUntil = st.day + ch.noFuelNights;
+      if (ch.adoptDog && (st.char.pet || "none") === "none") { st.char.pet = "dog"; st.char.petSprite = null; }
+      if (ch.travel) {
+        var provs = this.B.character.provinces.filter(function (p) { return p !== st.char.province; });
+        st.char.province = this.pick(provs);
+      }
+      if (hurt) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: hurt }); }
+    } else if (this.CH && !ev.effectsArc) st.chDone = (st.chDone || 0) + 1;
     var dec = this.CH && ev.effectsArc ? ev : null;
     if (dec) {
       st.decisions[dec.chapter] = key;
       st.chapter = dec.chapter + 1;
-      st.chapterIntro = { n: st.chapter, day: st.day, from: dec.id, key: key };
+      st.chapterIntro = { n: st.chapter, day: st.day, from: dec.id, key: key, extra: this.followLines(st, dec.id, key) };
+      st.chDone = 0;
     }
     var arcSt = dec ? null : st.arcs[ev.arc];
     var BR = this.D.branchRule;
@@ -328,7 +416,9 @@
     var mem = { day: st.day, hour: cur.hour, id: ev.id, arc: ev.arc, title: ev.title, key: key, text: ch.t, province: st.char.province };
     st.memory.push(mem);
     st.dayLog.push({ id: ev.id, title: ev.title, key: key, text: ch.t, delta: real });
-    st.lastResult = { id: ev.id, key: key, text: ch.t, result: ch.r, resultFull: ch.rf || ch.r, delta: real };
+    var resTxt = hurt && ch.rHurt ? ch.rHurt : ch.r;
+    st.lastResult = { id: ev.id, key: key, text: ch.t, result: resTxt, resultFull: hurt && ch.rHurt ? ch.rHurt : (ch.rf || ch.r), delta: real };
+    if (ev.twist && st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = "accident"; return st.lastResult; }
     st.phase = "result";
     return st.lastResult;
   };
@@ -356,6 +446,7 @@
       if (v < 0 && (mult !== 1 || v % 1)) { var x = v * mult, f = Math.floor(x); v = f + (self.rng() < x - f ? 1 : 0); }
       dc[k] = v;
     });
+    if (st.flags && st.flags.dog && B.night && B.night.dogFood) dc.fullness = (dc.fullness || 0) + B.night.dogFood;
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
     for (var k in hr.penalties) {
@@ -397,18 +488,26 @@
   };
 
   /* ---------- night (director approved 27 Oct, This War of Mine logic): after the day summary pick one night action ---------- */
-  P.nightActions = function () { return this.B.night ? this.B.night.actions : []; };
+  P.nightActions = function (st) {
+    if (!this.B.night) return [];
+    var self = this;
+    return this.B.night.actions.filter(function (a) { return !st || self.flagOk(st, a.requires, a.notFlags); });
+  };
+  /* far places are closed while out of fuel (twist T3) */
+  P.placeOpen = function (st, p) { var f = st.flags || {}; return !(p.needsFuel && f.noFuelUntil && st.day < f.noFuelUntil); };
   P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
   P.night = function (st, key, placeId) {
     if (!this.canNight(st)) return null;
-    var N = this.B.night, act = N.actions.filter(function (a) { return a.key === key; })[0];
+    var N = this.B.night, act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
     if (!act) return null;
     var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
-    if (act.places && !place) return null;
+    if (act.places && (!place || !this.placeOpen(st, place))) return null;
+    var fl = st.flags || {};
     var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
     for (k in src.effects) delta[k] = src.effects[k];
     var injury = 0, raid = false;
-    if (src.risk && this.rng() < src.risk * mult) {
+    var riskM = (fl.safeRoute && st.chapter === 3) ? 0.5 : 1;
+    if (src.risk && this.rng() < src.risk * mult * riskM) {
       injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
       delta.health = (delta.health || 0) - injury;
       /* hurt on the way: come back with half */
@@ -418,9 +517,11 @@
     var R = N.raid;
     if (R && key !== "guard") {
       var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
+      if (fl.dog) ch *= (R.dogMult || 1);
       if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
     }
     var real = this.applyDelta(st, delta);
+    if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
     st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });

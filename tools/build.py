@@ -6,7 +6,7 @@
 import base64, os, json, shutil, hashlib
 from PIL import Image, ImageDraw
 R=os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))+'/'
-INL=['data/events.js','data/life_variants.js','data/branches.js','data/chapters.js','online/config.js','config/balance_draft.js','engine.js']
+INL=['data/events.js','data/life_variants.js','data/branches.js','data/chapters.js','data/twists.js','online/config.js','config/balance_draft.js','engine.js']
 KINDS=['npc','bg','props','player','pets','walk']
 def source():
     s=open(R+'index.src.html',encoding='utf-8').read()

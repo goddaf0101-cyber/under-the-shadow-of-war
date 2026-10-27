@@ -677,13 +677,16 @@ window.WW3_BALANCE = {
     actions: [
       { key: "scavenge", th: "ออกค้นหา", places: [
         { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
-        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
-        { id: "depot", th: "โกดังริมถนนใหญ่", effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
+        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
-      { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } }
+      { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
+      /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
+      { key: "share", th: "แบ่งของให้ต้น", effects: { fullness: -4, hydration: -4, mental: 6, energy: -4 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
     ],
-    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 } }
+    dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
+    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 }, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
   },
 
   travel: {

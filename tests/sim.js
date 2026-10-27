@@ -2,18 +2,21 @@
    policies pick a day choice (A–D) and a night action; reports days survived, % reaching the ending, endings, causes of death */
 const ROOT = require('path').resolve(__dirname, '..');
 global.window = global;
-require(ROOT + '/data/events.js'); require(ROOT + '/data/chapters.js'); require(ROOT + '/config/balance_draft.js');
+require(ROOT + '/data/events.js'); require(ROOT + '/data/chapters.js'); require(ROOT + '/data/twists.js'); require(ROOT + '/config/balance_draft.js');
 const E = require(ROOT + '/engine.js');
 const B = WW3_BALANCE;
 
 function score(st, d) { let s = 0; for (const x in d) { const v = st.stats[x]; const w = x === 'energy' ? (v < 30 ? 1.2 : v < 60 ? 0.4 : 0.1) : x === 'health' ? 1.2 : 1; s += d[x] * w * (1.7 - v / 100); } return s; }
-const greedyEv = (e, st, ev) => { let best, bs = -1e9; for (const k of 'ABCD') { const s = score(st, e.effectsFor(ev, k)); if (s > bs) { bs = s; best = k; } } return best; };
-const greedyNight = (e, st) => { let best = ['sleep'], bs = -1e9; for (const a of B.night.actions) for (const pl of (a.places || [null])) { const src = pl || a; const s = score(st, src.effects) - (src.risk || 0) * 12 + (a.key === 'guard' && st.stats.safety < 50 ? 6 : 0); if (s > bs) { bs = s; best = [a.key, pl && pl.id]; } } return best; };
-const randomNight = () => { const a = B.night.actions[Math.floor(Math.random() * B.night.actions.length)]; return [a.key, a.places ? a.places[Math.floor(Math.random() * a.places.length)].id : null]; };
+const keysOf = ev => ev.choices.map(c => c.k);
+const greedyEv = (e, st, ev) => { let best, bs = -1e9; for (const k of keysOf(ev)) { const s = score(st, e.effectsFor(ev, k)); if (s > bs) { bs = s; best = k; } } return best; };
+const greedyNight = (e, st) => { let best = ['sleep'], bs = -1e9; for (const a of e.nightActions(st)) for (const pl of (a.places || [null]).filter(p => !p || e.placeOpen(st, p))) { const src = pl || a; const s = score(st, src.effects) - (src.risk || 0) * 12 + (a.key === 'guard' && st.stats.safety < 50 ? 6 : 0); if (s > bs) { bs = s; best = [a.key, pl && pl.id]; } } return best; };
+const randomNight = (e, st) => { const acts = e.nightActions(st), a = acts[Math.floor(Math.random() * acts.length)]; const pls = a.places ? a.places.filter(p => e.placeOpen(st, p)) : null; return [a.key, pls ? pls[Math.floor(Math.random() * pls.length)].id : null]; };
+/* single-approach players: on a twist pick the choice tagged with that approach (or the first) */
+const byTag = t => (e, st, ev) => { if (!ev.twist) return t; const c = ev.choices.find(c => c.tag === t) || ev.choices[0]; return c.k; };
 const pol = {
   greedy: [greedyEv, greedyNight],
-  random: [() => 'ABCD'[Math.floor(Math.random() * 4)], randomNight],
-  allA: [() => 'A', greedyNight], allB: [() => 'B', greedyNight], allC: [() => 'C', greedyNight], allD: [() => 'D', greedyNight]
+  random: [(e, st, ev) => { const k = keysOf(ev); return k[Math.floor(Math.random() * k.length)]; }, randomNight],
+  allA: [byTag('A'), greedyNight], allB: [byTag('B'), greedyNight], allC: [byTag('C'), greedyNight], allD: [byTag('D'), greedyNight]
 };
 
 function run([pe, pn]) {
