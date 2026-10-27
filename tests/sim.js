@@ -1,14 +1,17 @@
 const ROOT=require('path').resolve(__dirname,'..');
 global.window = global;
-require(ROOT+'/data/events.js'); require(ROOT+'/config/balance_draft.js');
+require(ROOT+'/data/events.js'); require(ROOT+'/data/chapters.js'); require(ROOT+'/config/balance_draft.js');
 const E = require(ROOT+'/engine.js');
+let ENDS=0, ENDKEYS={};
 function run(policy, maxDays){
   const e = new E(WW3_DATA, WW3_BALANCE); const st = e.newGame();
   while(st.alive && st.day <= maxDays){
     if(st.phase==='event'){ const {ev}=e.currentEvent(st); e.choose(st, policy(e,st,ev)); }
     else if(st.phase==='result') e.next(st);
     else if(st.phase==='summary') e.nextDay(st);
+    else if(st.phase==='ending') break;
   }
+  if(st.phase==='ending'){ ENDS++; ENDKEYS[st.ending.key]=(ENDKEYS[st.ending.key]||0)+1; return e.daysSurvived(st); }
   return st.alive ? maxDays : e.daysSurvived(st);
 }
 const pol = {
@@ -16,10 +19,10 @@ const pol = {
   allA:()=> 'A', allB:()=>'B', allC:()=>'C', allD:()=>'D',
   greedy:(e,st,ev)=>{ let best,bs=-1e9; for(const k of 'ABCD'){ const d=e.effectsFor(ev,k); let s=0; for(const x in d){ const v=st.stats[x]; s+= d[x]*(x==='energy'?0.6:1)*(1.6-v/100);} if(s>bs){bs=s;best=k;} } return best; }
 };
-const N=+process.argv[2]||300, MAX=365;
+const N=+process.argv[2]||300, MAX=+process.env.MAXDAY||365;
 for(const [n,p] of Object.entries(pol)){
-  const r=[]; for(let i=0;i<N;i++) r.push(run(p,MAX)); r.sort((a,b)=>a-b);
-  console.log(n.padEnd(7),'median',r[N>>1],'p10',r[Math.floor(N*.1)],'p90',r[Math.floor(N*.9)],'reach365', (r.filter(x=>x>=MAX).length/N*100).toFixed(0)+'%');
+  ENDS=0; ENDKEYS={}; const r=[]; for(let i=0;i<N;i++) r.push(run(p,MAX)); r.sort((a,b)=>a-b);
+  console.log(n.padEnd(7),'median',r[N>>1],'p10',r[Math.floor(N*.1)],'p90',r[Math.floor(N*.9)],'reach'+MAX, (r.filter(x=>x>=MAX).length/N*100).toFixed(0)+'%', 'ending', (ENDS/N*100).toFixed(0)+'%', JSON.stringify(ENDKEYS));
 }
 if(process.argv[3]==='diag'){
  for (const n of ['greedy','random']){
