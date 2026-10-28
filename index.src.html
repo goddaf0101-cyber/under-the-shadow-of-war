@@ -200,6 +200,25 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
 .note{font-size:12.5px;color:var(--faint)}
 .dead h3{color:var(--bad)}
+/* death (28 Oct): the scene drains to black and white, a grave stands where you stood, one candle keeps its colour */
+.scene.rip .bg,.scene.rip .actor .spr{filter:grayscale(1) brightness(.62) contrast(1.05);transition:filter 2.4s ease}
+.scene.rip{max-height:min(56vh,330px);flex-grow:3}
+.scene.rip .tint{background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.55))!important}
+.scene .grave{position:absolute;left:24%;bottom:6%;height:70%;transform:translateX(-50%);z-index:2;animation:graveIn 1.8s cubic-bezier(.2,.7,.3,1) .4s both}
+.scene .grave svg{height:100%;width:auto;display:block;overflow:visible}
+.scene .candle{position:absolute;left:36%;bottom:8%;height:15%;z-index:3;animation:graveIn 1.2s ease 1.6s both}
+.scene .candle .fl{transform-origin:50% 100%;animation:flick .9s ease-in-out infinite alternate}
+@keyframes graveIn{from{opacity:0;transform:translateX(-50%) translateY(14%)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes flick{from{transform:scale(1,1)}to{transform:scale(.85,1.12) translateY(-3%)}}
+.card.rip{text-align:center;border-color:#4a4843;background:linear-gradient(180deg,#1b1b1a,#141413)}
+.card.rip .eyebrow{justify-content:center;letter-spacing:.2em}
+.card.rip .rname{font-family:var(--f-display);font-size:30px;font-weight:700;margin:2px 0 0;color:#e9e4d8}
+.card.rip .rdays{font-family:var(--f-mono);font-size:13px;color:var(--muted);letter-spacing:.08em}
+.card.rip .rcause{margin:8px 0 2px;font-size:15px}
+.card.rip .rcause b{color:var(--bad)}
+.card.rip .rlast{font-size:13px;color:var(--muted);margin:2px auto 0;max-width:34em;font-style:italic}
+.card.rip .foot{justify-content:center}
+@media (prefers-reduced-motion:reduce){.scene .grave,.scene .candle{animation:none}.scene .candle .fl{animation:none}}
 
 /* draft review panel */
 .overlay{position:fixed;inset:0;background:rgba(5,5,4,.7);z-index:20;display:flex;justify-content:center;align-items:flex-start;overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
@@ -723,12 +742,30 @@ function sceneHTML(ev,hour){
   var trader=(!ev&&st.phase==="summary"&&B.stock&&E.traderHere(st)&&A.npc[TRADER_NPC])?'<div class="actor" style="left:74%"><div class="shadow"></div><img class="spr" alt="'+esc(B.stock.trader.name)+'" src="'+A.npc[TRADER_NPC]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(B.stock.trader.name)+'</span>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  return '<div class="scene"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
+  var dead=st.phase==="dead";
+  if(dead){ player=graveHTML(); npc=""; }
+  return '<div class="scene'+(dead?' rip':'')+'"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+((loc&&(B.litScene||[]).indexOf(lk)>=0)?'linear-gradient(180deg,rgba(10,12,30,.12),rgba(10,10,20,.22))':tint(hour))+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
     ((!loc&&B.stock&&st.built)?Object.keys(st.built).map(function(k){var b=E.buildDef(k),x=BUILT_X[k];if(!b||x==null||!A.props[b.prop])return "";var fresh=st.phase==="night"&&st.nightResult&&st.nightResult.build===k;return '<img class="bitem'+(fresh?' new':'')+(/^BUILD_/.test(b.prop)?' wide':'')+'" alt="'+esc(b.th)+'" title="'+esc(b.th)+'" style="left:'+x+'%" src="'+A.props[b.prop]+'">';}).join(""):'')+
     props+'</div>';
 }
 
+/* gravestone drawn in SVG: name and days engraved (28 Oct) */
+function graveHTML(){
+  var nm=esc(st.char.name), d=E.daysSurvived(st);
+  return '<div class="grave" role="img" aria-label="หลุมศพของ '+nm+'"><svg viewBox="0 0 120 150" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs><linearGradient id="gs" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a9790"/><stop offset="1" stop-color="#5d5b56"/></linearGradient></defs>'+
+    '<ellipse cx="60" cy="146" rx="58" ry="7" fill="#2a2724"/>'+
+    '<path d="M16 146 V48 Q16 8 60 8 Q104 8 104 48 V146 Z" fill="url(#gs)" stroke="#3b3a36" stroke-width="2"/>'+
+    '<path d="M22 140 V50 Q22 15 60 15" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>'+
+    '<path d="M42 40 h12 M66 40 h12" stroke="#3a3833" stroke-width="1.6" stroke-linecap="round"/><circle cx="60" cy="40" r="3" fill="#3a3833"/>'+
+    '<text x="60" y="70" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" font-weight="600" font-size="'+(st.char.name.length>7?11:14)+'" fill="#2e2c28">'+nm+'</text>'+
+    '<text x="60" y="88" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" fill="#3a3833">วันที่ 1 – '+(st.deathDay||d)+'</text>'+
+    '<text x="60" y="104" text-anchor="middle" font-family="IBM Plex Sans Thai,sans-serif" font-size="8.5" fill="#3a3833">'+esc(st.char.occupation)+'</text>'+
+    '<path d="M18 146 q10 -10 22 -4 q10 -8 20 -2 q12 -7 22 0 q10 -6 20 6 Z" fill="#3d3a33"/>'+
+  '</svg></div>'+
+  '<div class="candle" aria-hidden="true"><svg viewBox="0 0 20 46" height="100%"><path class="fl" d="M10 2 C14 9 14 13 10 16 C6 13 6 9 10 2Z" fill="#f2b33d"/><rect x="6" y="17" width="8" height="27" rx="1.5" fill="#d9d2c0"/></svg></div>';
+}
 function pipsHTML(){
   var n=st.queue.length,h="";
   for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
@@ -832,10 +869,12 @@ function renderGame(){
       submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
   } else if(st.phase==="dead"){
     var days=E.daysSurvived(st);
-    body='<article class="card dead"><div class="eyebrow">สิ้นสุดชีวิตรอบนี้</div><h3 style="font-family:var(--f-display);font-size:24px;margin:4px 0">'+esc(st.char.name)+' รอดชีวิตได้ <span class="num">'+days+'</span> วัน</h3>'+
-      '<p>เสียชีวิตจาก<b>'+esc(causeTh(st.deathCause))+'</b> คืนวันที่ '+st.deathDay+' ที่'+esc(st.char.province)+'</p>'+
+    var lastM=(st.memory||[]).filter(function(m){return m.id!=="NIGHT";}).slice(-1)[0];
+    body='<article class="card dead rip"><div class="eyebrow">สิ้นสุดชีวิตรอบนี้</div><div class="rname">'+esc(st.char.name)+'</div><div class="rdays">รอดชีวิต <span class="num">'+days+'</span> วัน · '+esc(st.char.province)+'</div>'+
+      '<p class="rcause">เสียชีวิตจาก<b>'+esc(causeTh(st.deathCause))+'</b> คืนวันที่ '+st.deathDay+'</p>'+
+      (lastM?'<p class="rlast">สิ่งสุดท้ายที่เลือก: '+esc(lastM.title)+' — '+esc(lastM.text)+'</p>':'')+
       '<div class="foot" style="margin-top:8px"><button class="btn" id="home2">หน้าแรก</button><button class="btn primary" id="again">เริ่มชีวิตใหม่</button>'+(opts.test?'<button class="btn ghost" id="logExport2">ส่งออกบันทึกทดสอบ</button>':'')+'</div>'+
-      submitBoxHTML()+'<p class="sec-h" style="margin-top:14px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML()+'</article>';
+      submitBoxHTML()+'<button class="more" id="boardsOpen" style="margin-top:6px">ดูอันดับผู้รอดชีวิต ›</button></article>';
   }
   var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:(st.phase==="night"&&st.nightResult?st.nightResult.delta:{}));
   var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
@@ -858,6 +897,7 @@ function renderGame(){
 
   app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
   on("logExport2",exportLog);
+  on("boardsOpen",function(){openSheet('<div class="eyebrow">อันดับผู้รอดชีวิต</div><p class="sec-h" style="margin-top:6px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML());});
   on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});
   on("nextday",function(){E.nextDay(st);if(st.phase==="ending"){cue("day");plog("ending",{note:st.ending.key});recordDeath();}if(st.phase==="dead"){cue("death");recordDeath();}persist();render();focusMain();window.scrollTo({top:0,behavior:"smooth"});});
   app.querySelectorAll(".nopt").forEach(function(b){b.addEventListener("click",function(){
