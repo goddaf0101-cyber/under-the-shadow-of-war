@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="9b542afbd8";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="f3a6902f64";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -842,6 +842,48 @@ window.WW3_DATA.twists = {
   ]
 };
 </script>
+<script>/* เหตุการณ์ระหว่างออกค้นหากลางคืน (ผู้กำกับสั่งทำ 28 ต.ค. · แนว This War of Mine)
+   ร่างโดย Claude 3 เรื่องเป็นตัวอย่าง รอผู้กำกับ/ทีมบทอนุมัติแนวก่อนเขียนเพิ่ม
+   places = ที่ที่เกิดได้ (id ใน night.actions.scavenge.places) · เกิดครั้งเดียวต่อรอบ
+   choice: tag = นับคะแนนตอนจบ (A ช่วยเหลือ / B เก็บไว้เอง / C ตรวจสอบ / D ประสานงาน)
+           eff = ค่าสถานะ · items = ของได้/เสีย (ติดลบ = ต้องมีของนั้นถึงเลือกได้)
+           risk = โอกาสบาดเจ็บ (injury [ต่ำสุด, สูงสุด]) → ใช้ rf / itemsFail แทน · set = ธงเรื่องราว */
+window.WW3_DATA = window.WW3_DATA || {};
+window.WW3_DATA.nightEvents = [
+  { id: "N01", places: ["near"], npc: "NPC_05", role: "ยายเจ้าของบ้าน", title: "บ้านที่ยังมีคนอยู่",
+    s: "บ้านที่คุณคิดว่าร้างยังมีคนอยู่ ยายคนหนึ่งนั่งเฝ้าตาที่นอนป่วยในความมืด ในครัวมีข้าวสารครึ่งกระสอบกับยาลดไข้สองแผง",
+    choices: [
+      { k: "A", tag: "A", t: "ขอโทษ แล้ววางน้ำไว้ให้หนึ่งขวดก่อนออกมา", items: { water: -1 }, eff: { mental: 5 },
+        r: "ยายพนมมือขอบคุณ คุณกลับบ้านมือเปล่ากว่าที่ตั้งใจ แต่ใจเบากว่าที่คิด" },
+      { k: "B", tag: "B", t: "รอให้ยายหลับ แล้วเอาข้าวสารกับยาไป", items: { food: 2, meds: 1 }, eff: { mental: -10 }, set: { stoleElders: true },
+        r: "คืนนี้ได้ของกลับมามากกว่าทุกคืน แต่ภาพยายนั่งเฝ้าตาไม่ยอมออกไปจากหัว" },
+      { k: "C", tag: "C", t: "ถามยายว่าแถวนี้บ้านไหนว่างจริง ๆ", items: { mat: 1 }, eff: { energy: -4 },
+        r: "ยายชี้ไปบ้านท้ายซอยที่เจ้าของอพยพไปแล้ว คุณได้ไม้กับตะปูกลับมา" }
+    ] },
+  { id: "N02", places: ["market"], npc: "NPC_08", role: "ชายบาดเจ็บ", title: "คนเจ็บใต้แผงผัก",
+    s: "ใต้แผงผักที่ถล่มมีชายคนหนึ่งขาติดอยู่ เลือดยังไม่หยุด เขาขอให้ช่วย ข้างตัวเขามีกระเป๋าเป้ใบใหญ่",
+    choices: [
+      { k: "A", tag: "A", t: "ยกแผงออกแล้วทำแผลให้ ใช้ยาหนึ่งชุด", items: { meds: -1, food: 2 }, eff: { mental: 6, energy: -6 },
+        r: "เขาเดินกะเผลกกลับไปหาครอบครัวได้ ก่อนไปเขาแบ่งอาหารกระป๋องให้สองกระป๋อง" },
+      { k: "B", tag: "B", t: "เอากระเป๋าเป้ของเขาไป แล้วรีบออกมา", items: { food: 2, water: 1, val: 1 }, eff: { mental: -12 }, set: { tookPack: true },
+        r: "เสียงเรียกของเขาเงียบลงตอนคุณเลี้ยวพ้นตลาด" },
+      { k: "C", tag: "D", t: "วิ่งไปตามคนในชุมชนมาช่วยกันยก", eff: { energy: -8, mental: 4 }, risk: 0.15, injury: [5, 10],
+        r: "คุณวิ่งไปกลับเกือบชั่วโมง พอกลับมาพร้อมคนอื่น เขายังหายใจอยู่ ชุมชนจำชื่อคุณได้",
+        rf: "ระหว่างวิ่งกลับคุณสะดุดเศษกระจก แต่ยังพาคนมาช่วยเขาได้ทัน" }
+    ] },
+  { id: "N03", places: ["depot"], npc: "NPC_16", role: "ยามเฝ้าโกดัง", title: "ยามหน้าโกดัง",
+    s: "มีคนถือไฟฉายเดินตรวจรอบโกดัง เขาไม่ใช่เจ้าหน้าที่ แต่มีกระบองในมือ ประตูหลังโกดังเปิดแง้มอยู่",
+    choices: [
+      { k: "A", tag: "D", t: "เดินไปคุยตรง ๆ เอาของมีค่าแลกให้เข้าไปขนของ", items: { val: -1, food: 2, water: 1 },
+        r: "เขารับของมีค่าไป แล้วยืนส่องไฟให้คุณขนของออกมาได้หนึ่งรอบ" },
+      { k: "B", tag: "B", t: "แอบเข้าประตูหลังตอนเขาเดินไปอีกฝั่ง", items: { food: 3, meds: 1 }, risk: 0.35, injury: [8, 18], itemsFail: { food: 1 },
+        r: "คุณขนของออกมาได้ก่อนไฟฉายจะส่องกลับมาทางนี้",
+        rf: "ไฟฉายส่องมาเจอ คุณโดนกระบองฟาดไหล่ระหว่างหนี ได้ของติดมือมานิดเดียว" },
+      { k: "C", tag: "C", t: "ถอยกลับ ไม่เสี่ยงคืนนี้", eff: { safety: 2, mental: -2 },
+        r: "คุณกลับบ้านก่อนเที่ยงคืน ได้แค่ของที่เก็บมาระหว่างทาง" }
+    ] }
+];
+</script>
 <script>/* อันดับออนไลน์บนเว็บสาธารณะ (Supabase) — ใส่ค่าจาก Supabase > Project Settings > API
    ว่างไว้ = ปิด (เกมใช้อันดับของ Claude ถ้าเปิดผ่าน Claude หรือใช้สถิติในเครื่องอย่างเดียว)
    anonKey เป็นคีย์สาธารณะ ใส่ในหน้าเว็บได้ ห้ามใส่ service_role key */
@@ -1548,7 +1590,7 @@ window.WW3_BALANCE = {
         /* คลังของ (28 ต.ค.): ออกค้นหาได้ "ของ" เข้าคลัง (loot = แน่นอน, chance = โอกาสได้เพิ่ม 1 ชิ้น) แทนการเพิ่มหลอดทันที · fuel = ใช้น้ำมันในคลัง */
         { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { clean: 2, energy: -8 }, loot: { food: 1, water: 1, mat: 1 }, chance: { fuel: 0.15, val: 0.15 }, risk: 0.03 },
         { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
-        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+        { id: "depot", th: "โกดังริมถนนใหญ่", scene: "BG18-depot", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: -6, mental: -1 } /* ผู้กำกับอนุมัติ 28 ต.ค.: นั่งเฝ้าทั้งคืนไม่ได้พัก */ },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
@@ -1557,6 +1599,8 @@ window.WW3_BALANCE = {
     ],
     dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
     /* ถูกปล้น (ผู้กำกับอนุมัติ 28 ต.ค. รอบ 2): พื้นฐาน 3% + 1% ทุกของในคลัง 5 ชิ้น · ×2 ถ้าปลอดภัย < 50 · ×4 ถ้า < 30 · × ความยากตามวัน · เฝ้าบ้าน = ไล่โจรได้ */
+    /* เหตุการณ์ระหว่างออกค้นหา (28 ต.ค. ร่าง): โอกาสต่อคืนที่ออกค้นหา · เรื่องใน data/nights.js เกิดครั้งเดียวต่อรอบ */
+    encounter: { chance: 0.45 },
     raid: { base: 0.03, perItems: 5, perStep: 0.01, safetyMult: [{ below: 30, m: 4 }, { below: 50, m: 2 }], loss: { mental: -4 }, stockLoss: 0.5 /* ถูกปล้น = เสียของในคลังครึ่งหนึ่ง (28 ต.ค.) */, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
   },
 
@@ -2215,11 +2259,46 @@ window.WW3_BALANCE = {
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
     st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, repelled: repelled, loot: loot, build: builtKey, spoiled: spoiled };
+    /* something happens out there (28 Oct): the player must answer before the night ends */
+    var EN = N.encounter;
+    if (key === "scavenge" && place && EN && this.rng() < (EN.chance || 0)) { var pool = this.encounterPool(st, place.id); if (pool.length) st.nightResult.enc = pool[Math.floor(this.rng() * pool.length)].id; }
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
     else st.phase = "night";
     return st.nightResult;
+  };
+
+  /* ---------- night encounters (28 Oct) ---------- */
+  P.encounterPool = function (st, placeId) {
+    var done = st.encDone || [], self = this;
+    return (this.D.nightEvents || []).filter(function (e) { return e.places.indexOf(placeId) >= 0 && done.indexOf(e.id) < 0 && self.flagOk(st, e.requires, e.notFlags); });
+  };
+  P.encounterDef = function (id) { return (this.D.nightEvents || []).filter(function (e) { return e.id === id; })[0] || null; };
+  P.encounterPending = function (st) { var nr = st.nightResult; return !!(st.phase === "night" && nr && nr.enc && !nr.encKey); };
+  /* a choice that gives something away needs it in stock */
+  P.canEncounter = function (st, c) { var need = {}; for (var k in (c.items || {})) if (c.items[k] < 0) need[k] = -c.items[k]; return this.has(st, need); };
+  P.encounter = function (st, k) {
+    if (!this.encounterPending(st)) return null;
+    var nr = st.nightResult, ev = this.encounterDef(nr.enc), c = ev && ev.choices.filter(function (x) { return x.k === k; })[0];
+    if (!c || !this.canEncounter(st, c)) return null;
+    var hurt = 0, delta = {}, x;
+    for (x in (c.eff || {})) delta[x] = c.eff[x];
+    if (c.risk && this.rng() < c.risk * this.difficulty(st.day)) { hurt = this.randInt(c.injury[0], c.injury[1]); delta.health = (delta.health || 0) - hurt; }
+    var items = (hurt && c.itemsFail) ? c.itemsFail : (c.items || {}), gain = {}, lose = {};
+    for (x in items) { if (items[x] > 0) gain[x] = items[x]; else if (items[x] < 0) lose[x] = -items[x]; }
+    this.pay(st, lose); this.addItems(st, gain);
+    var real = this.applyDelta(st, delta);
+    for (x in real) nr.delta[x] = (nr.delta[x] || 0) + real[x];
+    for (x in gain) nr.loot[x] = (nr.loot[x] || 0) + gain[x];
+    nr.encKey = k; nr.encHurt = hurt; nr.encLost = lose; nr.encText = hurt && c.rf ? c.rf : c.r;
+    if (hurt) { nr.injury = (nr.injury || 0) + hurt; st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: hurt }); }
+    if (c.set) { st.flags = st.flags || {}; for (x in c.set) st.flags[x] = c.set[x]; }
+    if (c.tag && st.tally) st.tally[c.tag] = (st.tally[c.tag] || 0) + 1;
+    st.encDone = (st.encDone || []).concat([ev.id]);
+    st.memory.push({ day: st.day, hour: 23, id: ev.id, arc: "_night", title: ev.title, key: k, text: c.t, province: st.char.province });
+    if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = hurt ? "accident" : this.deathCause(st); }
+    return nr;
   };
 
   P.canTravel = function (st) {
@@ -2239,6 +2318,7 @@ window.WW3_BALANCE = {
   };
 
   P.nextDay = function (st) {
+    if (this.encounterPending(st)) return;   /* answer what happened out there first */
     if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
     if (st.phase === "summary" || st.phase === "night") {
       st.nightDone = false; st.nightResult = null; st.usedToday = {};
@@ -2266,7 +2346,7 @@ window.WW3_BALANCE = {
   if (typeof module !== "undefined") module.exports = Engine;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
-<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp", "BG09-classroom": "assets/bg/BG09-classroom.webp", "BG10-activity": "assets/bg/BG10-activity.webp", "BG11-kitchen": "assets/bg/BG11-kitchen.webp", "BG12-kitchen2": "assets/bg/BG12-kitchen2.webp", "BG13-commkitchen": "assets/bg/BG13-commkitchen.webp", "BG14-yard-night": "assets/bg/BG14-yard-night.webp", "BG15-front-poor": "assets/bg/BG15-front-poor.webp", "BG16-front-mid": "assets/bg/BG16-front-mid.webp", "BG17-front-rich": "assets/bg/BG17-front-rich.webp"}, "props": {"BUILD_filter": "assets/props/BUILD_filter.webp", "BUILD_garden": "assets/props/BUILD_garden.webp", "BUILD_solar": "assets/props/BUILD_solar.webp", "PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}, "vo": {}};</script>
+<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp", "BG09-classroom": "assets/bg/BG09-classroom.webp", "BG10-activity": "assets/bg/BG10-activity.webp", "BG11-kitchen": "assets/bg/BG11-kitchen.webp", "BG12-kitchen2": "assets/bg/BG12-kitchen2.webp", "BG13-commkitchen": "assets/bg/BG13-commkitchen.webp", "BG14-yard-night": "assets/bg/BG14-yard-night.webp", "BG15-front-poor": "assets/bg/BG15-front-poor.webp", "BG16-front-mid": "assets/bg/BG16-front-mid.webp", "BG17-front-rich": "assets/bg/BG17-front-rich.webp", "BG18-depot": "assets/bg/BG18-depot.webp"}, "props": {"BUILD_filter": "assets/props/BUILD_filter.webp", "BUILD_garden": "assets/props/BUILD_garden.webp", "BUILD_solar": "assets/props/BUILD_solar.webp", "PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}, "vo": {}};</script>
 <script>
 (function(){
 "use strict";
@@ -2641,7 +2721,8 @@ function sceneHTML(ev,hour){
   var trader=(!ev&&st.phase==="summary"&&B.stock&&E.traderHere(st)&&A.npc[TRADER_NPC])?'<div class="actor" style="left:74%"><div class="shadow"></div><img class="spr" alt="'+esc(B.stock.trader.name)+'" src="'+A.npc[TRADER_NPC]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(B.stock.trader.name)+'</span>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  var dead=st.phase==="dead";
+  var dead=st.phase==="dead", nre=!ev&&st.phase==="night"&&st.nightResult&&st.nightResult.enc&&E.encounterDef(st.nightResult.enc);
+  if(nre&&opts.npc&&A.npc[nre.npc]) npc='<div class="actor'+(E.encounterPending(st)?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[nre.npc]?' fade'+NPC_CUT[nre.npc]:'')+'" alt="'+esc(nre.role)+'" src="'+A.npc[nre.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(nre.role)+'</span>';
   if(dead){ player=graveHTML(); npc=""; }
   return '<div class="scene'+(dead?' rip':'')+'"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+((loc&&(B.litScene||[]).indexOf(lk)>=0)?'linear-gradient(180deg,rgba(10,12,30,.12),rgba(10,10,20,.22))':tint(hour))+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
@@ -2705,6 +2786,7 @@ function chapIntroHTML(day){
 }
 function isFinalNight(){var C=D.chapters;if(!C||st.chapter<C.list.length)return false;return !E.availableArcs(st).length;}
 function nextDayLabel(){return isFinalNight()?"ดูบทสรุปชีวิต":"เช้าวันที่ "+(st.day+1);}
+function nightPlace(nr){var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{};return act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];}
 function nightText(nr){
   var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{}, pl=act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];
   var o;
@@ -2756,9 +2838,15 @@ function renderGame(){
       (B.stock?stockBarHTML():'')+
       (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard";return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
       '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+""+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+  } else if(st.phase==="night"&&E.encounterPending(st)){
+    var en0=E.encounterDef(st.nightResult.enc), pl0=nightPlace(st.nightResult);
+    body='<article class="card event"><div class="eyebrow">คืนวันที่ '+st.day+' · ออกค้นหา · '+esc(pl0?pl0.th:"")+'</div><h3>'+esc(en0.title)+'</h3><p class="scene-text">'+esc(en0.s)+'</p>'+
+      '<div class="choices">'+en0.choices.map(function(c){var ok=E.canEncounter(st,c),need={};for(var x in (c.items||{}))if(c.items[x]<0)need[x]=-c.items[x];
+        return '<button class="choice enc" data-enc="'+c.k+'"'+(ok?'':' disabled style="opacity:.5"')+'><span class="k">'+c.k+'</span><span>'+esc(c.t)+(Object.keys(need).length?'<span class="peek" style="display:block;margin-top:3px">ต้องใช้ '+payHTML(need)+'</span>':'')+'</span></button>';}).join("")+'</div></article>';
   } else if(st.phase==="night"){
     var nr=st.nightResult||{}, nt=nightText(nr);
-    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+(nr.spoiled&&Object.keys(nr.spoiled).length?'<span class="note" style="margin:0 2px">ของเสียระหว่างคืน</span>'+itemChips(nr.spoiled,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
+    if(nr.encKey){var en1=E.encounterDef(nr.enc);nt.h=en1.title;nt.p=nr.encText;}
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+(nr.encLost&&Object.keys(nr.encLost).length?itemChips(nr.encLost,true):'')+(nr.spoiled&&Object.keys(nr.spoiled).length?'<span class="note" style="margin:0 2px">ของเสียระหว่างคืน</span>'+itemChips(nr.spoiled,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
       '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
   } else if(st.phase==="ending"){
     var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
@@ -2794,7 +2882,8 @@ function renderGame(){
   });
   on("charSheet",function(){openSheet(sideHTML().replace('<aside class="side">','<div class="sidesheet">').replace('</aside>','</div>'),true);});
 
-  app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
+  app.querySelectorAll(".choice.enc").forEach(function(b){b.addEventListener("click",function(){var id=st.nightResult.enc;E.encounter(st,b.dataset.enc);cue(st.nightResult.encHurt?"hurt":"tick");plog("encounter",{id:id,key:b.dataset.enc,note:st.nightResult.encHurt?"injury -"+st.nightResult.encHurt:""});if(st.phase==="dead"){cue("death");recordDeath();}persist();render();focusMain();});});
+  app.querySelectorAll(".choice:not(.enc)").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
   on("logExport2",exportLog);
   on("boardsOpen",function(){openSheet('<div class="eyebrow">อันดับผู้รอดชีวิต</div><p class="sec-h" style="margin-top:6px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML());});
   on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});
