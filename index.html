@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="bb7532fbb8";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="f441e63ffa";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -182,6 +182,7 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .ichip{display:inline-flex;align-items:center;gap:3px}
 /* built things stand in the home scene (28 Oct) */
 .scene .bitem{position:absolute;bottom:7%;height:21%;width:auto;transform:translateX(-50%);filter:drop-shadow(0 3px 3px rgba(0,0,0,.55)) saturate(.8) brightness(.92);z-index:0;pointer-events:none}
+.scene .bitem.wide{height:18%}
 .scene .bitem.new{animation:bnew 1.6s ease-out 2}
 @keyframes bnew{0%{filter:drop-shadow(0 0 0 rgba(212,168,67,0)) brightness(1.4)}50%{filter:drop-shadow(0 0 10px rgba(212,168,67,.9)) brightness(1.3)}100%{filter:drop-shadow(0 3px 3px rgba(0,0,0,.55))}}
 .trader{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;text-align:left;background:rgba(127,176,105,.1);border:1px solid rgba(127,176,105,.55);border-radius:10px;padding:4px 10px;margin:8px 0 0;cursor:pointer}
@@ -189,7 +190,7 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .trader b{display:block;color:var(--good)}
 .trader small{display:none}
 .trader .go{color:var(--good);font-weight:600;white-space:nowrap}
-.bigbuild{display:block;width:96px;height:96px;object-fit:contain;margin:4px auto 6px}
+.bigbuild{display:block;width:150px;height:96px;object-fit:contain;margin:4px auto 6px}
 .nopt small.keep{display:block}
 .tally{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin:8px 0 0}
 .log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
@@ -1490,10 +1491,19 @@ window.WW3_BALANCE = {
     "R011": "BG03-shops", "R015": "BG03-shops", "R017": "BG08-relief", "R020": "BG05-rural",
     "R025": "BG08-relief", "R030": "BG04-sala", "R065": "BG02-soi", "R069": "BG08-relief", "R070": "BG04-sala",
     "R108": "BG04-sala", "R110": "BG04-sala", "R116": "BG02-soi", "R120": "BG05-rural",
-    "R125": "BG04-sala", "R128": "BG04-sala", "R130": "BG04-sala",
+    "R125": "BG09-classroom", "R128": "BG04-sala", "R130": "BG04-sala",
     "R153": "BG08-relief", "R157": "BG08-relief", "R159": "BG04-sala",
-    "R174": "BG03-shops", "R179": "BG02-soi", "R180": "BG04-sala"
+    "R174": "BG03-shops", "R179": "BG02-soi", "R180": "BG04-sala",
+    /* ฉากชุดใหม่ (ผู้กำกับส่งภาพ 28 ต.ค.): ห้องเรียน ห้องกิจกรรม ครัว ลานหน้าบ้านกลางคืน หน้าบ้าน (FRONT = หน้าบ้านตามฐานะ) */
+    "R121": "BG09-classroom", "R126": "BG09-classroom", "R127": "BG09-classroom",
+    "R123": "BG10-activity", "R129": "BG10-activity",
+    "R012": "BG11-kitchen", "R018": "BG12-kitchen2", "R085": "BG13-commkitchen",
+    "R151": "BG14-yard-night", "R155": "BG14-yard-night", "R152": "FRONT"
   },
+  /* หน้าบ้านตามฐานะ (28 ต.ค.): ใช้ตอนเจ๊เง็กมาเคาะประตู และเหตุการณ์ FRONT */
+  frontScene: { poor: "BG15-front-poor", middle: "BG16-front-mid", wealthy: "BG17-front-rich" },
+  /* ฉากที่เป็นภาพกลางคืน/มีไฟในภาพแล้ว ไม่ต้องย้อมสีตามเวลาเต็มที่ */
+  litScene: ["BG11-kitchen", "BG12-kitchen2", "BG13-commkitchen", "BG14-yard-night"],
 
   /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
   arcScene: {
@@ -1521,7 +1531,7 @@ window.WW3_BALANCE = {
         { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
         { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
-      { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
+      { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: 4 } },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
       { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
@@ -1545,13 +1555,13 @@ window.WW3_BALANCE = {
     start: { poor: { food: 1, fuel: 1 }, middle: { food: 2, water: 2, fuel: 2 }, wealthy: { food: 3, water: 3, fuel: 2, val: 2 } },
     /* สร้างได้ครั้งละอย่าง ใช้เวลาหนึ่งคืน (แทนการเลือกทำตอนกลางคืน) · ผลทุกวันจนจบเกม */
     builds: [
-      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "PROP_012", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
-      { key: "garden", th: "แปลงผัก",               prop: "PROP_004", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
+      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "BUILD_filter", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
+      { key: "garden", th: "แปลงผัก",               prop: "BUILD_garden", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
       { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5 },
       { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
       { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
       { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
-      { key: "solar",  th: "แผงโซลาร์",             prop: "PROP_030", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
     ],
     buildNight: { energy: -6 },
     /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
@@ -2229,7 +2239,7 @@ window.WW3_BALANCE = {
   if (typeof module !== "undefined") module.exports = Engine;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
-<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp"}, "props": {"PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}, "vo": {}};</script>
+<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp", "BG09-classroom": "assets/bg/BG09-classroom.webp", "BG10-activity": "assets/bg/BG10-activity.webp", "BG11-kitchen": "assets/bg/BG11-kitchen.webp", "BG12-kitchen2": "assets/bg/BG12-kitchen2.webp", "BG13-commkitchen": "assets/bg/BG13-commkitchen.webp", "BG14-yard-night": "assets/bg/BG14-yard-night.webp", "BG15-front-poor": "assets/bg/BG15-front-poor.webp", "BG16-front-mid": "assets/bg/BG16-front-mid.webp", "BG17-front-rich": "assets/bg/BG17-front-rich.webp"}, "props": {"BUILD_filter": "assets/props/BUILD_filter.webp", "BUILD_garden": "assets/props/BUILD_garden.webp", "BUILD_solar": "assets/props/BUILD_solar.webp", "PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}, "vo": {}};</script>
 <script>
 (function(){
 "use strict";
@@ -2582,9 +2592,13 @@ function playerSprite(){
 }
 /* where the scene happens: event's own scene, else its arc's scene, else night place, else home (27 Oct) */
 function sceneKey(ev){
+  var k=sceneKey0(ev); return k==="FRONT"?((B.frontScene||{})[st.char.tier]||null):k;
+}
+function sceneKey0(ev){
   if(ev) return ev.scene||(B.eventScene||{})[ev.id]||(B.arcScene||{})[ev.arc]||null;
   var nr=st.phase==="night"&&st.nightResult;
-  if(nr&&nr.place){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return pl&&pl.scene||null;}
+  if(nr){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=nr.place&&act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return (pl&&pl.scene)||(act&&act.scene)||null;}
+  if(st.phase==="summary"&&B.stock&&E.traderHere(st)) return "FRONT";   /* เจ๊เง็กมาเคาะประตูหน้าบ้าน (28 ต.ค.) */
   return null;
 }
 function sceneHTML(ev,hour){
@@ -2601,8 +2615,8 @@ function sceneHTML(ev,hour){
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
   return '<div class="scene"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
-    '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
-    ((!loc&&B.stock&&st.built)?Object.keys(st.built).map(function(k){var b=E.buildDef(k),x=BUILT_X[k];if(!b||x==null||!A.props[b.prop])return "";var fresh=st.phase==="night"&&st.nightResult&&st.nightResult.build===k;return '<img class="bitem'+(fresh?' new':'')+'" alt="'+esc(b.th)+'" title="'+esc(b.th)+'" style="left:'+x+'%" src="'+A.props[b.prop]+'">';}).join(""):'')+
+    '<div class="tint" style="background:'+((loc&&(B.litScene||[]).indexOf(lk)>=0)?'linear-gradient(180deg,rgba(10,12,30,.12),rgba(10,10,20,.22))':tint(hour))+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
+    ((!loc&&B.stock&&st.built)?Object.keys(st.built).map(function(k){var b=E.buildDef(k),x=BUILT_X[k];if(!b||x==null||!A.props[b.prop])return "";var fresh=st.phase==="night"&&st.nightResult&&st.nightResult.build===k;return '<img class="bitem'+(fresh?' new':'')+(/^BUILD_/.test(b.prop)?' wide':'')+'" alt="'+esc(b.th)+'" title="'+esc(b.th)+'" style="left:'+x+'%" src="'+A.props[b.prop]+'">';}).join(""):'')+
     props+'</div>';
 }
 
@@ -2615,7 +2629,7 @@ function pipsHTML(){
 /* stock + build helpers (28 Oct) */
 var TRADER_NPC="NPC_10";   /* เจ๊เง็ก ใช้ภาพแม่ค้าหิ้วตะกร้า */
 /* where each built thing stands in the home scene (% from left), clear of you (22%), the pet (39%) and a visitor (74%) */
-var BUILT_X={bed:5,filter:49,bath:57,garden:63,lock:97,radio:88,solar:93};
+var BUILT_X={bed:5,filter:44,bath:55,garden:66,lock:99,radio:80,solar:91};   /* 28 Oct: wider art for filter/garden/solar */
 function propImg(id){return A.props&&A.props[id]?'<img alt="" src="'+A.props[id]+'">':'';}
 function itemChips(obj,neg){var S=B.stock;if(!S||!obj)return "";return Object.keys(obj).filter(function(k){return obj[k];}).map(function(k){var d=E.itemDef(k);return '<span class="chip '+(neg?'down':'up')+' ichip">'+propImg(d.prop)+esc(d.th)+' '+(neg?'−':'+')+obj[k]+'</span>';}).join("");}
 function payHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+cost[k]+' <span class="note">(มี '+have+')</span></span>';}).join(" ");}
@@ -2787,7 +2801,7 @@ var INTRO=[
   {bg:"BG03-shops",ey:"ก่อนหน้านี้",t:["ข่าวสงครามเคยเป็นเรื่องไกลตัว","จนวันหนึ่ง ความขัดแย้งลุกลามไปทั่วโลก","และมาถึงประเทศไทย"]},
   {bg:"BG02-soi",ey:"คืนแรก",t:["คืนนั้นไฟดับทั้งเมือง","สัญญาณโทรศัพท์หายไป","ไม่มีใครรู้ว่ามันจะกลับมาเมื่อไร"]},
   {bg:"BG07-checkpoint",ey:"สัปดาห์ต่อมา",t:["ถนนถูกปิด ร้านค้าว่างเปล่า","ความช่วยเหลือมาไม่ถึงทุกที่","ทุกคนต้องพึ่งตัวเอง"]},
-  {bg:"BG01-B",ey:"ตอนนี้",t:["คุณเป็นคนธรรมดาคนหนึ่ง","มีแค่บ้านหลังนี้ ของที่เหลืออยู่","และการตัดสินใจของตัวเอง"]},
+  {bg:"BG16-front-mid",ey:"ตอนนี้",t:["คุณเป็นคนธรรมดาคนหนึ่ง","มีแค่บ้านหลังนี้ ของที่เหลืออยู่","และการตัดสินใจของตัวเอง"]},
   {bg:"BG08-relief",ey:"สิ่งที่ต้องทำ",t:["กลางวัน เลือกว่าจะรับมือกับเรื่องตรงหน้าอย่างไร","กลางคืน เลือกว่าจะออกหาของ เฝ้าบ้าน หรือพักผ่อน","อยู่ให้รอดครบ 4 บท แล้วดูว่าชีวิตจะพาคุณไปถึงไหน"]}
 ];
 var INTRO_KEY="ww3ts.intro.v1";
