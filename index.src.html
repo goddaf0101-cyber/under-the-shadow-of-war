@@ -200,6 +200,17 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
 .note{font-size:12.5px;color:var(--faint)}
 .dead h3{color:var(--bad)}
+.skills{margin-top:10px;display:grid;gap:6px}
+/* new-character screen fits 375x600 with skills (28 Oct) */
+.newc{gap:10px;margin-top:0}.newc .card{padding:12px 14px}
+.newc .charcard{display:grid;grid-template-columns:auto 1fr;gap:0 10px;margin:8px 0 8px!important;font-size:13px;line-height:1.5}
+.newc .charcard dt,.newc .charcard dd{margin:0}
+.newc .strip{margin-top:4px}
+.skills .sec-h{margin:0}
+.skrow{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;background:var(--accent-soft);border:1px solid rgba(214,166,58,.28);border-radius:9px;padding:6px 9px}
+.skrow .sklbl{font-size:11px;color:var(--accent-ink);background:var(--accent);border-radius:6px;padding:1px 7px;white-space:nowrap;margin-top:2px;font-weight:600}
+.skrow b{font-size:13.5px}.skrow .sub{display:block;font-size:12px;color:var(--muted);line-height:1.45}
+.skills.compact{gap:4px;margin-top:8px}.skills.compact .skrow{padding:4px 8px}
 /* death (28 Oct): the scene drains to black and white, a grave stands where you stood, one candle keeps its colour */
 .scene.rip .bg,.scene.rip .actor .spr{filter:grayscale(1) brightness(.62) contrast(1.05);transition:filter 2.4s ease}
 .scene.rip{max-height:min(56vh,330px);flex-grow:3}
@@ -654,7 +665,7 @@ function renderTitle(){
 function renderNewChar(){
   var c=pendingChar, s=E.startStatsFor(c), tier=B.character.tiers[c.tier];
   var pk=c.sex==="หญิง"?"female":("male_"+c.tier), psrc=A.player[pk];
-  app.innerHTML='<section class="title"><p class="sec-h">ชีวิตที่สุ่มได้</p>'+
+  app.innerHTML='<section class="title newc"><p class="sec-h">ชีวิตที่สุ่มได้</p>'+
     '<div class="card" style="position:relative"><div class="who"><div class="badge">'+esc(c.name.charAt(0))+'</div><div><b>'+esc(c.name)+'</b><span>'+esc(c.occupation)+' · <span class="num">'+c.age+'</span> ปี · '+esc(c.sex)+'</span></div></div>'+
     '<dl class="charcard" style="margin:16px 0 0">'+
       '<dt>จังหวัดเริ่มต้น</dt><dd>'+esc(c.province)+'</dd>'+
@@ -662,7 +673,7 @@ function renderNewChar(){
       '<dt>ครอบครัว</dt><dd>'+esc(c.family)+'</dd>'+
       '<dt>สุขภาพ</dt><dd>'+esc(c.healthBg)+'</dd>'+
       '<dt>สัตว์เลี้ยง</dt><dd>'+esc(petTh(c))+'</dd></dl>'+
-    '<div class="stats">'+statRows(s)+'</div>'+(psrc?'<img src="'+psrc+'" alt="" style="position:absolute;right:14px;top:14px;height:150px;width:auto;opacity:.95">':'')+(function(){var pi=E.petSpriteOf(c);return (psrc&&pi&&A.pets[pi.id])?'<img src="'+A.pets[pi.id]+'" alt="" style="position:absolute;right:70px;top:'+(14+150*(1-pi.h)).toFixed(0)+'px;height:'+(150*pi.h).toFixed(0)+'px;width:auto">':'';})()+'</div>'+
+    stripHTML(s,null)+skillsHTML(c,true)+(psrc?'<img src="'+psrc+'" alt="" style="position:absolute;right:14px;top:14px;height:150px;width:auto;opacity:.95">':'')+(function(){var pi=E.petSpriteOf(c);return (psrc&&pi&&A.pets[pi.id])?'<img src="'+A.pets[pi.id]+'" alt="" style="position:absolute;right:70px;top:'+(14+150*(1-pi.h)).toFixed(0)+'px;height:'+(150*pi.h).toFixed(0)+'px;width:auto">':'';})()+'</div>'+
     '<div class="row"><button class="btn primary" id="go">เริ่มชีวิตนี้</button><button class="btn" id="re">สุ่มใหม่</button><button class="btn ghost" id="back">กลับ</button></div></section>';
   on("go",function(){
     st=E.newGame(pendingChar);
@@ -674,6 +685,10 @@ function renderNewChar(){
   on("back",function(){view="title";render();});
 }
 
+/* skills (28 Oct): income-tier trait + occupation skill */
+function skillsHTML(c,compact){var K=B.skills;if(!K)return "";var t=K.tier[c.tier],o=K.occ[c.occupation];
+  function row(lbl,s){return s?'<div class="skrow"><span class="sklbl">'+lbl+'</span><span><b>'+esc(s.th)+'</b><span class="sub">'+esc(s.text)+'</span></span></div>':'';}
+  return '<div class="skills'+(compact?' compact':'')+'"><p class="sec-h">ทักษะ</p>'+row(esc(B.character.tiers[c.tier].th),t)+row(esc(c.occupation),o)+'</div>';}
 function statRows(s){
   return B.stats.map(function(m){var v=s[m.key],cls=v<B.warnAt?"low":v<50?"mid":"";
     return '<div class="stat '+cls+'"><span class="ic" aria-hidden="true">'+m.icon+'</span><span>'+esc(m.th)+'</span><div class="track"><div class="fill" style="width:'+v+'%"></div></div><span class="v num">'+v+'</span></div>';}).join("");
@@ -684,7 +699,7 @@ function sideHTML(){
   return '<aside class="side"><div class="card">'+
     '<div class="who"><div class="badge">'+esc(c.name.charAt(0))+'</div><div><b>'+esc(c.name)+'</b><span>'+esc(c.occupation)+' · <span class="num">'+c.age+'</span> ปี</span></div></div>'+
     '<div class="facts"><span>จังหวัด <b>'+esc(c.province)+'</b></span><span>'+esc(B.character.tiers[c.tier].th)+' · '+esc(c.family)+'</span><span>'+esc(c.healthBg)+' · '+esc(petTh(c))+'</span></div>'+
-    '<div class="stats">'+statRows(st.stats)+'</div></div>'+
+    '<div class="stats">'+statRows(st.stats)+'</div>'+skillsHTML(c)+'</div>'+
     (B.stock?'<div class="card"><p class="sec-h">บ้านของคุณ</p>'+(Object.keys(st.built||{}).length?Object.keys(st.built).map(function(k){var b=E.buildDef(k);return '<div class="srow">'+propImg(b.prop)+'<span><b>'+esc(b.th)+'</b><span class="sub">'+esc(buildEffectText(b))+'</span></span><span class="note">วันที่ '+st.built[k]+'</span></div>';}).join(""):'<span class="note">ยังไม่ได้สร้างอะไร · เปิด "คลัง" ตอนสรุปวันเพื่อสร้างของ</span>')+'</div>':'')+
     '<div class="card"><p class="sec-h">ความทรงจำ</p><div class="mem">'+
       (mem.length?mem.map(function(m){return '<div>วันที่ <span class="num">'+m.day+'</span> · <b>'+esc(m.title)+'</b><br>'+esc(m.text)+'</div>';}).join(""):'<span class="note">ยังไม่มีการตัดสินใจ</span>')+
@@ -787,7 +802,7 @@ function buildEffectText(b){var t=[];if(b.gives)t.push(Object.keys(b.gives).map(
 function openStock(){
   var S=B.stock, canNightNow=st.phase==="summary"&&!st.nightDone;
   var items=S.items.map(function(d){var n=(st.stock||{})[d.key]||0;return '<div class="srow">'+propImg(d.prop)+'<span><b>'+esc(d.th)+'</b> <span class="num">'+n+'</span>'+(d.use?'<span class="sub">ใช้ 1 ชิ้น: '+Object.keys(d.use).map(function(k){return STAT[k].th+' +'+d.use[k];}).join(", ")+'</span>':'')+'</span>'+(d.use?'<button class="btn" data-use="'+d.key+'"'+(E.canUse(st,d.key)?'':' disabled')+'>'+(d.key==="food"?"กิน":d.key==="water"?"ดื่ม":"ใช้")+'</button>':'<span></span>')+'</div>';}).join("");
-  var builds=S.builds.map(function(b){var done=(st.built||{})[b.key];return '<div class="srow">'+propImg(b.prop)+'<span><b>'+esc(b.th)+'</b>'+(done?' ✓':'')+'<span class="sub">'+esc(buildEffectText(b))+'</span>'+(done?'':'<span class="sub">'+costHTML(b.cost)+'</span>')+'</span>'+(done?'<span class="note">สร้างแล้ว</span>':'<button class="btn" data-build="'+b.key+'"'+(canNightNow&&E.canBuild(st,b.key)?'':' disabled')+'>สร้าง</button>')+'</div>';}).join("");
+  var builds=S.builds.map(function(b){var done=(st.built||{})[b.key];return '<div class="srow">'+propImg(b.prop)+'<span><b>'+esc(b.th)+'</b>'+(done?' ✓':'')+'<span class="sub">'+esc(buildEffectText(b))+'</span>'+(done?'':'<span class="sub">'+costHTML(E.buildCost(st,b))+'</span>')+'</span>'+(done?'<span class="note">สร้างแล้ว</span>':'<button class="btn" data-build="'+b.key+'"'+(canNightNow&&E.canBuild(st,b.key)?'':' disabled')+'>สร้าง</button>')+'</div>';}).join("");
   openSheet('<div class="eyebrow">คลังของ</div>'+items+'<p class="sec-h" style="margin:12px 0 0">สร้างของในบ้าน · ใช้เวลาหนึ่งคืน</p>'+(canNightNow?'':'<p class="note" style="margin:0">สร้างได้ตอนสรุปวัน ก่อนเลือกทำตอนกลางคืน</p>')+builds);
   document.querySelectorAll("#bsheet [data-use]").forEach(function(b){b.addEventListener("click",function(){E.useItem(st,b.dataset.use);cue("tick");plog("use",{note:b.dataset.use});persist();render();openStock();});});
   document.querySelectorAll("#bsheet [data-build]").forEach(function(b){b.addEventListener("click",function(){closeSheet();doNight("build",b.dataset.build);});});

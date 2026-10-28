@@ -102,7 +102,29 @@
     if (!S) return out;
     S.items.forEach(function (it) { out[it.key] = 0; });
     var st0 = S.start[ch.tier] || {}; for (var k in st0) out[k] = st0[k];
+    var si = this.traitOf(ch, "startItems"); for (k in si) out[k] = (out[k] || 0) + si[k];
     return out;
+  };
+  /* ---------- skills (28 Oct): income tier trait + occupation skill, from B.skills ----------
+     fields ending in Mult multiply, numbers add, objects merge-add */
+  P.skillsOf = function (ch) {
+    var K = this.B.skills; if (!K || !ch) return [];
+    return [K.tier[ch.tier], K.occ[ch.occupation]].filter(Boolean);
+  };
+  var SKILL_OBJ = { startItems: 1, useBonus: 1, lootExtra: 1 };
+  function addDeep(a, b) { for (var k in b) { if (typeof b[k] === "object") { a[k] = a[k] || {}; addDeep(a[k], b[k]); } else a[k] = (a[k] || 0) + b[k]; } return a; }
+  P.traitOf = function (ch, field) {
+    var list = this.skillsOf(ch), mult = /Mult$/.test(field), obj = SKILL_OBJ[field], out = obj ? {} : (mult ? 1 : 0);
+    list.forEach(function (s) { var v = s.fx && s.fx[field]; if (v == null) return;
+      if (obj) addDeep(out, v); else if (mult) out *= v; else out += v; });
+    return out;
+  };
+  P.trait = function (st, field) { return this.traitOf(st.char, field); };
+  /* build cost after skills (never below 1 of an item that was in the cost) */
+  P.buildCost = function (st, b) {
+    var c = {}, cut = { mat: this.trait(st, "buildMatMinus"), elec: this.trait(st, "buildElecMinus") };
+    for (var k in b.cost) c[k] = Math.max(1, b.cost[k] - (cut[k] || 0));
+    return c;
   };
   P.itemDef = function (key) { return (this.B.stock.items.filter(function (x) { return x.key === key; })[0]) || null; };
   P.buildDef = function (key) { return (this.B.stock.builds.filter(function (x) { return x.key === key; })[0]) || null; };
@@ -117,17 +139,22 @@
   P.useItem = function (st, key) {
     if (!this.canUse(st, key)) return null;
     st.stock[key] -= 1;
-    var real = this.applyDelta(st, this.itemDef(key).use);
+    var use = {}, u0 = this.itemDef(key).use, x;
+    for (x in u0) use[x] = u0[x];
+    var ub = this.trait(st, "useBonus")[key] ; if (ub) for (x in ub) use[x] = (use[x] || 0) + ub[x];
+    var real = this.applyDelta(st, use);
     st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
     return real;
   };
-  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, b.cost)); };
+  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, this.buildCost(st, b))); };
   /* trader visits on summary days */
   P.traderHere = function (st) { return !!this.B.stock && st.phase === "summary" && st.day >= (st.traderDay || 1e9); };
   P.trade = function (st, i) {
     var d = this.B.stock.trader.deals[i];
     if (!d || !this.traderHere(st) || !this.has(st, d.pay)) return false;
-    this.pay(st, d.pay); this.addItems(st, d.get); return true;
+    this.pay(st, d.pay); this.addItems(st, d.get);
+    var ex = this.trait(st, "tradeExtra"); if (ex) { var g0 = Object.keys(d.get)[0]; var e0 = {}; e0[g0] = ex; this.addItems(st, e0); }
+    return true;
   };
 
   P.startStatsFor = function (ch) {
@@ -481,6 +508,7 @@
       if (v < 0 && (mult !== 1 || v % 1)) { var x = v * mult, f = Math.floor(x); v = f + (self.rng() < x - f ? 1 : 0); }
       dc[k] = v;
     });
+    var mlm = this.trait(st, "mentalLossMult"); if (mlm !== 1 && dc.mental < 0) dc.mental = Math.round(dc.mental * mlm);
     if (st.flags && st.flags.dog && B.night && B.night.dogFood) dc.fullness = (dc.fullness || 0) + B.night.dogFood;
     /* things built in the home work every day */
     var produced = {};
@@ -489,7 +517,8 @@
       if (b.daily) for (var x in b.daily) dc[x] = (dc[x] || 0) + b.daily[x];
       /* production slows in later chapters (B.stock.prodByChapter[chapter-1] = chance a due harvest comes in) */
       var pm = (B.stock.prodByChapter || [])[(st.chapter || 1) - 1]; if (pm == null) pm = 1;
-      if (b.gives && age > 0 && age % b.every === 0 && (pm >= 1 || self.rng() < pm)) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
+      var every = Math.max(1, b.every - (bk === "garden" ? self.trait(st, "gardenEveryMinus") : 0));
+      if (b.gives && age > 0 && age % every === 0 && (pm >= 1 || self.rng() < pm)) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
     });
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
@@ -553,7 +582,7 @@
     var m = 1; (R.safetyMult || []).forEach(function (c) { if (st.stats.safety < c.below && c.m > m) m = c.m; });
     ch *= m;
     if (fl.dog) ch *= (R.dogMult || 1);
-    ch *= this.builtMult(st, "raidMult") * this.difficulty(st.day);
+    ch *= this.builtMult(st, "raidMult") * this.difficulty(st.day) * this.trait(st, "raidMult");
     return Math.min(ch, 0.9);
   };
   P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
@@ -563,20 +592,24 @@
     if (key === "build") {
       var bd = this.buildDef(placeId);
       if (!this.canBuild(st, placeId)) return null;
-      this.pay(st, bd.cost); st.built = st.built || {}; st.built[bd.key] = st.day; builtKey = bd.key;
-      act = { key: "build", th: "สร้าง" + bd.th, effects: this.B.stock.buildNight };
+      this.pay(st, this.buildCost(st, bd)); st.built = st.built || {}; st.built[bd.key] = st.day; builtKey = bd.key;
+      var bn = {}, bn0 = this.B.stock.buildNight; for (var y0 in bn0) bn[y0] = bn0[y0]; if (bn.energy && this.trait(st, "buildNightFree")) delete bn.energy;
+      act = { key: "build", th: "สร้าง" + bd.th, effects: bn };
       placeId = null;
     } else act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
     if (!act) return null;
     var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
     if (act.places && (!place || !this.placeOpen(st, place))) return null;
     var fl = st.flags || {};
-    if (place && place.fuel && this.B.stock) st.stock.fuel -= place.fuel;
+    var fuelSaved = false;
+    if (place && place.fuel && this.B.stock) { if (this.rng() < this.trait(st, "fuelSaveChance")) fuelSaved = true; else st.stock.fuel -= place.fuel; }
     if (act.pay) this.pay(st, act.pay);
     var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
     for (k in src.effects) delta[k] = src.effects[k];
     var injury = 0, raid = false;
-    var riskM = ((fl.safeRoute && st.chapter === 3) ? 0.5 : 1) * this.builtMult(st, "riskMult");
+    var riskM = ((fl.safeRoute && st.chapter === 3) ? 0.5 : 1) * this.builtMult(st, "riskMult") * this.trait(st, "riskMult") * (place && place.id === "near" ? this.trait(st, "riskNearMult") : 1);
+    if (key === "sleep" && this.trait(st, "sleepEnergy")) delta.energy = (delta.energy || 0) + this.trait(st, "sleepEnergy");
+    if (key === "guard" && this.trait(st, "guardEnergy")) delta.energy = (delta.energy || 0) + this.trait(st, "guardEnergy");
     if (key === "sleep") { var self0 = this; Object.keys(st.built || {}).forEach(function (bk) { var b = self0.buildDef(bk); if (b && b.sleep) for (var x in b.sleep) delta[x] = (delta[x] || 0) + b.sleep[x]; }); }
     if (src.risk && this.rng() < src.risk * mult * riskM) {
       injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
@@ -589,6 +622,7 @@
     if (src.loot) {
       for (k in src.loot) loot[k] = injury ? Math.floor(src.loot[k] / 2) : src.loot[k];
       if (!injury && src.chance) for (k in src.chance) if (this.rng() < src.chance[k]) loot[k] = (loot[k] || 0) + 1;
+      if (!injury && key === "scavenge") { var lx = this.trait(st, "lootExtra"); for (k in lx) loot[k] = (loot[k] || 0) + lx[k]; }
       this.addItems(st, loot);
     }
     /* raid on the home when nobody guards it */
@@ -603,7 +637,7 @@
     }
     /* stored food and water spoil a little every night (B.stock.spoil = chance per unit) */
     var spoiled = {}, SP = this.B.stock && this.B.stock.spoil;
-    if (SP && st.stock) for (k in SP) { var n0 = 0; for (var u = 0; u < (st.stock[k] || 0); u++) if (this.rng() < SP[k]) n0++; if (n0) { st.stock[k] -= n0; spoiled[k] = n0; } }
+    if (SP && st.stock) for (k in SP) { var n0 = 0; for (var u = 0; u < (st.stock[k] || 0); u++) if (this.rng() < SP[k] * this.trait(st, "spoilMult")) n0++; if (n0) { st.stock[k] -= n0; spoiled[k] = n0; } }
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
@@ -672,7 +706,7 @@
     if (st.phase === "summary" || st.phase === "night") {
       st.nightDone = false; st.nightResult = null; st.usedToday = {};
       var T = this.B.stock && this.B.stock.trader;
-      if (T && st.day >= (st.traderDay || 0)) st.traderDay = st.day + this.randInt(T.everyMin, T.everyMax);
+      if (T && st.day >= (st.traderDay || 0)) st.traderDay = st.day + Math.max(2, this.randInt(T.everyMin, T.everyMax) + this.trait(st, "traderShift"));
       this.startDay(st);
     }
   };
