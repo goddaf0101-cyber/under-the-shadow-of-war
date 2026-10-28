@@ -739,6 +739,23 @@ window.WW3_BALANCE = {
     ],
     dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
     /* ถูกปล้น (ผู้กำกับอนุมัติ 28 ต.ค. รอบ 2): พื้นฐาน 3% + 1% ทุกของในคลัง 5 ชิ้น · ×2 ถ้าปลอดภัย < 50 · ×4 ถ้า < 30 · × ความยากตามวัน · เฝ้าบ้าน = ไล่โจรได้ */
+    /* ออกค้นหาแบบลุ้นเอง (28 ต.ค. ต้นแบบ · เปิดเฉพาะ ?test=1): สุ่ม show จุดจาก spots · ค้นแต่ละจุดได้ของตาม loot [ต่ำสุด, สูงสุด] และเสียงเพิ่ม noise (+สุ่ม 0–noiseJitter) × noiseMult
+       เสียงถึง noiseMax = ถูกเจอ บาดเจ็บ injuryMin–injuryMax และทิ้งของครึ่งหนึ่ง · พลังงาน = travel + search ต่อจุด */
+    explore: { show: 4, noiseMax: 100, noiseJitter: 10,
+      places: { near: { travel: 2, search: 2, noiseMult: 1.2, injuryMin: 4, injuryMax: 10 },
+                market: { travel: 3, search: 3, noiseMult: 0.75, injuryMin: 6, injuryMax: 14 },
+                depot: { travel: 4, search: 4, noiseMult: 0.7, injuryMin: 8, injuryMax: 18 } },
+      spots: {
+        near: [ { id: "kitchen", th: "ครัว", loot: { food: [0, 2] }, noise: 18 }, { id: "bedroom", th: "ห้องนอน", loot: { val: [0, 1], meds: [0, 1] }, noise: 14 },
+                { id: "bath", th: "ห้องน้ำ", loot: { meds: [0, 1], water: [0, 1] }, noise: 12 }, { id: "garage", th: "โรงรถ", loot: { mat: [1, 2], fuel: [0, 1] }, noise: 26 },
+                { id: "stairs", th: "ใต้บันได", loot: { mat: [0, 1], elec: [0, 1] }, noise: 16 }, { id: "store", th: "ห้องเก็บของ", loot: { food: [0, 1], water: [0, 2] }, noise: 20 } ],
+        market: [ { id: "veg", th: "แผงผัก", loot: { food: [1, 3] }, noise: 22 }, { id: "pharm", th: "ร้านขายยา", loot: { meds: [1, 2] }, noise: 34 },
+                  { id: "grocer", th: "ร้านของชำ", loot: { food: [1, 2], water: [0, 1] }, noise: 24 }, { id: "elec", th: "ร้านเครื่องใช้ไฟฟ้า", loot: { elec: [1, 2], val: [0, 1] }, noise: 30 },
+                  { id: "cold", th: "ห้องเย็นหลังร้าน", loot: { food: [1, 3] }, noise: 38 }, { id: "gold", th: "ร้านทองที่ถูกงัด", loot: { val: [1, 2] }, noise: 32 } ],
+        depot: [ { id: "shelf", th: "ชั้นวางลังอาหาร", loot: { food: [2, 3], water: [0, 1] }, noise: 30 }, { id: "engine", th: "ห้องเครื่อง", loot: { fuel: [1, 2], elec: [1, 1] }, noise: 34 },
+                 { id: "office", th: "สำนักงาน", loot: { val: [0, 1], meds: [0, 1] }, noise: 22 }, { id: "mat", th: "กองวัสดุ", loot: { mat: [2, 3] }, noise: 30 },
+                 { id: "truck", th: "รถบรรทุกที่จอดทิ้ง", loot: { fuel: [1, 2], water: [1, 2] }, noise: 36 } ]
+      } },
     /* เหตุการณ์ระหว่างออกค้นหา (28 ต.ค. ร่าง): โอกาสต่อคืนที่ออกค้นหา · เรื่องใน data/nights.js เกิดครั้งเดียวต่อรอบ */
     encounter: { chance: 0.45 },
     raid: { base: 0.03, perItems: 5, perStep: 0.01, safetyMult: [{ below: 30, m: 4 }, { below: 50, m: 2 }], loss: { mental: -4 }, stockLoss: 0.5 /* ถูกปล้น = เสียของในคลังครึ่งหนึ่ง (28 ต.ค.) */, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
