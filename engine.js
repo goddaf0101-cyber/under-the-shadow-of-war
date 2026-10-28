@@ -148,7 +148,7 @@
     st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
     return real;
   };
-  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, this.buildCost(st, b))); };
+  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !st.explore && !(st.built || {})[key] && this.has(st, this.buildCost(st, b))); };
   /* trader visits on summary days */
   P.traderHere = function (st) { return !!this.B.stock && st.phase === "summary" && st.day >= (st.traderDay || 1e9); };
   P.trade = function (st, i) {
