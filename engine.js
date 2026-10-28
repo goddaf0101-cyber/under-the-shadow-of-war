@@ -487,7 +487,9 @@
     if (B.stock) Object.keys(st.built || {}).forEach(function (bk) {
       var b = self.buildDef(bk), age = st.day - st.built[bk] - (b.delay || 0);
       if (b.daily) for (var x in b.daily) dc[x] = (dc[x] || 0) + b.daily[x];
-      if (b.gives && age > 0 && age % b.every === 0) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
+      /* production slows in later chapters (B.stock.prodByChapter[chapter-1] = chance a due harvest comes in) */
+      var pm = (B.stock.prodByChapter || [])[(st.chapter || 1) - 1]; if (pm == null) pm = 1;
+      if (b.gives && age > 0 && age % b.every === 0 && (pm >= 1 || self.rng() < pm)) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
     });
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
@@ -599,10 +601,13 @@
         if (R.stockLoss && st.stock) { var lost = {}; for (k in st.stock) { var n = Math.floor(st.stock[k] * R.stockLoss); if (n > 0) { lost[k] = n; st.stock[k] -= n; } } raid = lost; }
       }
     }
+    /* stored food and water spoil a little every night (B.stock.spoil = chance per unit) */
+    var spoiled = {}, SP = this.B.stock && this.B.stock.spoil;
+    if (SP && st.stock) for (k in SP) { var n0 = 0; for (var u = 0; u < (st.stock[k] || 0); u++) if (this.rng() < SP[k]) n0++; if (n0) { st.stock[k] -= n0; spoiled[k] = n0; } }
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
-    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, repelled: repelled, loot: loot, build: builtKey };
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, repelled: repelled, loot: loot, build: builtKey, spoiled: spoiled };
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }

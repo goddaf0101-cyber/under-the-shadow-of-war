@@ -701,7 +701,7 @@ window.WW3_BALANCE = {
         { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
         { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
-      { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: 4 } },
+      { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: -6, mental: -1 } /* ผู้กำกับอนุมัติ 28 ต.ค.: นั่งเฝ้าทั้งคืนไม่ได้พัก */ },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
       { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
@@ -735,6 +735,9 @@ window.WW3_BALANCE = {
     ],
     buildNight: { energy: -6 },
     /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
+    /* ความขาดแคลน (ผู้กำกับอนุมัติชุด ก 28 ต.ค.): ของเสียทุกคืน (โอกาสต่อชิ้น) · บ้านผลิตได้น้อยลงตามบท (โอกาสที่รอบผลิตจะได้ของ บท 1–4) */
+    spoil: { food: 0.06, water: 0.04 },
+    prodByChapter: [1, 1, 0.6, 0.5],
     trader: { name: "เจ๊เง็ก", everyMin: 4, everyMax: 6, firstDay: 4, deals: [
       { pay: { val: 1 }, get: { food: 2 } }, { pay: { val: 1 }, get: { water: 2 } }, { pay: { val: 1 }, get: { mat: 2 } },
       { pay: { val: 2 }, get: { meds: 1 } }, { pay: { val: 2 }, get: { fuel: 1 } }, { pay: { val: 2 }, get: { elec: 1 } },
