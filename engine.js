@@ -542,14 +542,26 @@
     if (p.fuel && this.B.stock && ((st.stock || {}).fuel || 0) < p.fuel) return false;
     return true;
   };
+  /* chance a raid comes tonight (shown on the guard button; guarding repels it) */
+  P.raidChance = function (st) {
+    var R = this.B.night && this.B.night.raid; if (!R) return 0;
+    var fl = st.flags || {}, items = 0, k;
+    for (k in (st.stock || {})) items += st.stock[k];
+    var ch = (R.base || 0) + Math.floor(items / (R.perItems || 5)) * (R.perStep || 0);
+    var m = 1; (R.safetyMult || []).forEach(function (c) { if (st.stats.safety < c.below && c.m > m) m = c.m; });
+    ch *= m;
+    if (fl.dog) ch *= (R.dogMult || 1);
+    ch *= this.builtMult(st, "raidMult") * this.difficulty(st.day);
+    return Math.min(ch, 0.9);
+  };
   P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
   P.night = function (st, key, placeId) {
     if (!this.canNight(st)) return null;
-    var N = this.B.night, act;
+    var N = this.B.night, act, builtKey = null;
     if (key === "build") {
       var bd = this.buildDef(placeId);
       if (!this.canBuild(st, placeId)) return null;
-      this.pay(st, bd.cost); st.built = st.built || {}; st.built[bd.key] = st.day;
+      this.pay(st, bd.cost); st.built = st.built || {}; st.built[bd.key] = st.day; builtKey = bd.key;
       act = { key: "build", th: "สร้าง" + bd.th, effects: this.B.stock.buildNight };
       placeId = null;
     } else act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
@@ -578,12 +590,11 @@
       this.addItems(st, loot);
     }
     /* raid on the home when nobody guards it */
-    var R = N.raid;
-    if (R && key !== "guard") {
-      var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
-      if (fl.dog) ch *= (R.dogMult || 1);
-      ch *= this.builtMult(st, "raidMult");
-      if (ch && this.rng() < ch * mult) {
+    var R = N.raid, repelled = false;
+    if (R) {
+      var ch = this.raidChance(st);
+      if (ch && this.rng() < ch && key === "guard") repelled = true;
+      else if (ch && key !== "guard" && this.rng() < ch) {
         raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k];
         if (R.stockLoss && st.stock) { var lost = {}; for (k in st.stock) { var n = Math.floor(st.stock[k] * R.stockLoss); if (n > 0) { lost[k] = n; st.stock[k] -= n; } } raid = lost; }
       }
@@ -591,7 +602,7 @@
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
-    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, loot: loot, build: key === "build" ? Object.keys(st.built).filter(function (b) { return st.built[b] === st.day; })[0] : null };
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, repelled: repelled, loot: loot, build: builtKey };
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
