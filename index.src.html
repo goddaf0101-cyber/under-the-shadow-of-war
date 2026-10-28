@@ -822,7 +822,7 @@ function renderGame(){
       '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+""+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
   } else if(st.phase==="night"){
     var nr=st.nightResult||{}, nt=nightText(nr);
-    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+(nr.spoiled&&Object.keys(nr.spoiled).length?'<span class="note" style="margin:0 2px">ของเสียระหว่างคืน</span>'+itemChips(nr.spoiled,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
       '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
   } else if(st.phase==="ending"){
     var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
@@ -966,8 +966,8 @@ function tutSteps(){ var lt=B.healthRules.lowThreshold; return {
   ],
   summary:[
     {sel:[".main > article.card"],ey:"สรุปวัน",h:"ผ่านไปอีกหนึ่งวัน",p:"ดูว่าค่าไหนเปลี่ยนไปเท่าไรทั้งวัน ถ้ามีอะไรต่ำเกินไปจะมีคำเตือนสีแดง"},
-    {sel:["#stockOpen"],ey:"คลังของ",h:"ของที่คุณมี",p:"อาหาร น้ำ ยา วัสดุ อะไหล่ไฟฟ้า น้ำมัน ของมีค่า แตะเพื่อกิน ดื่ม ใช้ยา หรือสร้างของในบ้าน เช่น เครื่องกรองน้ำ แปลงผัก กลอนประตู"},
-    {sel:[".nopts"],ey:"กลางคืน",h:"คืนนี้ทำได้ 1 อย่าง",p:"ออกค้นหา ได้ของแต่เสี่ยงบาดเจ็บ · เฝ้าบ้าน กันโจร ยิ่งของในคลังเยอะยิ่งเสี่ยงถูกปล้น · นอนพัก พลังงานฟื้น · การสร้างของก็ใช้เวลาทั้งคืน"},
+    {sel:["#stockOpen"],ey:"คลังของ",h:"ของที่คุณมี",p:"อาหาร น้ำ ยา วัสดุ อะไหล่ไฟฟ้า น้ำมัน ของมีค่า แตะเพื่อกิน ดื่ม ใช้ยา หรือสร้างของในบ้าน อาหารและน้ำที่เก็บไว้จะค่อย ๆ เสียทุกคืน"},
+    {sel:[".nopts"],ey:"กลางคืน",h:"คืนนี้ทำได้ 1 อย่าง",p:"ออกค้นหา ได้ของแต่เสี่ยงบาดเจ็บ · เฝ้าบ้าน กันโจรแต่ไม่ได้พัก ยิ่งของในคลังเยอะยิ่งเสี่ยงถูกปล้น · นอนพัก พลังงานฟื้น · การสร้างของก็ใช้เวลาทั้งคืน"},
     {sel:["#traderOpen"],ey:"แม่ค้าเร่",h:B.stock?B.stock.trader.name+"มาเคาะประตู":"",p:"แวะมาทุก "+(B.stock?B.stock.trader.everyMin+"–"+B.stock.trader.everyMax:"")+" วัน เอาของที่เหลือหรือของมีค่ามาแลกของจำเป็นได้ เฉพาะวันที่เธอมา"}
   ],
   trader:[]
