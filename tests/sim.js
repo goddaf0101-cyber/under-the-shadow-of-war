@@ -20,7 +20,7 @@ const randomNight = (e, st) => { const acts = e.nightActions(st), a = acts[Math.
 /* single-approach players: on a twist pick the choice tagged with that approach (or the first) */
 const byTag = t => (e, st, ev) => { if (!ev.twist) return t; const c = ev.choices.find(c => c.tag === t) || ev.choices[0]; return c.k; };
 /* stock handling (28 Oct): careful players eat/drink/heal when a bar is low, trade, and build when they can spare a night */
-const BUILD_ORDER = ['filter', 'lock', 'garden', 'bed', 'bath', 'solar', 'radio'];
+const BUILD_ORDER = ['bench', 'filter', 'lock', 'garden', 'bed', 'bath', 'radio', 'solar', 'filter2', 'garden2', 'fence'].filter(k => B.stock.builds.some(b => b.key === k));
 function carefulStock(e, st) {
   const S = st.stock || {}, use = (k, stat, below) => { while (st.stats[stat] < below && e.canUse(st, k)) e.useItem(st, k); };
   use('food', 'fullness', 70); use('water', 'hydration', 70); use('meds', 'health', 65);

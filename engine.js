@@ -121,7 +121,9 @@
     st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
     return real;
   };
-  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, b.cost)); };
+  /* build tree (28 Oct): b.requires = builds that must stand first */
+  P.buildUnlocked = function (st, key) { var b = this.buildDef(key), bt = st.built || {}; return !!b && (b.requires || []).every(function (r) { return bt[r] != null; }); };
+  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.buildUnlocked(st, key) && this.has(st, b.cost)); };
   /* trader visits on summary days */
   P.traderHere = function (st) { return !!this.B.stock && st.phase === "summary" && st.day >= (st.traderDay || 1e9); };
   P.trade = function (st, i) {

@@ -726,14 +726,19 @@ window.WW3_BALANCE = {
     ],
     start: { poor: { food: 1, fuel: 1 }, middle: { food: 2, water: 2, fuel: 2 }, wealthy: { food: 3, water: 3, fuel: 2, val: 2 } },
     /* สร้างได้ครั้งละอย่าง ใช้เวลาหนึ่งคืน (แทนการเลือกทำตอนกลางคืน) · ผลทุกวันจนจบเกม */
+    /* ลำดับขั้น (28 ต.ค. ร่างรออนุมัติ): requires = ต้องมีสิ่งนี้ก่อน · ขั้น 2 (tier 2) เพิ่มผลจากของเดิม */
     builds: [
-      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "BUILD_filter", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
-      { key: "garden", th: "แปลงผัก",               prop: "BUILD_garden", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
-      { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5 },
-      { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
-      { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
-      { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
-      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+      { key: "bench",  th: "โต๊ะช่าง",               prop: "BUILD_bench",  cost: { mat: 2 },           tier: 0, note: "ต้องมีก่อนสร้างของอย่างอื่น" },
+      { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 }, requires: ["bench"] },
+      { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 }, requires: ["bench"] },
+      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "BUILD_filter", cost: { mat: 3 },           gives: { water: 1 }, every: 2, requires: ["bench"] },
+      { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5, requires: ["bench"] },
+      { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75, requires: ["bench"] },
+      { key: "garden", th: "แปลงผัก",               prop: "BUILD_garden", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5, requires: ["filter"] },
+      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 }, requires: ["radio"] },
+      { key: "filter2", th: "ถังกรองน้ำใบที่สอง",     prop: "BUILD_filter", cost: { mat: 2, elec: 1 },  gives: { water: 1 }, every: 2, requires: ["filter"], tier: 2 },
+      { key: "garden2", th: "ขยายแปลงผัก",           prop: "BUILD_garden", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 4, requires: ["garden"], tier: 2 },
+      { key: "fence",  th: "รั้วเหล็กรอบบ้าน",        prop: "PROP_018", cost: { mat: 4 },           daily: { safety: 1 }, raidMult: 0.5, requires: ["lock"], tier: 2 }
     ],
     buildNight: { energy: -6 },
     /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
