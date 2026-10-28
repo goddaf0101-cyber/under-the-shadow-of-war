@@ -269,15 +269,19 @@
     var tw = this.dueTwist(st);
     if (tw) { chosen.push(tw.id); st.twistsDone[tw.id] = "queued"; }
     pool.forEach(function (a) { vptr[a] = st.arcs[a].ptr; });
+    /* variety (28 Oct): an arc seen in the last cooldown days waits, unless nothing else is left */
+    var cd = this.B.schedule.arcGapDays || 0, last = st.arcLast = st.arcLast || {};
+    var fresh = function (a) { return !cd || last[a] == null || st.day - last[a] > cd; };
     while (chosen.length < n) {
-      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
+      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0 && fresh(a); });
+      if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
       if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length; });
       if (!cand.length) break;
       var ws = cand.map(function (a) { return self.arcWeight(st, a); });
       var tot = ws.reduce(function (x, y) { return x + y; }, 0), r = this.rng() * tot, i = 0;
       for (; i < ws.length - 1; i++) { r -= ws[i]; if (r <= 0) break; }
       var a = cand[i];
-      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a);
+      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a); last[a] = st.day;
       vptr[a] = this.nextIdx(st, a, vptr[a] + 1);
     }
     var hours = this.rollHours(chosen.length);
