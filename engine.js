@@ -139,9 +139,11 @@
   P.useItem = function (st, key) {
     if (!this.canUse(st, key)) return null;
     st.stock[key] -= 1;
-    var use = {}, u0 = this.itemDef(key).use, x;
+    /* built things can make an item worth more (stove: food fills more) */
+    var use = {}, u0 = this.itemDef(key).use, self = this, x;
     for (x in u0) use[x] = u0[x];
-    var ub = this.trait(st, "useBonus")[key] ; if (ub) for (x in ub) use[x] = (use[x] || 0) + ub[x];
+    Object.keys(st.built || {}).forEach(function (bk) { var b = self.buildDef(bk), ub = b && b.useBonus && b.useBonus[key]; if (ub) for (var y in ub) use[y] = (use[y] || 0) + ub[y]; });
+    var ub0 = this.trait(st, "useBonus")[key]; if (ub0) for (x in ub0) use[x] = (use[x] || 0) + ub0[x];
     var real = this.applyDelta(st, use);
     st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
     return real;
@@ -520,6 +522,9 @@
       var every = Math.max(1, b.every - (bk === "garden" ? self.trait(st, "gardenEveryMinus") : 0));
       if (b.gives && age > 0 && age % every === 0 && (pm >= 1 || self.rng() < pm)) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
     });
+    /* rain (28 Oct): some days it rains; a rain barrel catches water */
+    var rain = !!(B.weather && this.rng() < (B.weather.rainChance || 0));
+    if (rain && B.stock) Object.keys(st.built || {}).forEach(function (bk) { var b = self.buildDef(bk); if (b && b.rainGives) { self.addItems(st, b.rainGives); for (var g in b.rainGives) produced[g] = (produced[g] || 0) + b.rainGives[g]; } });
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
     for (var k in hr.penalties) {
@@ -543,7 +548,7 @@
     st.lossLog = st.lossLog.filter(function (x) { return x.day > st.day - 7; });
     var total = {};
     for (k in st.stats) { var d = st.stats[k] - st.dayStartStats[k]; if (d) total[k] = d; }
-    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice(), produced: produced };
+    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice(), produced: produced, rain: rain };
     st.history.push({ day: st.day, stats: JSON.parse(JSON.stringify(st.stats)) });
     if (st.history.length > 400) st.history.shift();
     if (st.stats[B.defeat.stat] <= B.defeat.atOrBelow) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = this.deathCause(st); }
@@ -637,7 +642,8 @@
     }
     /* stored food and water spoil a little every night (B.stock.spoil = chance per unit) */
     var spoiled = {}, SP = this.B.stock && this.B.stock.spoil;
-    if (SP && st.stock) for (k in SP) { var n0 = 0; for (var u = 0; u < (st.stock[k] || 0); u++) if (this.rng() < SP[k] * this.trait(st, "spoilMult")) n0++; if (n0) { st.stock[k] -= n0; spoiled[k] = n0; } }
+    var spM = this.builtMult(st, "spoilMult") * this.trait(st, "spoilMult");
+    if (SP && st.stock) for (k in SP) { var n0 = 0; for (var u = 0; u < (st.stock[k] || 0); u++) if (this.rng() < SP[k] * spM) n0++; if (n0) { st.stock[k] -= n0; spoiled[k] = n0; } }
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;

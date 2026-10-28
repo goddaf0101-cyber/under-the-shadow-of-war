@@ -511,7 +511,7 @@ function sndSet(layer,v,tc){var g=SND.layers[layer];if(g&&SND.ctx)g.gain.setTarg
 function sndMood(){
   if(!SND.ctx||!st||view!=="game"){ if(SND.ctx){sndSet("wind",0.10);sndSet("crick",0);sndSet("rain",0);sndSet("drone",0);musSet("menu");} return; }
   var cur=E.currentEvent(st), h=(st.phase==="event"&&cur)?cur.hour:21.5, ev=cur&&cur.ev;
-  var night=h>=19||h<6, rain=!!(ev&&(st.phase==="event"||st.phase==="result")&&ev.arc==="สภาพอากาศ"), low=st.stats.health<30, dead=st.phase==="dead";
+  var night=h>=19||h<6, rain=!!(ev&&(st.phase==="event"||st.phase==="result")&&ev.arc==="สภาพอากาศ")||!!(st.phase==="summary"&&st.summary&&st.summary.rain), low=st.stats.health<30, dead=st.phase==="dead";
   sndSet("wind",dead?0.03:(night?0.10:0.16)); sndSet("crick",night&&!dead?0.9:0); sndSet("rain",rain?0.06:0); sndSet("drone",dead?0.10:(low?0.08:0),2.5);
   musSet(dead?"dead":low?"low":night?"night":"day");
 }
@@ -736,7 +736,10 @@ function playerSprite(){
 }
 /* where the scene happens: event's own scene, else its arc's scene, else night place, else home (27 Oct) */
 function sceneKey(ev){
-  var k=sceneKey0(ev); return k==="FRONT"?((B.frontScene||{})[st.char.tier]||null):k;
+  var k=sceneKey0(ev); if(k!=="FRONT") return k;
+  var F=B.frontBuilt, t=st.char.tier;
+  if(F&&F.tiers.indexOf(t)>=0&&F.any.filter(function(b){return (st.built||{})[b]!=null;}).length>=F.min) return F.scene;
+  return (B.frontScene||{})[t]||null;
 }
 function sceneKey0(ev){
   if(ev) return ev.scene||(B.eventScene||{})[ev.id]||(B.arcScene||{})[ev.arc]||null;
@@ -792,13 +795,13 @@ function pipsHTML(){
 /* stock + build helpers (28 Oct) */
 var TRADER_NPC="NPC_10";   /* เจ๊เง็ก ใช้ภาพแม่ค้าหิ้วตะกร้า */
 /* where each built thing stands in the home scene (% from left), clear of you (22%), the pet (39%) and a visitor (74%) */
-var BUILT_X={bed:5,filter:44,bath:55,garden:66,lock:99,radio:80,solar:91};   /* 28 Oct: wider art for filter/garden/solar */
+var BUILT_X={bed:5,shelf:13,stove:33,barrel:73,filter:44,bath:55,garden:66,lock:99,radio:80,solar:91};   /* 28 Oct: wider art for filter/garden/solar */
 function propImg(id){return A.props&&A.props[id]?'<img alt="" src="'+A.props[id]+'">':'';}
 function itemChips(obj,neg){var S=B.stock;if(!S||!obj)return "";return Object.keys(obj).filter(function(k){return obj[k];}).map(function(k){var d=E.itemDef(k);return '<span class="chip '+(neg?'down':'up')+' ichip">'+propImg(d.prop)+esc(d.th)+' '+(neg?'−':'+')+obj[k]+'</span>';}).join("");}
 function payHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+cost[k]+' <span class="note">(มี '+have+')</span></span>';}).join(" ");}
 function costHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+have+'/'+cost[k]+'</span>';}).join(" ");}
 function stockBarHTML(){var S=B.stock;if(!S)return "";var main=["food","water","meds","mat","elec","fuel","val"],pr=(st.phase==="summary"&&st.summary&&st.summary.produced)||{};return '<button class="stockbar" id="stockOpen" aria-label="คลังของ">'+main.map(function(k){var d=E.itemDef(k),n=(st.stock||{})[k]||0;return '<span class="it'+(n?'':' zero')+'" title="'+esc(d.th)+(pr[k]?' (บ้านผลิตได้ +'+pr[k]+')':'')+'">'+propImg(d.prop)+'<span class="num">'+n+'</span>'+(pr[k]?'<span class="num" style="color:var(--good);font-size:11px">+'+pr[k]+'</span>':'')+'</span>';}).join("")+'<span class="more">คลัง ›</span></button>';}
-function buildEffectText(b){var t=[];if(b.gives)t.push(Object.keys(b.gives).map(function(k){return E.itemDef(k).th+' +'+b.gives[k];}).join(", ")+' ทุก '+b.every+' วัน'+(b.delay?' (เริ่มหลัง '+b.delay+' วัน)':''));if(b.daily)t.push(Object.keys(b.daily).map(function(k){return STAT[k].th+' +'+b.daily[k];}).join(", ")+' ทุกวัน');if(b.sleep)t.push('นอนพักได้ '+Object.keys(b.sleep).map(function(k){return STAT[k].th+' +'+b.sleep[k];}).join(", "));if(b.raidMult)t.push('โอกาสถูกปล้นเหลือ '+Math.round(b.raidMult*100)+'%');if(b.riskMult)t.push('ออกค้นหาเสี่ยงน้อยลง '+Math.round((1-b.riskMult)*100)+'%');return t.join(" · ");}
+function buildEffectText(b){var t=[];if(b.gives)t.push(Object.keys(b.gives).map(function(k){return E.itemDef(k).th+' +'+b.gives[k];}).join(", ")+' ทุก '+b.every+' วัน'+(b.delay?' (เริ่มหลัง '+b.delay+' วัน)':''));if(b.daily)t.push(Object.keys(b.daily).map(function(k){return STAT[k].th+' +'+b.daily[k];}).join(", ")+' ทุกวัน');if(b.sleep)t.push('นอนพักได้ '+Object.keys(b.sleep).map(function(k){return STAT[k].th+' +'+b.sleep[k];}).join(", "));if(b.raidMult)t.push('โอกาสถูกปล้นเหลือ '+Math.round(b.raidMult*100)+'%');if(b.riskMult)t.push('ออกค้นหาเสี่ยงน้อยลง '+Math.round((1-b.riskMult)*100)+'%');if(b.useBonus)Object.keys(b.useBonus).forEach(function(i){t.push(E.itemDef(i).th+' 1 ชิ้นได้ '+Object.keys(b.useBonus[i]).map(function(k){return STAT[k].th+' +'+b.useBonus[i][k];}).join(", ")+' เพิ่ม');});if(b.rainGives)t.push('วันที่ฝนตกได้ '+Object.keys(b.rainGives).map(function(k){return E.itemDef(k).th+' +'+b.rainGives[k];}).join(", "));if(b.spoilMult)t.push('อาหารและน้ำเสียน้อยลง '+Math.round((1-b.spoilMult)*100)+'%');return t.join(" · ");}
 function openStock(){
   var S=B.stock, canNightNow=st.phase==="summary"&&!st.nightDone;
   var items=S.items.map(function(d){var n=(st.stock||{})[d.key]||0;return '<div class="srow">'+propImg(d.prop)+'<span><b>'+esc(d.th)+'</b> <span class="num">'+n+'</span>'+(d.use?'<span class="sub">ใช้ 1 ชิ้น: '+Object.keys(d.use).map(function(k){return STAT[k].th+' +'+d.use[k];}).join(", ")+'</span>':'')+'</span>'+(d.use?'<button class="btn" data-use="'+d.key+'"'+(E.canUse(st,d.key)?'':' disabled')+'>'+(d.key==="food"?"กิน":d.key==="water"?"ดื่ม":"ใช้")+'</button>':'<span></span>')+'</div>';}).join("");
@@ -867,7 +870,7 @@ function renderGame(){
     var s=st.summary;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
     var warn=[];if(s.accident)warn.push('เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident);if(s.lowReasons.length)warn.push('สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป');
-    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
+    body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(s.rain?' · ฝนตก':'')+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
       '<div class="chips sumchips">'+chips(s.total)+'</div>'+
       (warn.length?'<p class="note" style="color:var(--bad);margin-top:8px">'+warn.join(' · ')+'</p>':'')+
       chapIntroHTML(s.day)+
