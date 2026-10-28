@@ -605,8 +605,16 @@ function supaLoad(){
     .then(function(a){var me=clientId();NET.rows=a.map(function(x){return {nick:String(x.nickname||""),name:String(x.char_name||""),occ:String(x.occupation||""),province:String(x.province||""),days:+x.days||0,cause:String(x.cause||""),mine:x.client_id===me};});NET.state="on";refreshBoards();})
     .catch(function(){NET.state="off";NET.err="โหลดอันดับไม่ได้";refreshBoards();});
 }
+/* Cloudflare Pages Functions (28 Oct, same stack as Wuxian M): when the page is served with /api (pages.dev), use it for the board + player stats */
+function cfLoad(){
+  NET.state=NET.rows?"on":"loading";refreshBoards();
+  return fetch("api/board?n=20&me="+encodeURIComponent(clientId()),{cache:"no-store"}).then(function(r){if(!r.ok)throw 0;return r.json();})
+    .then(function(j){if(!j||!j.ok)throw 0;NET.provider="cf";NET.api=true;NET.rows=j.rows;NET.state="on";NET.err="";refreshBoards();return true;})
+    .catch(function(){if(NET.provider==="cf"){NET.err="โหลดอันดับไม่ได้";}NET.state=NET.provider==="cf"?"on":"off";if(!NET.rows)NET.state="off";refreshBoards();return false;});
+}
 function initOnline(){
   if(supaOn()){NET.provider="supa";supaLoad();return;}
+  if(/^https?:$/.test(location.protocol)&&!(window.claude&&claude.use)){cfLoad().then(function(ok){if(ok)telStart();});return;}
   if(!(window.claude&&claude.use)) return;
   NET.provider="claude"; NET.state="loading";
   Promise.all([claude.use("db"),claude.use("user")]).then(function(r){
@@ -632,6 +640,21 @@ function onlineBoardHTML(n){
   return '<div class="tbl" style="overflow-x:auto"><table class="board"><tr><th>#</th><th>ผู้เล่น · ตัวละคร</th><th>รอด (วัน)</th><th>สาเหตุ</th></tr>'+
     rows.map(function(r,i){return '<tr'+(r.mine?' class="me"':'')+'><td class="num">'+(i+1)+'</td><td>'+(r.nick?'<b>'+esc(r.nick)+'</b> · ':'')+esc(r.name)+' · '+esc(r.occ)+(r.mine?' <b class="you">คุณ</b>':'')+'<br><span class="note">'+esc(r.province)+'</span></td><td class="num">'+r.days+'</td><td>'+esc(r.cause||"–")+'</td></tr>';}).join("")+'</table></div>';
 }
+/* player stats for the admin page (28 Oct): anonymous device id + play seconds every minute, and a summary when a life ends. Nothing personal. */
+var TEL={on:false,last:0,acc:0,timer:null};
+function telAdmin(){return !!load("ww3ts.admin.v1",false);}
+function telSend(extra){
+  if(!NET.api) return;
+  var now=Date.now(); if(TEL.last&&!document.hidden) TEL.acc+=Math.min(90,(now-TEL.last)/1000); TEL.last=now;
+  var body={client_id:clientId(),sec:Math.round(TEL.acc),chapter:(st&&view==="game"&&st.chapter)||0,screen:view==="game"&&st?(st.explore?"explore":st.phase):view,build:window.WW3_BUILD||"",admin:telAdmin()};
+  for(var k in (extra||{})) body[k]=extra[k];
+  TEL.acc=0;
+  try{fetch("api/ping",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body),keepalive:true}).catch(function(){});}catch(e){}
+}
+function telStart(){ if(TEL.on) return; TEL.on=true; TEL.last=Date.now(); telSend(); TEL.timer=setInterval(function(){ if(!document.hidden) telSend(); },60000);
+  document.addEventListener("visibilitychange",function(){ if(document.hidden) telSend(); else TEL.last=Date.now(); }); }
+function telEnd(){ if(!NET.api||!st) return; var en=st.phase==="ending";
+  telSend({end:{kind:en?"ending":"dead",days:E.daysSurvived(st),cause:en?"":st.deathCause,ending:en?st.ending.key:"",chapter:st.chapter||1,occ:st.char.occupation,tier:st.char.tier,tally:st.tally||{},exN:st.exN||0,exCaught:st.exCaught||0}}); }
 function refreshBoards(){
   document.querySelectorAll("[data-online-board]").forEach(function(el){el.innerHTML=onlineBoardHTML(+el.getAttribute("data-online-board")||20);});
   var f=document.getElementById("submitBox"); if(f) f.outerHTML=submitBoxHTML();
@@ -645,7 +668,7 @@ function submitOnline(run){
     .then(function(){NET.sent=true;},function(){});
 }
 function submitBoxHTML(){
-  if(NET.provider!=="supa"||!st||(st.phase!=="dead"&&st.phase!=="ending")) return '<div id="submitBox"></div>';
+  if((NET.provider!=="supa"&&NET.provider!=="cf")||!st||(st.phase!=="dead"&&st.phase!=="ending")) return '<div id="submitBox"></div>';
   if(NET.sent) return '<div id="submitBox"><p class="note">ส่งขึ้นอันดับแล้ว</p></div>';
   return '<div id="submitBox" class="row" style="gap:8px;margin-top:6px;align-items:center"><input id="nick" maxlength="20" placeholder="ชื่อเล่นที่จะขึ้นอันดับ" value="'+esc(load("ww3ts.nick.v1","")||"")+'" style="flex:1;min-width:0;padding:9px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel-2);color:var(--fg);font:inherit"><button class="btn" id="sendRun"'+(NET.sending?' disabled':'')+'>'+(NET.sending?'กำลังส่ง…':'ส่งขึ้นอันดับ')+'</button>'+(NET.err&&NET.state==="on"?'<p class="note" style="width:100%;color:var(--bad)">'+esc(NET.err)+'</p>':'')+'</div>';
 }
@@ -656,8 +679,8 @@ function bindSubmit(){
     if(!nick){NET.err="ใส่ชื่อเล่นก่อนส่ง";refreshBoards();return;}
     save("ww3ts.nick.v1",nick); NET.sending=true; NET.err=""; refreshBoards();
     var body={client_id:clientId(),nickname:nick,char_name:st.char.name,occupation:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:(st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause)),events:st.playEvents||0,play_seconds:Math.round(st.playSec||0),game_version:CFG.gameVersion||""};
-    supaFetch("runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(body)})
-      .then(function(r){NET.sending=false;if(!r.ok)throw 0;NET.sent=true;st.submitted=true;persist&&persist();supaLoad();})
+    (NET.provider==="cf"?fetch("api/board",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}):supaFetch("runs",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify(body)}))
+      .then(function(r){NET.sending=false;if(!r.ok)throw 0;NET.sent=true;st.submitted=true;persist&&persist();if(NET.provider==="cf")cfLoad();else supaLoad();})
       .catch(function(){NET.sending=false;NET.err="ส่งไม่สำเร็จ ลองใหม่อีกครั้งในอีกสักครู่";refreshBoards();});
   });
 }
@@ -697,7 +720,7 @@ function renderNewChar(){
     '<div class="row"><button class="btn primary" id="go">เริ่มชีวิตนี้</button><button class="btn" id="re">สุ่มใหม่</button><button class="btn ghost" id="back">กลับ</button></div></section>';
   on("go",function(){
     st=E.newGame(pendingChar);
-    NET.sent=false; NET.err="";
+    NET.sent=false; NET.err=""; if(NET.api) telSend({start:1});
     plog("start",{note:st.char.sex+" "+st.char.age+" · "+st.char.occupation+" · "+st.char.family+" · "+st.char.province+" · pet:"+(st.char.pet||"none")});
     persist(); view="game"; render();
   });
@@ -952,8 +975,8 @@ function renderGame(){
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
   on("stockOpen",openStock);
-  app.querySelectorAll(".spot:not([disabled])").forEach(function(b){b.addEventListener("click",function(){var r=E.exploreSearch(st,b.dataset.spot);cue(r&&r.caught?"hurt":"tick");plog("explore",{note:b.dataset.spot+(r&&r.caught?" caught -"+r.caught:"")});persist();render();});});
-  on("exLeave",function(){E.exploreEnd(st);plog("night",{note:"explore "+(st.nightResult&&st.nightResult.place)});if(st.phase==="dead"){cue("death");recordDeath();}else cue("tick");persist();render();focusMain();});
+  app.querySelectorAll(".spot:not([disabled])").forEach(function(b){b.addEventListener("click",function(){var r=E.exploreSearch(st,b.dataset.spot);if(r&&r.caught)st.exCaught=(st.exCaught||0)+1;cue(r&&r.caught?"hurt":"tick");plog("explore",{note:b.dataset.spot+(r&&r.caught?" caught -"+r.caught:"")});persist();render();});});
+  on("exLeave",function(){st.exN=(st.exN||0)+1;E.exploreEnd(st);plog("night",{note:"explore "+(st.nightResult&&st.nightResult.place)});if(st.phase==="dead"){cue("death");recordDeath();}else cue("tick");persist();render();focusMain();});
   on("traderOpen",openTrader);
   on("chapIntro",function(){var c=document.getElementById("chapIntro");openSheet('<div class="eyebrow">เปิดบทใหม่</div><p style="margin:0">'+c.innerHTML+'</p>');});
   on("dayLog",function(){var s=st.summary;openSheet('<div class="eyebrow">สรุปวันที่ '+s.day+'</div><ul class="log">'+s.log.map(function(l){return '<li><b>'+esc(l.title)+'</b> → '+esc(l.key)+' · '+esc(l.text)+'</li>';}).join("")+'</ul>');});
@@ -1006,7 +1029,7 @@ function openSheet(html,isChar){
 function closeSheet(){["bscrim","bsheet"].forEach(function(id){var e=document.getElementById(id);if(e)e.remove();});}
 
 function recordDeath(){
-  if(st.recorded) return; st.recorded=true;
+  if(st.recorded) return; st.recorded=true; telEnd();
   var b=load(BOARD_KEY,[]);
   var cz=st.phase==="ending"?"รอดจนจบ · "+D.chapters.endings[st.ending.key].title:causeTh(st.deathCause);
   b.push({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});

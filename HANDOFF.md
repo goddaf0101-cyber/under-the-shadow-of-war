@@ -107,6 +107,30 @@ node tests/review_page.js    # สร้าง dist/review_branches.html หน�
   อัปเดต: build แล้วคัดลอก **เนื้อหาใน `web/`** ไปทับรากของ repo แล้ว commit + push (sw.js เปลี่ยนเวอร์ชันเองทุก build ผู้เล่นได้ของใหม่อัตโนมัติ)
 - **ลิงก์ Claude artifact:** เผยแพร่ `dist/game_single.html` (มี capabilities: db กฎ `board` อ่าน view เขียน owner + `board/{self}` เขียน interact, user, downloads)
 
+## 5.1 Cloudflare Pages + D1 (28 ต.ค. · แบบเดียวกับ Wuxian M)
+
+โค้ดเซิร์ฟเวอร์อยู่ใน `functions/api/` (build คัดลอกไปไว้ที่ `web/functions/` → อยู่ที่รากของ `main`) · หน้าผู้ดูแล `admin.src.html` → `web/admin.html`
+ตารางสร้างเองอัตโนมัติ (`_lib.js ensureSchema`): `runs` (อันดับ) · `players` (รหัสสุ่มประจำเครื่อง เวลาเล่น บทที่ไปถึง) · `run_ends` (จบรอบ สาเหตุ ตอนจบ ทางเลือก A–D การออกค้นหา)
+
+| เส้นทาง | ใช้ทำอะไร |
+|---|---|
+| `GET/POST /api/board` | อันดับออนไลน์ (หนึ่งแถวต่อเครื่อง เก็บรอบที่ดีที่สุด · ส่งถี่ได้ทุก 10 วิ) |
+| `POST /api/ping` | เกมส่งทุก 60 วิ + ตอนเริ่มชีวิตใหม่ + ตอนจบรอบ (ไม่มีข้อมูลส่วนตัว) |
+| `GET /api/online` | จำนวนคนออนไลน์ (ส่งสัญญาณภายใน 2 นาที) |
+| `GET /api/stats` | สถิติผู้ดูแล ต้องมี header `x-admin-key` = `ADMIN_KEY` |
+| `/admin.html` | หน้าผู้ดูแล (ใส่รหัสครั้งเดียว เครื่องนั้นจะไม่ถูกนับในสถิติ) |
+
+ตั้งค่าครั้งแรก (ผู้กำกับทำใน dash.cloudflare.com):
+1. Workers & Pages → Create → Pages → Connect to Git → เลือก repo `under-the-shadow-of-war`
+2. Production branch: `main` · Framework preset: None · Build command: (เว้นว่าง) · Build output directory: `/`
+3. Storage & Databases → D1 → Create → ชื่อ `ww3-db`
+4. กลับไปที่โปรเจกต์ Pages → Settings → Bindings → Add → D1 database → Variable name `DB` → เลือก `ww3-db`
+5. Settings → Variables and Secrets → Add → Type: Secret → Name `ADMIN_KEY` → ใส่รหัสผู้ดูแล
+6. Deployments → Retry deployment (ให้การผูกข้อ 4–5 มีผล)
+
+ทดสอบในเครื่อง: `python3 tools/build.py && node tools/devserver.mjs 8788` (SQLite ในหน่วยความจำแทน D1 · ADMIN_KEY=test)
+เกมเลือกผู้ให้บริการเอง: Supabase (ถ้าใส่ค่าใน config) → Claude artifact → `/api` ของ Cloudflare (ถ้าเปิดผ่าน http และ `/api/board` ตอบได้) · บน GitHub Pages ไม่มี `/api` จึงเป็นสถิติในเครื่องเหมือนเดิม
+
 ## 6. งานค้าง / รอผู้กำกับตัดสิน
 
 - รอคำตอบ: เปลี่ยนชื่อบนหน้าจอเป็น "ใต้เงาสงคราม"
