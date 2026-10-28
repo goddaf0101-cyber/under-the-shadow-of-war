@@ -661,10 +661,19 @@ window.WW3_BALANCE = {
     "R011": "BG03-shops", "R015": "BG03-shops", "R017": "BG08-relief", "R020": "BG05-rural",
     "R025": "BG08-relief", "R030": "BG04-sala", "R065": "BG02-soi", "R069": "BG08-relief", "R070": "BG04-sala",
     "R108": "BG04-sala", "R110": "BG04-sala", "R116": "BG02-soi", "R120": "BG05-rural",
-    "R125": "BG04-sala", "R128": "BG04-sala", "R130": "BG04-sala",
+    "R125": "BG09-classroom", "R128": "BG04-sala", "R130": "BG04-sala",
     "R153": "BG08-relief", "R157": "BG08-relief", "R159": "BG04-sala",
-    "R174": "BG03-shops", "R179": "BG02-soi", "R180": "BG04-sala"
+    "R174": "BG03-shops", "R179": "BG02-soi", "R180": "BG04-sala",
+    /* ฉากชุดใหม่ (ผู้กำกับส่งภาพ 28 ต.ค.): ห้องเรียน ห้องกิจกรรม ครัว ลานหน้าบ้านกลางคืน หน้าบ้าน (FRONT = หน้าบ้านตามฐานะ) */
+    "R121": "BG09-classroom", "R126": "BG09-classroom", "R127": "BG09-classroom",
+    "R123": "BG10-activity", "R129": "BG10-activity",
+    "R012": "BG11-kitchen", "R018": "BG12-kitchen2", "R085": "BG13-commkitchen",
+    "R151": "BG14-yard-night", "R155": "BG14-yard-night", "R152": "FRONT"
   },
+  /* หน้าบ้านตามฐานะ (28 ต.ค.): ใช้ตอนเจ๊เง็กมาเคาะประตู และเหตุการณ์ FRONT */
+  frontScene: { poor: "BG15-front-poor", middle: "BG16-front-mid", wealthy: "BG17-front-rich" },
+  /* ฉากที่เป็นภาพกลางคืน/มีไฟในภาพแล้ว ไม่ต้องย้อมสีตามเวลาเต็มที่ */
+  litScene: ["BG11-kitchen", "BG12-kitchen2", "BG13-commkitchen", "BG14-yard-night"],
 
   /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
   arcScene: {
@@ -692,7 +701,7 @@ window.WW3_BALANCE = {
         { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
         { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
-      { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
+      { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: 4 } },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
       { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
@@ -716,13 +725,13 @@ window.WW3_BALANCE = {
     start: { poor: { food: 1, fuel: 1 }, middle: { food: 2, water: 2, fuel: 2 }, wealthy: { food: 3, water: 3, fuel: 2, val: 2 } },
     /* สร้างได้ครั้งละอย่าง ใช้เวลาหนึ่งคืน (แทนการเลือกทำตอนกลางคืน) · ผลทุกวันจนจบเกม */
     builds: [
-      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "PROP_012", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
-      { key: "garden", th: "แปลงผัก",               prop: "PROP_004", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
+      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "BUILD_filter", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
+      { key: "garden", th: "แปลงผัก",               prop: "BUILD_garden", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
       { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5 },
       { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
       { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
       { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
-      { key: "solar",  th: "แผงโซลาร์",             prop: "PROP_030", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
     ],
     buildNight: { energy: -6 },
     /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
