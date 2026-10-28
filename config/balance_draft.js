@@ -72,7 +72,8 @@ window.WW3_BALANCE = {
        (วิธีวนนี้เป็นร่าง เอกสารห้ามสมมติวิธีวน — รอผู้กำกับอนุมัติหรือแก้) */
   schedule: {
     baseWeight: 1,
-    needWeight: 2.5,            // น้ำหนักเพิ่ม = needWeight × (1 - ค่าสถานะหลัก/100)
+    needWeight: 1,              // น้ำหนักเพิ่ม = needWeight × (1 - ค่าสถานะหลัก/100) · 28 ต.ค. ลดจาก 2.5 (เรื่องน้ำมาติด ๆ กันตอนน้ำต่ำ)
+    arcGapDays: 1,              // 28 ต.ค.: หมวดที่เพิ่งมาเมื่อวาน ห้ามมาซ้ำวันนี้ (ถ้ายังมีหมวดอื่นเหลือ)
     lockedUntilDay: { "การฟื้นตัว": 21 },
     loopAfterArcComplete: true,
     arcCooldownDays: 15
