@@ -3,7 +3,7 @@
    Works in browser and in Node (for automated playtests). */
 (function (root) {
   "use strict";
-  var SAVE_VERSION = 2; /* 2 = chapter structure (27 Oct) */
+  var SAVE_VERSION = 3; /* 2 = chapter structure (27 Oct) · 3 = stock + build (28 Oct) */
 
   function Engine(data, bal, rng) {
     this.D = data; this.B = bal; this.rng = rng || Math.random;
@@ -96,6 +96,40 @@
     return { id: it.id, h: PS.size[ch.pet] * it.s };
   };
 
+  /* ---------- stock + build (director approved 28 Oct) ---------- */
+  P.startStock = function (ch) {
+    var S = this.B.stock, out = {};
+    if (!S) return out;
+    S.items.forEach(function (it) { out[it.key] = 0; });
+    var st0 = S.start[ch.tier] || {}; for (var k in st0) out[k] = st0[k];
+    return out;
+  };
+  P.itemDef = function (key) { return (this.B.stock.items.filter(function (x) { return x.key === key; })[0]) || null; };
+  P.buildDef = function (key) { return (this.B.stock.builds.filter(function (x) { return x.key === key; })[0]) || null; };
+  P.has = function (st, cost) { st.stock = st.stock || {}; for (var k in cost) if ((st.stock[k] || 0) < cost[k]) return false; return true; };
+  P.pay = function (st, cost) { for (var k in cost) st.stock[k] = (st.stock[k] || 0) - cost[k]; };
+  P.addItems = function (st, items) { st.stock = st.stock || {}; for (var k in items) st.stock[k] = (st.stock[k] || 0) + items[k]; };
+  P.builtMult = function (st, field) {
+    var m = 1, self = this; Object.keys(st.built || {}).forEach(function (k) { var b = self.buildDef(k); if (b && b[field]) m *= b[field]; }); return m;
+  };
+  /* eat / drink / take medicine from the stock (player taps it; summary or night) */
+  P.canUse = function (st, key) { var d = this.itemDef(key); return !!(d && d.use && (st.phase === "summary" || st.phase === "night") && (st.stock || {})[key] > 0); };
+  P.useItem = function (st, key) {
+    if (!this.canUse(st, key)) return null;
+    st.stock[key] -= 1;
+    var real = this.applyDelta(st, this.itemDef(key).use);
+    st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
+    return real;
+  };
+  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, b.cost)); };
+  /* trader visits on summary days */
+  P.traderHere = function (st) { return !!this.B.stock && st.phase === "summary" && st.day >= (st.traderDay || 1e9); };
+  P.trade = function (st, i) {
+    var d = this.B.stock.trader.deals[i];
+    if (!d || !this.traderHere(st) || !this.has(st, d.pay)) return false;
+    this.pay(st, d.pay); this.addItems(st, d.get); return true;
+  };
+
   P.startStatsFor = function (ch) {
     var C = this.B.character, s = {}, k;
     for (k in this.B.startStats) s[k] = this.B.startStats[k];
@@ -118,7 +152,8 @@
       memory: [], dayLog: [], dayStartStats: null, lastResult: null, summary: null,
       alive: true, travelledToday: false, history: [],
       chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null,
-      flags: {}, twistsDone: {}, chDone: 0
+      flags: {}, twistsDone: {}, chDone: 0,
+      stock: this.startStock(ch), built: {}, traderDay: this.B.stock ? this.B.stock.trader.firstDay : 0
     };
     this.startDay(st);
     return st;
@@ -388,7 +423,7 @@
       st.flags = st.flags || {}; st.twistsDone = st.twistsDone || {};
       st.twistsDone[ev.id] = key;
       if (ch.set) Object.keys(ch.set).forEach(function (k) { st.flags[k] = ch.set[k]; });
-      if (ch.noFuelNights) st.flags.noFuelUntil = st.day + ch.noFuelNights;
+      if (ch.noFuelNights) { st.flags.noFuelUntil = st.day + ch.noFuelNights; if (st.stock) st.stock.fuel = 0; }
       if (ch.adoptDog && (st.char.pet || "none") === "none") { st.char.pet = "dog"; st.char.petSprite = null; }
       if (ch.travel) {
         var provs = this.B.character.provinces.filter(function (p) { return p !== st.char.province; });
@@ -447,6 +482,13 @@
       dc[k] = v;
     });
     if (st.flags && st.flags.dog && B.night && B.night.dogFood) dc.fullness = (dc.fullness || 0) + B.night.dogFood;
+    /* things built in the home work every day */
+    var produced = {};
+    if (B.stock) Object.keys(st.built || {}).forEach(function (bk) {
+      var b = self.buildDef(bk), age = st.day - st.built[bk] - (b.delay || 0);
+      if (b.daily) for (var x in b.daily) dc[x] = (dc[x] || 0) + b.daily[x];
+      if (b.gives && age > 0 && age % b.every === 0) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
+    });
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
     for (var k in hr.penalties) {
@@ -470,7 +512,7 @@
     st.lossLog = st.lossLog.filter(function (x) { return x.day > st.day - 7; });
     var total = {};
     for (k in st.stats) { var d = st.stats[k] - st.dayStartStats[k]; if (d) total[k] = d; }
-    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice() };
+    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice(), produced: produced };
     st.history.push({ day: st.day, stats: JSON.parse(JSON.stringify(st.stats)) });
     if (st.history.length > 400) st.history.shift();
     if (st.stats[B.defeat.stat] <= B.defeat.atOrBelow) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = this.deathCause(st); }
@@ -491,39 +533,65 @@
   P.nightActions = function (st) {
     if (!this.B.night) return [];
     var self = this;
-    return this.B.night.actions.filter(function (a) { return !st || self.flagOk(st, a.requires, a.notFlags); });
+    return this.B.night.actions.filter(function (a) { return !st || (self.flagOk(st, a.requires, a.notFlags) && (!a.pay || self.has(st, a.pay))); });
   };
   /* far places are closed while out of fuel (twist T3) */
-  P.placeOpen = function (st, p) { var f = st.flags || {}; return !(p.needsFuel && f.noFuelUntil && st.day < f.noFuelUntil); };
+  P.placeOpen = function (st, p) {
+    var f = st.flags || {};
+    if (p.needsFuel && f.noFuelUntil && st.day < f.noFuelUntil) return false;
+    if (p.fuel && this.B.stock && ((st.stock || {}).fuel || 0) < p.fuel) return false;
+    return true;
+  };
   P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
   P.night = function (st, key, placeId) {
     if (!this.canNight(st)) return null;
-    var N = this.B.night, act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
+    var N = this.B.night, act;
+    if (key === "build") {
+      var bd = this.buildDef(placeId);
+      if (!this.canBuild(st, placeId)) return null;
+      this.pay(st, bd.cost); st.built = st.built || {}; st.built[bd.key] = st.day;
+      act = { key: "build", th: "สร้าง" + bd.th, effects: this.B.stock.buildNight };
+      placeId = null;
+    } else act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
     if (!act) return null;
     var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
     if (act.places && (!place || !this.placeOpen(st, place))) return null;
     var fl = st.flags || {};
+    if (place && place.fuel && this.B.stock) st.stock.fuel -= place.fuel;
+    if (act.pay) this.pay(st, act.pay);
     var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
     for (k in src.effects) delta[k] = src.effects[k];
     var injury = 0, raid = false;
-    var riskM = (fl.safeRoute && st.chapter === 3) ? 0.5 : 1;
+    var riskM = ((fl.safeRoute && st.chapter === 3) ? 0.5 : 1) * this.builtMult(st, "riskMult");
+    if (key === "sleep") { var self0 = this; Object.keys(st.built || {}).forEach(function (bk) { var b = self0.buildDef(bk); if (b && b.sleep) for (var x in b.sleep) delta[x] = (delta[x] || 0) + b.sleep[x]; }); }
     if (src.risk && this.rng() < src.risk * mult * riskM) {
       injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
       delta.health = (delta.health || 0) - injury;
       /* hurt on the way: come back with half */
       for (k in src.effects) if (src.effects[k] > 0) delta[k] = Math.round(src.effects[k] / 2);
     }
+    /* loot goes into the stock (half when hurt, no lucky extras) */
+    var loot = {};
+    if (src.loot) {
+      for (k in src.loot) loot[k] = injury ? Math.floor(src.loot[k] / 2) : src.loot[k];
+      if (!injury && src.chance) for (k in src.chance) if (this.rng() < src.chance[k]) loot[k] = (loot[k] || 0) + 1;
+      this.addItems(st, loot);
+    }
     /* raid on the home when nobody guards it */
     var R = N.raid;
     if (R && key !== "guard") {
       var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
       if (fl.dog) ch *= (R.dogMult || 1);
-      if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
+      ch *= this.builtMult(st, "raidMult");
+      if (ch && this.rng() < ch * mult) {
+        raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k];
+        if (R.stockLoss && st.stock) { var lost = {}; for (k in st.stock) { var n = Math.floor(st.stock[k] * R.stockLoss); if (n > 0) { lost[k] = n; st.stock[k] -= n; } } raid = lost; }
+      }
     }
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
-    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, loot: loot, build: key === "build" ? Object.keys(st.built).filter(function (b) { return st.built[b] === st.day; })[0] : null };
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
@@ -549,7 +617,12 @@
 
   P.nextDay = function (st) {
     if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
-    if (st.phase === "summary" || st.phase === "night") { st.nightDone = false; st.nightResult = null; this.startDay(st); }
+    if (st.phase === "summary" || st.phase === "night") {
+      st.nightDone = false; st.nightResult = null; st.usedToday = {};
+      var T = this.B.stock && this.B.stock.trader;
+      if (T && st.day >= (st.traderDay || 0)) st.traderDay = st.day + this.randInt(T.everyMin, T.everyMax);
+      this.startDay(st);
+    }
   };
 
   /* Days survived = completed days. */
