@@ -6,7 +6,7 @@
 import base64, os, json, shutil, hashlib
 from PIL import Image, ImageDraw
 R=os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))+'/'
-INL=['data/events.js','data/life_variants.js','data/branches.js','data/chapters.js','data/twists.js','online/config.js','config/balance_draft.js','engine.js']
+INL=['data/events.js','data/life_variants.js','data/branches.js','data/chapters.js','data/twists.js','data/nights.js','online/config.js','config/balance_draft.js','engine.js']
 KINDS=['npc','bg','props','player','pets','walk','vo']   # vo = optional recorded narration (intro_1.mp3 …); empty folder = device TTS
 MIME={'webp':'image/webp','mp3':'audio/mpeg','m4a':'audio/mp4','ogg':'audio/ogg'}
 def ls(k): d=R+'assets/'+k; return sorted(f for f in os.listdir(d) if not f.startswith('.')) if os.path.isdir(d) else []

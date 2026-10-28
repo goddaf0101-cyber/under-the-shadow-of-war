@@ -699,7 +699,7 @@ window.WW3_BALANCE = {
         /* คลังของ (28 ต.ค.): ออกค้นหาได้ "ของ" เข้าคลัง (loot = แน่นอน, chance = โอกาสได้เพิ่ม 1 ชิ้น) แทนการเพิ่มหลอดทันที · fuel = ใช้น้ำมันในคลัง */
         { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { clean: 2, energy: -8 }, loot: { food: 1, water: 1, mat: 1 }, chance: { fuel: 0.15, val: 0.15 }, risk: 0.03 },
         { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
-        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+        { id: "depot", th: "โกดังริมถนนใหญ่", scene: "BG18-depot", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: -6, mental: -1 } /* ผู้กำกับอนุมัติ 28 ต.ค.: นั่งเฝ้าทั้งคืนไม่ได้พัก */ },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
@@ -708,6 +708,8 @@ window.WW3_BALANCE = {
     ],
     dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
     /* ถูกปล้น (ผู้กำกับอนุมัติ 28 ต.ค. รอบ 2): พื้นฐาน 3% + 1% ทุกของในคลัง 5 ชิ้น · ×2 ถ้าปลอดภัย < 50 · ×4 ถ้า < 30 · × ความยากตามวัน · เฝ้าบ้าน = ไล่โจรได้ */
+    /* เหตุการณ์ระหว่างออกค้นหา (28 ต.ค. ร่าง): โอกาสต่อคืนที่ออกค้นหา · เรื่องใน data/nights.js เกิดครั้งเดียวต่อรอบ */
+    encounter: { chance: 0.45 },
     raid: { base: 0.03, perItems: 5, perStep: 0.01, safetyMult: [{ below: 30, m: 4 }, { below: 50, m: 2 }], loss: { mental: -4 }, stockLoss: 0.5 /* ถูกปล้น = เสียของในคลังครึ่งหนึ่ง (28 ต.ค.) */, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
   },
 
