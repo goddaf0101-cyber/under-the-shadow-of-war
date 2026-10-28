@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>WW3 · ผู้ดูแล</title><meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* หน้าผู้ดูแล WW3 (28 ต.ค.) — แบบเดียวกับหน้าผู้ดูแลของ Wuxian M · ธีมมืดเดียวกับเกม */
+:root{--bg:#141413;--panel:#1c1c1a;--panel-2:#232320;--line:#33322d;--fg:#ece8dd;--muted:#9d988a;--accent:#d6a63a;--good:#7fb069;--bad:#d9644a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:"IBM Plex Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.5}
+body{padding:18px max(16px,env(safe-area-inset-left)) 40px}
+.wrap{max-width:900px;margin:0 auto;display:grid;gap:14px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+h1{font-family:"Chakra Petch",sans-serif;font-size:24px;margin:0;color:var(--accent)}
+.sub{color:var(--muted);font-size:13px}
+.btn{background:var(--panel-2);border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--accent);color:#1b1606;border-color:var(--accent);text-decoration:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.card h2{font-size:16px;margin:0 0 10px}
+.card h2 small{color:var(--muted);font-weight:400}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.tile{background:var(--panel-2);border-radius:11px;padding:12px 14px}
+.tile b{display:block;font-family:"IBM Plex Mono",monospace;font-size:28px;line-height:1.2}
+.tile span{color:var(--muted);font-size:13px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--good);margin-right:5px;vertical-align:1px}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+td.n{font-family:"IBM Plex Mono",monospace;text-align:right}
+.bar{height:8px;background:#2c2b27;border-radius:5px;overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.login{display:grid;gap:10px;max-width:360px}
+input{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;color:var(--fg);font:inherit;padding:10px 12px}
+.err{color:var(--bad)}
+.cols{display:grid;gap:14px}@media(min-width:760px){.cols{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><div class="wrap" id="app"></div>
+<script>
+var KEY="ww3ts.adminkey.v1";
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v);}catch(e){return null;}}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function n(v){return (v==null?0:+v).toLocaleString("th-TH");}
+var CAUSE={fullness:"อดอาหาร",hydration:"ขาดน้ำ",clean:"ติดเชื้อและล้มป่วย",mental:"หมดกำลังใจ",energy:"อ่อนเพลีย",accident:"บาดเจ็บจากอุบัติเหตุ",other:"สุขภาพทรุดลง","":"-"};
+var END={A:"ที่พึ่งของคนอื่น",B:"รอดด้วยตัวเอง",C:"คนที่รู้ความจริง",D:"ผู้ร่วมสร้างชุมชน"};
+var SCREEN={title:"หน้าแรก",newchar:"สุ่มตัวละคร",event:"เหตุการณ์",result:"ผลการเลือก",summary:"สรุปวัน",night:"ผลกลางคืน",explore:"กำลังออกค้นหา",dead:"หน้าตาย",ending:"ตอนจบ","-":"-"};
+function tile(v,t,dot){return '<div class="tile"><b>'+n(v)+'</b><span>'+(dot?'<i class="dot"></i>':'')+esc(t)+'</span></div>';}
+function bars(rows,label,val){var mx=Math.max(1,...rows.map(function(r){return +r[val]||0;}));
+  return '<table>'+rows.map(function(r){var v=+r[val]||0;return '<tr><td>'+esc(label(r))+'</td><td style="width:40%"><div class="bar"><i style="width:'+(v/mx*100)+'%"></i></div></td><td class="n">'+n(v)+'</td></tr>';}).join("")+'</table>';}
+function login(msg){
+  document.getElementById("app").innerHTML='<header><h1>📊 WW3 · ผู้ดูแล</h1></header><div class="card login"><h2>ใส่รหัสผู้ดูแล</h2><p class="sub">รหัสเดียวกับค่า ADMIN_KEY ที่ตั้งไว้ใน Cloudflare · เครื่องนี้จะถูกนับเป็นเครื่องผู้ดูแลและไม่นับในสถิติ</p>'+(msg?'<p class="err">'+esc(msg)+'</p>':'')+'<input id="k" type="password" autocomplete="current-password" placeholder="รหัสผู้ดูแล"><button class="btn primary" id="go">เข้า</button></div>';
+  document.getElementById("go").onclick=function(){ls(KEY,document.getElementById("k").value.trim());ls("ww3ts.admin.v1","true");load();};
+}
+function load(){
+  var k=ls(KEY); if(!k){login();return;}
+  fetch("api/stats",{headers:{"x-admin-key":k},cache:"no-store"}).then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(x){if(!x.ok||!x.j.ok){login(x.j&&x.j.message||"โหลดไม่ได้");return;}render(x.j);})
+    .catch(function(){login("ต่อเซิร์ฟเวอร์ไม่ได้ (หน้านี้ใช้ได้บนลิงก์ Cloudflare เท่านั้น)");});
+}
+function render(d){
+  var c=d.counts||{},p=d.play||{},e=d.ends||{},b=d.daysBuckets||{};
+  var t=new Date(d.now+7*3600e3).toISOString().replace("T"," ").slice(0,16);
+  var ch=e.A+e.B+e.C+e.D||1;
+  var h='<header><div><h1>📊 WW3 · ผู้ดูแล</h1><div class="sub">อัปเดต '+t+' น. (เวลาไทย) · รีเฟรชเองทุก 30 วินาที</div></div><div style="display:flex;gap:8px"><button class="btn" id="re">รีเฟรช</button><a class="btn primary" href="./">เข้าเกม</a></div></header>'+
+  '<div class="card"><h2>👥 คนเล่นจริง <small>(เล่นเกิน 3 นาที · ไม่นับเครื่องผู้ดูแล)</small></h2><div class="grid">'+
+    tile(c.realPlay,"เล่นจริงทั้งหมด")+tile(c.realOnline,"เล่นจริงที่ออนไลน์",1)+tile(c.realToday,"เล่นจริง · ใหม่วันนี้")+tile(c.openedOnly,"เปิดดูแต่ไม่ได้เริ่มเล่น")+tile(c.shortPlay,"เล่นแป๊บเดียว (<3 นาที)")+tile(c.adminDev,"เครื่องผู้ดูแล")+'</div></div>'+
+  '<div class="card"><h2>ทุกเครื่อง</h2><div class="grid">'+tile(c.online,"ออนไลน์ตอนนี้",1)+tile(c.today,"เล่นวันนี้")+tile(c.d1,"เล่นใน 24 ชม.")+tile(c.newToday,"ผู้เล่นใหม่วันนี้")+tile(c.total,"ผู้เล่นทั้งหมด")+tile(c.bestDays,"รอดนานสุด (วัน)")+'</div></div>'+
+  '<div class="card"><h2>📖 ไปถึงบทไหน <small>(นับคนที่เคยไปถึง)</small></h2><div class="grid">'+tile(c.ch2,"ถึงบท 2")+tile(c.ch3,"ถึงบท 3")+tile(c.ch4,"ถึงบท 4")+'</div></div>'+
+  '<div class="cols">'+
+  '<div class="card"><h2>⏱️ เวลาเล่นรวมต่อเครื่อง</h2>'+bars([{l:"ไม่ถึง 3 นาที",v:p.m3},{l:"3–10 นาที",v:p.m10},{l:"10–30 นาที",v:p.m30},{l:"30–60 นาที",v:p.m60},{l:"เกิน 1 ชั่วโมง",v:p.m60p}],function(r){return r.l;},"v")+'</div>'+
+  '<div class="card"><h2>☠️ จบรอบ <small>('+n(e.n)+' รอบ · วันนี้ '+n(e.today)+' · รอดถึงตอนจบ '+n(e.endings)+' · เฉลี่ย '+(e.avgDays||0)+' วัน)</small></h2>'+bars([{l:"ไม่ถึง 10 วัน",v:b.d10},{l:"10–29 วัน",v:b.d30},{l:"30–59 วัน",v:b.d60},{l:"60–99 วัน",v:b.d100},{l:"100 วันขึ้นไป",v:b.d100p}],function(r){return r.l;},"v")+'</div>'+
+  '<div class="card"><h2>สาเหตุการตาย</h2>'+(d.causes.length?bars(d.causes,function(r){return CAUSE[r.cause]||r.cause;},"n"):'<p class="sub">ยังไม่มีข้อมูล</p>')+'</div>'+
+  '<div class="card"><h2>ทางเลือกที่ผู้เล่นเลือก <small>(รวมทุกรอบ)</small></h2>'+bars([{l:"A ช่วยเหลือ",v:e.A},{l:"B เก็บไว้เอง",v:e.B},{l:"C ตรวจสอบ",v:e.C},{l:"D ประสานงาน",v:e.D}],function(r){return r.l+" · "+Math.round((r.v||0)/ch*100)+"%";},"v")+
+    '<p class="sub" style="margin:8px 0 0">ออกค้นหา '+n(e.exN)+' ครั้ง · ถูกเจอ '+n(e.exCaught)+' ครั้ง ('+(e.exN?Math.round(e.exCaught/e.exN*100):0)+'%)</p></div>'+
+  '<div class="card"><h2>ตอนจบที่ได้</h2>'+(d.endingsBy.length?bars(d.endingsBy,function(r){return END[r.ending]||r.ending;},"n"):'<p class="sub">ยังไม่มีใครรอดถึงตอนจบ</p>')+'</div>'+
+  '<div class="card"><h2>🚪 หน้าจอสุดท้ายก่อนหายไป <small>(ไม่ได้เข้าเกิน 30 นาที)</small></h2>'+(d.screens.length?'<table><tr><th>หน้าจอ</th><th style="text-align:right">คน</th><th style="text-align:right">เล่นเฉลี่ย (นาที)</th></tr>'+d.screens.map(function(r){return '<tr><td>'+esc(SCREEN[r.s]||r.s)+'</td><td class="n">'+n(r.n)+'</td><td class="n">'+(r.avgMin||0)+'</td></tr>';}).join("")+'</table>':'<p class="sub">ยังไม่มีข้อมูล</p>')+'</div>'+
+  '</div>'+
+  '<div class="card"><h2>อาชีพ · รอดเฉลี่ย</h2>'+(d.occ.length?'<table><tr><th>อาชีพ</th><th style="text-align:right">รอบ</th><th style="text-align:right">เฉลี่ย (วัน)</th><th style="text-align:right">ดีสุด</th></tr>'+d.occ.map(function(r){return '<tr><td>'+esc(r.occupation)+'</td><td class="n">'+n(r.n)+'</td><td class="n">'+r.avgDays+'</td><td class="n">'+n(r.best)+'</td></tr>';}).join("")+'</table>':'<p class="sub">ยังไม่มีข้อมูล</p>')+'</div>'+
+  '<div class="cols"><div class="card"><h2>🏆 อันดับสูงสุด</h2>'+(d.top.length?'<table>'+d.top.map(function(r,i){return '<tr><td class="n" style="text-align:left">'+(i+1)+'</td><td><b>'+esc(r.nickname)+'</b> · '+esc(r.char_name)+'<br><span class="sub">'+esc(r.occupation)+' · '+esc(r.cause)+'</span></td><td class="n">'+n(r.days)+' วัน</td></tr>';}).join("")+'</table>':'<p class="sub">ยังไม่มีใครส่งสถิติ</p>')+'</div>'+
+  '<div class="card"><h2>เวอร์ชันเกมที่ผู้เล่นใช้</h2><table>'+d.builds.map(function(r){return '<tr><td style="font-family:monospace">'+esc(r.b)+'</td><td class="n">'+n(r.n)+'</td><td class="n">วันนี้ '+n(r.today)+'</td></tr>';}).join("")+'</table></div></div>'+
+  '<p class="sub">คนเล่นจริง = เล่นรวมเกิน 3 นาที · ออนไลน์ = ส่งสัญญาณภายใน 2 นาที · เก็บแค่รหัสสุ่มประจำเครื่อง ไม่มีข้อมูลส่วนตัว · <a href="#" id="out" style="color:var(--muted)">ออกจากระบบ</a></p>';
+  document.getElementById("app").innerHTML=h;
+  document.getElementById("re").onclick=load;
+  document.getElementById("out").onclick=function(ev){ev.preventDefault();try{localStorage.removeItem(KEY);}catch(e){}login();};
+}
+load(); setInterval(function(){ if(!document.hidden&&ls(KEY)) load(); },30000);
+</script></body></html>
