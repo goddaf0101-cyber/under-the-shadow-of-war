@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="68ec7db327";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="ebcd41f5ce";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -200,6 +200,9 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
 .note{font-size:12.5px;color:var(--faint)}
 .dead h3{color:var(--bad)}
+/* low energy (28 Oct): the sleep button stands out when energy < 30 */
+.nopt.rec{border-color:var(--warn)!important;background:rgba(214,166,58,.16)!important;box-shadow:0 0 0 1px var(--warn) inset}
+.nopt.rec small{color:var(--warn)!important;font-weight:600}
 .skills{margin-top:10px;display:grid;gap:6px}
 /* new-character screen fits 375x600 with skills (28 Oct) */
 .newc{gap:10px;margin-top:0}.newc .card{padding:12px 14px}
@@ -1048,7 +1051,7 @@ window.WW3_BALANCE = {
 
   /* การเปลี่ยนแปลงท้ายวัน (กิน-ดื่ม-ใช้ชีวิตตามปกติ, นอน) [ร่าง] */
   /* ผู้กำกับอนุมัติ 27 ต.ค. (รอบ 2): ลดเหลือวันละ 2 เหตุการณ์ จึงลดค่าที่ลดต่อวันเหลือ 70% ของเดิม (เดิม อิ่ม −4.5 น้ำ −4.5 จิตใจ −6 ปลอดภัย −4.5 สะอาด −4) · ทศนิยม = สุ่มปัดเศษ ค่าเฉลี่ยตรง */
-  dailyChange: { fullness: -3.15, hydration: -3.15, energy: 0 /* พลังงานฟื้นจากการนอนตอนกลางคืนแทน (27 ต.ค. รอบ 3) */, mental: -4.2, safety: -3.15, clean: -2.8 },
+  dailyChange: { fullness: -3.15, hydration: -3.15, energy: 3 /* 28 ต.ค. ผู้กำกับอนุมัติ: ฟื้นเองวันละ +3 (เดิม 0 · ตายเพราะพลังงานหมดราววันที่ 30) */, mental: -4.2, safety: -3.15, clean: -2.8 },
 
   /* กฎสุขภาพท้ายวัน [ร่าง] — สุขภาพลดเมื่อค่าอื่นต่ำ ฟื้นเมื่อพื้นฐานดี */
   healthRules: {
@@ -1133,7 +1136,7 @@ window.WW3_BALANCE = {
      A ช่วยเหลือ: จิตใจ +7 ปลอดภัย +3 แต่เสียค่าหลักของหมวด −2 (หรืออิ่ม −2) พลังงาน −4
      B เก็บไว้เอง: ค่าหลัก +10 ค่ารอง +2 แต่จิตใจ −3 ปลอดภัย −2 พลังงาน −2
      C ตรวจสอบ: ค่าหลัก +4 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย) · 28 ต.ค. ปรับจาก +5 หลังเพิ่มคลังของ
-     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −10 (เหนื่อยมาก) · 28 ต.ค. ปรับจาก −8 หลังเพิ่มคลังของ
+     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −10 (เหนื่อยมาก · 28 ต.ค. ผู้กำกับเลือกคงไว้ ไม่ให้ D ชนะตลอด) · 28 ต.ค. ปรับจาก −8 หลังเพิ่มคลังของ
      ค่ารองต่อหมวด: ไฟฟ้า=fullness, การแลกเปลี่ยน=fullness, เกษตร=hydration, งานและทักษะ=hydration, การปกครอง=fullness, น้ำสะอาด=clean, สภาพอากาศ=clean, ที่พัก=safety, ชุมชน=safety, อาหาร=health
      ตัวเลขเดิมก่อนรอบนี้ดูได้ใน git history */
   choiceEffects: {
@@ -1755,7 +1758,7 @@ window.WW3_BALANCE = {
         { id: "depot", th: "โกดังริมถนนใหญ่", scene: "BG18-depot", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", scene: "BG14-yard-night", effects: { safety: 8, energy: -6, mental: -1 } /* ผู้กำกับอนุมัติ 28 ต.ค.: นั่งเฝ้าทั้งคืนไม่ได้พัก */ },
-      { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
+      { key: "sleep", th: "นอนพัก", effects: { energy: 22, mental: 3 } /* 28 ต.ค.: เดิม 18 */ },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
       { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
     ],
@@ -3049,7 +3052,7 @@ function renderGame(){
       chapIntroHTML(s.day)+
       (B.stock&&E.traderHere(st)?'<button class="trader" id="traderOpen">'+(A.npc[TRADER_NPC]?'<img alt="" src="'+A.npc[TRADER_NPC]+'">':'')+'<span><b>'+esc(B.stock.trader.name)+'มาเคาะประตู</b><small>แลกของได้เฉพาะวันนี้</small></span><span class="go">ดูของ ›</span></button>':'')+
       (B.stock?stockBarHTML():'')+
-      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard";return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
+      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard",tired=a.key==="sleep"&&st.stats.energy<30;return '<button class="nopt'+(tired?' rec':'')+'" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':tired?'พลังงานต่ำ ควรพัก':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
       '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+""+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
   } else if(st.phase==="night"&&E.encounterPending(st)){
     var en0=E.encounterDef(st.nightResult.enc), pl0=nightPlace(st.nightResult);
