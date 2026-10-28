@@ -671,9 +671,14 @@ window.WW3_BALANCE = {
     "R151": "BG14-yard-night", "R155": "BG14-yard-night", "R152": "FRONT"
   },
   /* หน้าบ้านตามฐานะ (28 ต.ค.): ใช้ตอนเจ๊เง็กมาเคาะประตู และเหตุการณ์ FRONT */
-  frontScene: { poor: "BG15-front-poor", middle: "BG16-front-mid", wealthy: "BG17-front-rich" },
+  frontScene: { poor: "BG15-front-poor", middle: "BG16-front-mid", wealthy: "BG16-front-mid" },
+  /* บ้านเปลี่ยนให้เห็น (ผู้กำกับอนุมัติ 28 ต.ค.): สร้างของนอกบ้านครบ min อย่าง → หน้าบ้านเป็นภาพที่มีของเหล่านั้น (ยังไม่มีภาพบ้านไม้แบบไม่มีของ) */
+  frontBuilt: { scene: "BG17-front-rich", any: ["solar", "filter", "garden"], min: 2, tiers: ["middle", "wealthy"] },
   /* ฉากที่เป็นภาพกลางคืน/มีไฟในภาพแล้ว ไม่ต้องย้อมสีตามเวลาเต็มที่ */
   litScene: ["BG11-kitchen", "BG12-kitchen2", "BG13-commkitchen", "BG14-yard-night"],
+
+  /* ฝนตก (28 ต.ค. ร่าง): โอกาสต่อวัน · ถังรองน้ำฝนได้น้ำในวันที่ฝนตก */
+  weather: { rainChance: 0.25 },
 
   /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
   arcScene: {
@@ -733,7 +738,11 @@ window.WW3_BALANCE = {
       { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
       { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
       { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
-      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+      { key: "solar",  th: "แผงโซลาร์",             prop: "BUILD_solar", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } },
+      /* ของช่วยอยู่รอด (ผู้กำกับอนุมัติแนว 28 ต.ค. · ตัวเลขร่าง) */
+      { key: "stove",  th: "เตาหุงข้าว",             prop: "BUILD_stove", cost: { mat: 2, fuel: 1 }, useBonus: { food: { fullness: 6 } } },
+      { key: "barrel", th: "ถังรองน้ำฝน",            prop: "BUILD_barrel", cost: { mat: 2 },          rainGives: { water: 1 } },
+      { key: "shelf",  th: "ชั้นเก็บของมิดชิด",        prop: "BUILD_shelf", cost: { mat: 3 },          spoilMult: 0.6 }
     ],
     buildNight: { energy: -6 },
     /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */

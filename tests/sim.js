@@ -20,14 +20,14 @@ const randomNight = (e, st) => { const acts = e.nightActions(st), a = acts[Math.
 /* single-approach players: on a twist pick the choice tagged with that approach (or the first) */
 const byTag = t => (e, st, ev) => { if (!ev.twist) return t; const c = ev.choices.find(c => c.tag === t) || ev.choices[0]; return c.k; };
 /* stock handling (28 Oct): careful players eat/drink/heal when a bar is low, trade, and build when they can spare a night */
-const BUILD_ORDER = ['filter', 'lock', 'garden', 'bed', 'bath', 'solar', 'radio'];
+const BUILD_ORDER = ['filter', 'lock', 'garden', 'bed', 'bath', 'solar', 'radio', 'shelf', 'stove', 'barrel'];
 function carefulStock(e, st) {
   const S = st.stock || {}, use = (k, stat, below) => { while (st.stats[stat] < below && e.canUse(st, k)) e.useItem(st, k); };
   use('food', 'fullness', 70); use('water', 'hydration', 70); use('meds', 'health', 65);
   if (e.traderHere(st)) { const deals = B.stock.trader.deals; for (let i = 0; i < deals.length; i++) { const g = Object.keys(deals[i].get)[0];
     if ((g === 'food' && S.food < 3) || (g === 'water' && S.water < 3) || (g === 'fuel' && S.fuel < 1) || (g === 'mat' && S.mat < 3)) e.trade(st, i); } }
   const order = st.stats.clean < 60 ? ['bath'].concat(BUILD_ORDER) : BUILD_ORDER;
-  if (st.stats.energy > 35) for (const b of order) if (e.canBuild(st, b)) return ['build', b];
+  if (st.stats.energy > 35 && st.stats.clean > 45) for (const b of order) if (e.canBuild(st, b)) return ['build', b];   /* 28 Oct: careful players do not build while filthy */
   return null;
 }
 function randomStock(e, st) {
