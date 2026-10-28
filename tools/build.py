@@ -64,9 +64,13 @@ self.addEventListener('fetch',e=>{
   const u=new URL(r.url);
   if(u.hostname.endsWith('supabase.co')) return;
   if(u.pathname.endsWith('/version.json')) return;   /* always from the network: update notice */
+  if(u.pathname.indexOf('/api/')>=0||u.pathname.endsWith('/admin.html')) return;   /* server + admin page never cached */
   if(r.mode==='navigate'){ e.respondWith(fetch(r).then(res=>{caches.open(V).then(c=>c.put('index.html',res.clone()));return res;}).catch(()=>caches.match('index.html'))); return; }
   e.respondWith(caches.match(r).then(hit=>hit||fetch(r).then(res=>{ if(res.ok||res.type==='opaque'){const cp=res.clone();caches.open(V).then(c=>c.put(r,cp));} return res; })));
 });
 """%(ver,json.dumps(files)))
 open(W+'.nojekyll','w').write('')
+# Cloudflare Pages (28 Oct): server code + admin page ride along in web/ so the deploy branch carries them at its root
+if os.path.isdir(R+'functions'): shutil.copytree(R+'functions',W+'functions')
+if os.path.isfile(R+'admin.src.html'): shutil.copy(R+'admin.src.html',W+'admin.html')
 print('web/index.html %.0f KB · cache %s · build %s'%(os.path.getsize(W+'index.html')/1024,ver,build))
