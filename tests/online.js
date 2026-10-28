@@ -14,7 +14,7 @@ for(const withMock of [false,true]){const p=await b.newPage({viewport:{width:390
  await p.evaluate(()=>{const s=window.__ww3.state;s.stats.health=3;s.stats.hydration=0;});
  for(let i=0;i<4&&!(await p.$('.card.dead'));i++){await p.click('.choice >> nth=1');await p.click('#next');}
  await p.waitForTimeout(400);
- const t2=await p.textContent('.card.dead [data-online-board]');
+ await p.click('#boardsOpen');const t2=await p.textContent('#bsheet [data-online-board]');
  const ov=await p.evaluate(()=>{const c=document.querySelector('.main > .card');return [c.scrollHeight-c.clientHeight,document.documentElement.scrollHeight-innerHeight]});
  await p.screenshot({path:ROOT+'/dist/shots/online_'+withMock+'.png'});
  console.log(withMock?'MOCK':'NO-CLAUDE','| title:',t1.slice(0,80),'| dead:',t2.replace(/\s+/g,' ').slice(0,160),'| overflow',ov, withMock?JSON.stringify(await p.evaluate(()=>window.__docs['board/me1'])):'');
