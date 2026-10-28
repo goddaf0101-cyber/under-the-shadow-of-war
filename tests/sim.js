@@ -2,7 +2,7 @@
    policies pick a day choice (A–D) and a night action; reports days survived, % reaching the ending, endings, causes of death */
 const ROOT = require('path').resolve(__dirname, '..');
 global.window = global;
-require(ROOT + '/data/events.js'); require(ROOT + '/data/chapters.js'); require(ROOT + '/data/twists.js'); require(ROOT + '/config/balance_draft.js');
+require(ROOT + '/data/events.js'); require(ROOT + '/data/chapters.js'); require(ROOT + '/data/twists.js'); require(ROOT + '/data/nights.js'); require(ROOT + '/config/balance_draft.js');
 const E = require(ROOT + '/engine.js');
 const B = WW3_BALANCE;
 
@@ -42,12 +42,24 @@ const pol = {
   allA: [byTag('A'), greedyNight, carefulStock], allB: [byTag('B'), greedyNight, carefulStock], allC: [byTag('C'), greedyNight, carefulStock], allD: [byTag('D'), greedyNight, carefulStock]
 };
 
-function run([pe, pn, ps]) {
+/* night encounters (28 Oct): careful players weigh stats + loot, single-approach players follow their tag, random picks any allowed */
+function encPick(e, st, mode, tag) {
+  const ev = e.encounterDef(st.nightResult.enc), ok = ev.choices.filter(c => e.canEncounter(st, c));
+  if (mode === 'random') return ok[Math.floor(Math.random() * ok.length)].k;
+  if (tag) { const c = ok.find(c => c.tag === tag); if (c) return c.k; }
+  let best = ok[0], bs = -1e9;
+  for (const c of ok) { const it = {}; for (const k in (c.items || {})) if (c.items[k] > 0) it[k] = c.items[k];
+    let s = score(st, c.eff || {}) + lootValue(st, { loot: it }) - (c.risk || 0) * 12; for (const k in (c.items || {})) if (c.items[k] < 0) s += c.items[k] * 4;
+    if (s > bs) { bs = s; best = c; } }
+  return best.k;
+}
+function run([pe, pn, ps], name) {
   const e = new E(WW3_DATA, B), st = e.newGame(); let guard = 0;
   while (st.alive && st.phase !== 'ending' && guard++ < 5000) {
     if (st.phase === 'event') { const { ev } = e.currentEvent(st); e.choose(st, pe(e, st, ev)); }
     else if (st.phase === 'result') e.next(st);
     else if (st.phase === 'summary') { const b = ps(e, st); const [a, p] = b || pn(e, st); e.night(st, a, p); if (st.phase === 'night' && ps === carefulStock) carefulStock(e, st); }
+    else if (e.encounterPending(st)) e.encounter(st, encPick(e, st, name === 'random' ? 'random' : 'best', /^all/.test(name) ? name.slice(3) : null));
     else e.nextDay(st);
   }
   BUILT.push(Object.keys(st.built || {}).length);
@@ -58,7 +70,7 @@ let BUILT = [];
 const N = +process.argv[2] || 300;
 for (const [n, p] of Object.entries(pol)) {
   const r = [], ends = {}, causes = {}; let endN = 0; BUILT = [];
-  for (let i = 0; i < N; i++) { const o = run(p); r.push(o.days); if (o.end) { endN++; ends[o.end] = (ends[o.end] || 0) + 1; } if (o.cause) causes[o.cause] = (causes[o.cause] || 0) + 1; }
+  for (let i = 0; i < N; i++) { const o = run(p, n); r.push(o.days); if (o.end) { endN++; ends[o.end] = (ends[o.end] || 0) + 1; } if (o.cause) causes[o.cause] = (causes[o.cause] || 0) + 1; }
   r.sort((a, b) => a - b);
   console.log(n.padEnd(7), 'median', r[N >> 1], 'p10', r[Math.floor(N * .1)], 'p90', r[Math.floor(N * .9)], 'ending', (endN / N * 100).toFixed(0) + '%', JSON.stringify(ends), 'died', JSON.stringify(causes), 'built avg', (BUILT.reduce((a, b) => a + b, 0) / N).toFixed(1));
 }

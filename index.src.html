@@ -364,6 +364,7 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 <script>/*INLINE:data/branches.js*/</script>
 <script>/*INLINE:data/chapters.js*/</script>
 <script>/*INLINE:data/twists.js*/</script>
+<script>/*INLINE:data/nights.js*/</script>
 <script>/*INLINE:online/config.js*/</script>
 <script>/*INLINE:config/balance_draft.js*/</script>
 <script>/*INLINE:engine.js*/</script>
@@ -742,7 +743,8 @@ function sceneHTML(ev,hour){
   var trader=(!ev&&st.phase==="summary"&&B.stock&&E.traderHere(st)&&A.npc[TRADER_NPC])?'<div class="actor" style="left:74%"><div class="shadow"></div><img class="spr" alt="'+esc(B.stock.trader.name)+'" src="'+A.npc[TRADER_NPC]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(B.stock.trader.name)+'</span>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  var dead=st.phase==="dead";
+  var dead=st.phase==="dead", nre=!ev&&st.phase==="night"&&st.nightResult&&st.nightResult.enc&&E.encounterDef(st.nightResult.enc);
+  if(nre&&opts.npc&&A.npc[nre.npc]) npc='<div class="actor'+(E.encounterPending(st)?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[nre.npc]?' fade'+NPC_CUT[nre.npc]:'')+'" alt="'+esc(nre.role)+'" src="'+A.npc[nre.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(nre.role)+'</span>';
   if(dead){ player=graveHTML(); npc=""; }
   return '<div class="scene'+(dead?' rip':'')+'"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+((loc&&(B.litScene||[]).indexOf(lk)>=0)?'linear-gradient(180deg,rgba(10,12,30,.12),rgba(10,10,20,.22))':tint(hour))+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
@@ -806,6 +808,7 @@ function chapIntroHTML(day){
 }
 function isFinalNight(){var C=D.chapters;if(!C||st.chapter<C.list.length)return false;return !E.availableArcs(st).length;}
 function nextDayLabel(){return isFinalNight()?"ดูบทสรุปชีวิต":"เช้าวันที่ "+(st.day+1);}
+function nightPlace(nr){var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{};return act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];}
 function nightText(nr){
   var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{}, pl=act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];
   var o;
@@ -857,9 +860,15 @@ function renderGame(){
       (B.stock?stockBarHTML():'')+
       (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard";return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
       '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+""+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+  } else if(st.phase==="night"&&E.encounterPending(st)){
+    var en0=E.encounterDef(st.nightResult.enc), pl0=nightPlace(st.nightResult);
+    body='<article class="card event"><div class="eyebrow">คืนวันที่ '+st.day+' · ออกค้นหา · '+esc(pl0?pl0.th:"")+'</div><h3>'+esc(en0.title)+'</h3><p class="scene-text">'+esc(en0.s)+'</p>'+
+      '<div class="choices">'+en0.choices.map(function(c){var ok=E.canEncounter(st,c),need={};for(var x in (c.items||{}))if(c.items[x]<0)need[x]=-c.items[x];
+        return '<button class="choice enc" data-enc="'+c.k+'"'+(ok?'':' disabled style="opacity:.5"')+'><span class="k">'+c.k+'</span><span>'+esc(c.t)+(Object.keys(need).length?'<span class="peek" style="display:block;margin-top:3px">ต้องใช้ '+payHTML(need)+'</span>':'')+'</span></button>';}).join("")+'</div></article>';
   } else if(st.phase==="night"){
     var nr=st.nightResult||{}, nt=nightText(nr);
-    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+(nr.spoiled&&Object.keys(nr.spoiled).length?'<span class="note" style="margin:0 2px">ของเสียระหว่างคืน</span>'+itemChips(nr.spoiled,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
+    if(nr.encKey){var en1=E.encounterDef(nr.enc);nt.h=en1.title;nt.p=nr.encText;}
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3>'+(nt.img?'<img class="bigbuild" alt="" src="'+nt.img+'">':'')+'<p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+(nr.encLost&&Object.keys(nr.encLost).length?itemChips(nr.encLost,true):'')+(nr.spoiled&&Object.keys(nr.spoiled).length?'<span class="note" style="margin:0 2px">ของเสียระหว่างคืน</span>'+itemChips(nr.spoiled,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
       '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
   } else if(st.phase==="ending"){
     var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
@@ -895,7 +904,8 @@ function renderGame(){
   });
   on("charSheet",function(){openSheet(sideHTML().replace('<aside class="side">','<div class="sidesheet">').replace('</aside>','</div>'),true);});
 
-  app.querySelectorAll(".choice").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
+  app.querySelectorAll(".choice.enc").forEach(function(b){b.addEventListener("click",function(){var id=st.nightResult.enc;E.encounter(st,b.dataset.enc);cue(st.nightResult.encHurt?"hurt":"tick");plog("encounter",{id:id,key:b.dataset.enc,note:st.nightResult.encHurt?"injury -"+st.nightResult.encHurt:""});if(st.phase==="dead"){cue("death");recordDeath();}persist();render();focusMain();});});
+  app.querySelectorAll(".choice:not(.enc)").forEach(function(b){b.addEventListener("click",function(){var cur=E.currentEvent(st),ev0=cur&&cur.ev;var msOn=shownAt?Date.now()-shownAt:0;cue("tick");E.choose(st,b.dataset.k);st.playEvents=(st.playEvents||0)+1;st.playSec=(st.playSec||0)+Math.min(msOn,120000)/1000;if(ev0)plog("choice",{id:ev0.id,arc:ev0.arc,path:ev0.path||(E.pathFor(st,ev0.arc)||""),key:b.dataset.k,ms:shownAt?Date.now()-shownAt:""});persist();render();focusMain();});});
   on("logExport2",exportLog);
   on("boardsOpen",function(){openSheet('<div class="eyebrow">อันดับผู้รอดชีวิต</div><p class="sec-h" style="margin-top:6px">อันดับออนไลน์</p><div data-online-board="10">'+onlineBoardHTML(10)+'</div><p class="sec-h" style="margin-top:12px">เครื่องนี้</p>'+boardHTML());});
   on("next",function(){E.next(st);if(st.phase==="summary")cue(st.summary&&st.summary.accident?"hurt":"day");if(st.phase==="dead")cue("death");if(st.phase==="summary")plog("day_end",{note:st.summary&&st.summary.accident?"accident -"+st.summary.accident:""});if(st.phase==="dead"){plog("death",{note:causeTh(st.deathCause)});recordDeath();}persist();render();focusMain();});

@@ -608,11 +608,46 @@
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
     st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, repelled: repelled, loot: loot, build: builtKey, spoiled: spoiled };
+    /* something happens out there (28 Oct): the player must answer before the night ends */
+    var EN = N.encounter;
+    if (key === "scavenge" && place && EN && this.rng() < (EN.chance || 0)) { var pool = this.encounterPool(st, place.id); if (pool.length) st.nightResult.enc = pool[Math.floor(this.rng() * pool.length)].id; }
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
     else st.phase = "night";
     return st.nightResult;
+  };
+
+  /* ---------- night encounters (28 Oct) ---------- */
+  P.encounterPool = function (st, placeId) {
+    var done = st.encDone || [], self = this;
+    return (this.D.nightEvents || []).filter(function (e) { return e.places.indexOf(placeId) >= 0 && done.indexOf(e.id) < 0 && self.flagOk(st, e.requires, e.notFlags); });
+  };
+  P.encounterDef = function (id) { return (this.D.nightEvents || []).filter(function (e) { return e.id === id; })[0] || null; };
+  P.encounterPending = function (st) { var nr = st.nightResult; return !!(st.phase === "night" && nr && nr.enc && !nr.encKey); };
+  /* a choice that gives something away needs it in stock */
+  P.canEncounter = function (st, c) { var need = {}; for (var k in (c.items || {})) if (c.items[k] < 0) need[k] = -c.items[k]; return this.has(st, need); };
+  P.encounter = function (st, k) {
+    if (!this.encounterPending(st)) return null;
+    var nr = st.nightResult, ev = this.encounterDef(nr.enc), c = ev && ev.choices.filter(function (x) { return x.k === k; })[0];
+    if (!c || !this.canEncounter(st, c)) return null;
+    var hurt = 0, delta = {}, x;
+    for (x in (c.eff || {})) delta[x] = c.eff[x];
+    if (c.risk && this.rng() < c.risk * this.difficulty(st.day)) { hurt = this.randInt(c.injury[0], c.injury[1]); delta.health = (delta.health || 0) - hurt; }
+    var items = (hurt && c.itemsFail) ? c.itemsFail : (c.items || {}), gain = {}, lose = {};
+    for (x in items) { if (items[x] > 0) gain[x] = items[x]; else if (items[x] < 0) lose[x] = -items[x]; }
+    this.pay(st, lose); this.addItems(st, gain);
+    var real = this.applyDelta(st, delta);
+    for (x in real) nr.delta[x] = (nr.delta[x] || 0) + real[x];
+    for (x in gain) nr.loot[x] = (nr.loot[x] || 0) + gain[x];
+    nr.encKey = k; nr.encHurt = hurt; nr.encLost = lose; nr.encText = hurt && c.rf ? c.rf : c.r;
+    if (hurt) { nr.injury = (nr.injury || 0) + hurt; st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: hurt }); }
+    if (c.set) { st.flags = st.flags || {}; for (x in c.set) st.flags[x] = c.set[x]; }
+    if (c.tag && st.tally) st.tally[c.tag] = (st.tally[c.tag] || 0) + 1;
+    st.encDone = (st.encDone || []).concat([ev.id]);
+    st.memory.push({ day: st.day, hour: 23, id: ev.id, arc: "_night", title: ev.title, key: k, text: c.t, province: st.char.province });
+    if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = hurt ? "accident" : this.deathCause(st); }
+    return nr;
   };
 
   P.canTravel = function (st) {
@@ -632,6 +667,7 @@
   };
 
   P.nextDay = function (st) {
+    if (this.encounterPending(st)) return;   /* answer what happened out there first */
     if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
     if (st.phase === "summary" || st.phase === "night") {
       st.nightDone = false; st.nightResult = null; st.usedToday = {};
