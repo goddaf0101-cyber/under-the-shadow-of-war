@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="a7d7bae71d";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="50037f78e5";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -168,6 +168,20 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .nopt:hover{border-color:var(--accent)}
 .place{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin:0 0 8px;cursor:pointer}
 .place b{display:block;margin-bottom:4px}
+/* stock + build (28 Oct) */
+.stockbar{display:flex;flex-wrap:nowrap;align-items:center;gap:2px 8px;width:100%;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:5px 8px;margin:12px 0 8px;cursor:pointer;font-size:13px;overflow:hidden}
+.stockbar .it{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.stockbar .it.zero{opacity:.4}
+.stockbar img,.srow img,.ichip img{width:20px;height:20px;object-fit:contain}
+.stockbar .more{margin-left:auto;color:var(--accent);white-space:nowrap}
+.srow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.srow img{width:26px;height:26px}
+.srow .sub{display:block;font-size:12px;color:var(--muted)}
+.srow .btn{padding:6px 12px;font-size:13px}
+.srow .lack{color:var(--bad)}
+.ichip{display:inline-flex;align-items:center;gap:3px}
+.scene .built{position:absolute;right:8px;top:8px;display:flex;gap:3px;z-index:3}
+.scene .built img{width:26px;height:26px;background:rgba(10,10,9,.55);border-radius:6px;padding:2px}
 .tally{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin:8px 0 0}
 .log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
 .log li{color:var(--muted)}
@@ -247,6 +261,7 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 /* short phones (e.g. SE): trim spacing so the four choices always fit */
 @media (max-width:860px) and (max-height:640px){
   .nopt small{display:none} .nopt{padding:8px 4px}
+  .sumchips{display:none}   /* the stat strip above already shows today's changes */
   .chap{font-size:12px;padding:5px 9px;margin-top:6px;line-height:1.4}
   .chap .chapt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .place{padding:8px 10px;margin-bottom:6px}
@@ -884,8 +899,8 @@ window.WW3_BALANCE = {
   /* ผลตัวเลือก (ผู้กำกับอนุมัติแนวทาง 27 ต.ค. รอบ 3 · แนว This War of Mine: ทุกตัวเลือกมีราคา)
      A ช่วยเหลือ: จิตใจ +7 ปลอดภัย +3 แต่เสียค่าหลักของหมวด −2 (หรืออิ่ม −2) พลังงาน −4
      B เก็บไว้เอง: ค่าหลัก +10 ค่ารอง +2 แต่จิตใจ −3 ปลอดภัย −2 พลังงาน −2
-     C ตรวจสอบ: ค่าหลัก +5 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย)
-     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −8 (เหนื่อยมาก)
+     C ตรวจสอบ: ค่าหลัก +4 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย) · 28 ต.ค. ปรับจาก +5 หลังเพิ่มคลังของ
+     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −10 (เหนื่อยมาก) · 28 ต.ค. ปรับจาก −8 หลังเพิ่มคลังของ
      ค่ารองต่อหมวด: ไฟฟ้า=fullness, การแลกเปลี่ยน=fullness, เกษตร=hydration, งานและทักษะ=hydration, การปกครอง=fullness, น้ำสะอาด=clean, สภาพอากาศ=clean, ที่พัก=safety, ชุมชน=safety, อาหาร=health
      ตัวเลขเดิมก่อนรอบนี้ดูได้ใน git history */
   choiceEffects: {
@@ -904,7 +919,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "clean": 1,
         "energy": -3
       },
@@ -912,7 +927,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "clean": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "อาหาร": {
@@ -930,7 +945,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "health": 1,
         "energy": -3
       },
@@ -938,7 +953,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "health": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ที่พัก": {
@@ -955,7 +970,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "safety": 1,
         "energy": -3
       },
@@ -963,7 +978,7 @@ window.WW3_BALANCE = {
         "clean": 8,
         "safety": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "เวชภัณฑ์": {
@@ -980,13 +995,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "health": 5,
+        "health": 4,
         "energy": -3
       },
       "D": {
         "health": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ครอบครัว": {
@@ -1002,12 +1017,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "ข่าวสาร": {
@@ -1023,13 +1038,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ไฟฟ้า": {
@@ -1046,14 +1061,14 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "fullness": 1,
         "energy": -3
       },
       "D": {
         "mental": 8,
         "fullness": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การเดินทาง": {
@@ -1069,13 +1084,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ชุมชน": {
@@ -1092,7 +1107,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "safety": 1,
         "energy": -3
       },
@@ -1100,7 +1115,7 @@ window.WW3_BALANCE = {
         "clean": 8,
         "safety": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การแลกเปลี่ยน": {
@@ -1118,7 +1133,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "fullness": 1,
         "energy": -3
       },
@@ -1126,7 +1141,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "fullness": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "สุขภาพจิต": {
@@ -1142,12 +1157,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "สภาพอากาศ": {
@@ -1165,7 +1180,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "clean": 1,
         "energy": -3
       },
@@ -1173,7 +1188,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "clean": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การศึกษา": {
@@ -1189,12 +1204,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "เกษตร": {
@@ -1212,7 +1227,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "hydration": 1,
         "energy": -3
       },
@@ -1220,7 +1235,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "hydration": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "สัตว์เลี้ยง": {
@@ -1237,13 +1252,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "energy": -3
       },
       "D": {
         "clean": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ความปลอดภัย": {
@@ -1259,13 +1274,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การปกครอง": {
@@ -1282,7 +1297,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "fullness": 1,
         "energy": -3
       },
@@ -1290,7 +1305,7 @@ window.WW3_BALANCE = {
         "safety": 8,
         "fullness": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "งานและทักษะ": {
@@ -1308,7 +1323,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "hydration": 1,
         "energy": -3
       },
@@ -1316,7 +1331,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "hydration": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ผู้ย้ายถิ่น": {
@@ -1332,13 +1347,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การฟื้นตัว": {
@@ -1355,13 +1370,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "health": 5,
+        "health": 4,
         "energy": -3
       },
       "D": {
         "health": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     }
   },
@@ -1451,17 +1466,48 @@ window.WW3_BALANCE = {
     defaultKey: "sleep",
     actions: [
       { key: "scavenge", th: "ออกค้นหา", places: [
-        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
-        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
-        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+        /* คลังของ (28 ต.ค.): ออกค้นหาได้ "ของ" เข้าคลัง (loot = แน่นอน, chance = โอกาสได้เพิ่ม 1 ชิ้น) แทนการเพิ่มหลอดทันที · fuel = ใช้น้ำมันในคลัง */
+        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { clean: 2, energy: -8 }, loot: { food: 1, water: 1, mat: 1 }, chance: { fuel: 0.15, val: 0.15 }, risk: 0.03 },
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
+        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
-      { key: "share", th: "แบ่งของให้ต้น", effects: { fullness: -4, hydration: -4, mental: 6, energy: -4 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
+      { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
     ],
     dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
-    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 }, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
+    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { mental: -4 }, stockLoss: 0.5 /* ถูกปล้น = เสียของในคลังครึ่งหนึ่ง (28 ต.ค.) */, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
+  },
+
+  /* คลังของ + สร้างบ้าน (ผู้กำกับอนุมัติ 28 ต.ค.: ผู้เล่นกดกิน/ดื่มเอง · ไอคอนใช้ภาพ Props · รายการตามเอกสาร) [ตัวเลขร่าง รอจูน] */
+  stock: {
+    items: [
+      { key: "food",  th: "อาหาร",       prop: "PROP_017", use: { fullness: 12 } },
+      { key: "water", th: "น้ำดื่ม",      prop: "PROP_026", use: { hydration: 12 } },
+      { key: "meds",  th: "ยา",          prop: "PROP_010", use: { health: 12 } },
+      { key: "mat",   th: "วัสดุ",        prop: "PROP_018" },
+      { key: "elec",  th: "อะไหล่ไฟฟ้า",  prop: "PROP_027" },
+      { key: "fuel",  th: "น้ำมัน",       prop: "PROP_029" },
+      { key: "val",   th: "ของมีค่า",     prop: "PROP_032" }
+    ],
+    start: { poor: { food: 1, fuel: 1 }, middle: { food: 2, water: 2, fuel: 2 }, wealthy: { food: 3, water: 3, fuel: 2, val: 2 } },
+    /* สร้างได้ครั้งละอย่าง ใช้เวลาหนึ่งคืน (แทนการเลือกทำตอนกลางคืน) · ผลทุกวันจนจบเกม */
+    builds: [
+      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "PROP_012", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
+      { key: "garden", th: "แปลงผัก",               prop: "PROP_004", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
+      { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5 },
+      { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
+      { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
+      { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
+      { key: "solar",  th: "แผงโซลาร์",             prop: "PROP_030", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+    ],
+    buildNight: { energy: -6 },
+    /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
+    trader: { name: "เจ๊เง็ก", everyMin: 4, everyMax: 6, firstDay: 4, deals: [
+      { pay: { val: 1 }, get: { food: 2 } }, { pay: { val: 1 }, get: { water: 2 } }, { pay: { val: 1 }, get: { mat: 2 } },
+      { pay: { val: 2 }, get: { meds: 1 } }, { pay: { val: 2 }, get: { fuel: 1 } }, { pay: { val: 2 }, get: { elec: 1 } },
+      { pay: { food: 3 }, get: { val: 1 } }, { pay: { water: 3 }, get: { val: 1 } } ] }
   },
 
   travel: {
@@ -1481,7 +1527,7 @@ window.WW3_BALANCE = {
    Works in browser and in Node (for automated playtests). */
 (function (root) {
   "use strict";
-  var SAVE_VERSION = 2; /* 2 = chapter structure (27 Oct) */
+  var SAVE_VERSION = 3; /* 2 = chapter structure (27 Oct) · 3 = stock + build (28 Oct) */
 
   function Engine(data, bal, rng) {
     this.D = data; this.B = bal; this.rng = rng || Math.random;
@@ -1574,6 +1620,40 @@ window.WW3_BALANCE = {
     return { id: it.id, h: PS.size[ch.pet] * it.s };
   };
 
+  /* ---------- stock + build (director approved 28 Oct) ---------- */
+  P.startStock = function (ch) {
+    var S = this.B.stock, out = {};
+    if (!S) return out;
+    S.items.forEach(function (it) { out[it.key] = 0; });
+    var st0 = S.start[ch.tier] || {}; for (var k in st0) out[k] = st0[k];
+    return out;
+  };
+  P.itemDef = function (key) { return (this.B.stock.items.filter(function (x) { return x.key === key; })[0]) || null; };
+  P.buildDef = function (key) { return (this.B.stock.builds.filter(function (x) { return x.key === key; })[0]) || null; };
+  P.has = function (st, cost) { st.stock = st.stock || {}; for (var k in cost) if ((st.stock[k] || 0) < cost[k]) return false; return true; };
+  P.pay = function (st, cost) { for (var k in cost) st.stock[k] = (st.stock[k] || 0) - cost[k]; };
+  P.addItems = function (st, items) { st.stock = st.stock || {}; for (var k in items) st.stock[k] = (st.stock[k] || 0) + items[k]; };
+  P.builtMult = function (st, field) {
+    var m = 1, self = this; Object.keys(st.built || {}).forEach(function (k) { var b = self.buildDef(k); if (b && b[field]) m *= b[field]; }); return m;
+  };
+  /* eat / drink / take medicine from the stock (player taps it; summary or night) */
+  P.canUse = function (st, key) { var d = this.itemDef(key); return !!(d && d.use && (st.phase === "summary" || st.phase === "night") && (st.stock || {})[key] > 0); };
+  P.useItem = function (st, key) {
+    if (!this.canUse(st, key)) return null;
+    st.stock[key] -= 1;
+    var real = this.applyDelta(st, this.itemDef(key).use);
+    st.usedToday = st.usedToday || {}; st.usedToday[key] = (st.usedToday[key] || 0) + 1;
+    return real;
+  };
+  P.canBuild = function (st, key) { var b = this.buildDef(key); return !!(b && !(st.built || {})[key] && this.has(st, b.cost)); };
+  /* trader visits on summary days */
+  P.traderHere = function (st) { return !!this.B.stock && st.phase === "summary" && st.day >= (st.traderDay || 1e9); };
+  P.trade = function (st, i) {
+    var d = this.B.stock.trader.deals[i];
+    if (!d || !this.traderHere(st) || !this.has(st, d.pay)) return false;
+    this.pay(st, d.pay); this.addItems(st, d.get); return true;
+  };
+
   P.startStatsFor = function (ch) {
     var C = this.B.character, s = {}, k;
     for (k in this.B.startStats) s[k] = this.B.startStats[k];
@@ -1596,7 +1676,8 @@ window.WW3_BALANCE = {
       memory: [], dayLog: [], dayStartStats: null, lastResult: null, summary: null,
       alive: true, travelledToday: false, history: [],
       chapter: 1, decisions: {}, tally: { A: 0, B: 0, C: 0, D: 0 }, chapterIntro: null, ending: null,
-      flags: {}, twistsDone: {}, chDone: 0
+      flags: {}, twistsDone: {}, chDone: 0,
+      stock: this.startStock(ch), built: {}, traderDay: this.B.stock ? this.B.stock.trader.firstDay : 0
     };
     this.startDay(st);
     return st;
@@ -1866,7 +1947,7 @@ window.WW3_BALANCE = {
       st.flags = st.flags || {}; st.twistsDone = st.twistsDone || {};
       st.twistsDone[ev.id] = key;
       if (ch.set) Object.keys(ch.set).forEach(function (k) { st.flags[k] = ch.set[k]; });
-      if (ch.noFuelNights) st.flags.noFuelUntil = st.day + ch.noFuelNights;
+      if (ch.noFuelNights) { st.flags.noFuelUntil = st.day + ch.noFuelNights; if (st.stock) st.stock.fuel = 0; }
       if (ch.adoptDog && (st.char.pet || "none") === "none") { st.char.pet = "dog"; st.char.petSprite = null; }
       if (ch.travel) {
         var provs = this.B.character.provinces.filter(function (p) { return p !== st.char.province; });
@@ -1925,6 +2006,13 @@ window.WW3_BALANCE = {
       dc[k] = v;
     });
     if (st.flags && st.flags.dog && B.night && B.night.dogFood) dc.fullness = (dc.fullness || 0) + B.night.dogFood;
+    /* things built in the home work every day */
+    var produced = {};
+    if (B.stock) Object.keys(st.built || {}).forEach(function (bk) {
+      var b = self.buildDef(bk), age = st.day - st.built[bk] - (b.delay || 0);
+      if (b.daily) for (var x in b.daily) dc[x] = (dc[x] || 0) + b.daily[x];
+      if (b.gives && age > 0 && age % b.every === 0) { self.addItems(st, b.gives); for (var g in b.gives) produced[g] = (produced[g] || 0) + b.gives[g]; }
+    });
     var daily = this.applyDelta(st, dc);
     var hd = 0, reasons = [];
     for (var k in hr.penalties) {
@@ -1948,7 +2036,7 @@ window.WW3_BALANCE = {
     st.lossLog = st.lossLog.filter(function (x) { return x.day > st.day - 7; });
     var total = {};
     for (k in st.stats) { var d = st.stats[k] - st.dayStartStats[k]; if (d) total[k] = d; }
-    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice() };
+    st.summary = { day: st.day, total: total, daily: daily, health: hReal, accident: acc, lowReasons: reasons, log: st.dayLog.slice(), produced: produced };
     st.history.push({ day: st.day, stats: JSON.parse(JSON.stringify(st.stats)) });
     if (st.history.length > 400) st.history.shift();
     if (st.stats[B.defeat.stat] <= B.defeat.atOrBelow) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = this.deathCause(st); }
@@ -1969,39 +2057,65 @@ window.WW3_BALANCE = {
   P.nightActions = function (st) {
     if (!this.B.night) return [];
     var self = this;
-    return this.B.night.actions.filter(function (a) { return !st || self.flagOk(st, a.requires, a.notFlags); });
+    return this.B.night.actions.filter(function (a) { return !st || (self.flagOk(st, a.requires, a.notFlags) && (!a.pay || self.has(st, a.pay))); });
   };
   /* far places are closed while out of fuel (twist T3) */
-  P.placeOpen = function (st, p) { var f = st.flags || {}; return !(p.needsFuel && f.noFuelUntil && st.day < f.noFuelUntil); };
+  P.placeOpen = function (st, p) {
+    var f = st.flags || {};
+    if (p.needsFuel && f.noFuelUntil && st.day < f.noFuelUntil) return false;
+    if (p.fuel && this.B.stock && ((st.stock || {}).fuel || 0) < p.fuel) return false;
+    return true;
+  };
   P.canNight = function (st) { return !!this.B.night && st.phase === "summary" && !st.nightDone; };
   P.night = function (st, key, placeId) {
     if (!this.canNight(st)) return null;
-    var N = this.B.night, act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
+    var N = this.B.night, act;
+    if (key === "build") {
+      var bd = this.buildDef(placeId);
+      if (!this.canBuild(st, placeId)) return null;
+      this.pay(st, bd.cost); st.built = st.built || {}; st.built[bd.key] = st.day;
+      act = { key: "build", th: "สร้าง" + bd.th, effects: this.B.stock.buildNight };
+      placeId = null;
+    } else act = this.nightActions(st).filter(function (a) { return a.key === key; })[0];
     if (!act) return null;
     var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
     if (act.places && (!place || !this.placeOpen(st, place))) return null;
     var fl = st.flags || {};
+    if (place && place.fuel && this.B.stock) st.stock.fuel -= place.fuel;
+    if (act.pay) this.pay(st, act.pay);
     var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
     for (k in src.effects) delta[k] = src.effects[k];
     var injury = 0, raid = false;
-    var riskM = (fl.safeRoute && st.chapter === 3) ? 0.5 : 1;
+    var riskM = ((fl.safeRoute && st.chapter === 3) ? 0.5 : 1) * this.builtMult(st, "riskMult");
+    if (key === "sleep") { var self0 = this; Object.keys(st.built || {}).forEach(function (bk) { var b = self0.buildDef(bk); if (b && b.sleep) for (var x in b.sleep) delta[x] = (delta[x] || 0) + b.sleep[x]; }); }
     if (src.risk && this.rng() < src.risk * mult * riskM) {
       injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
       delta.health = (delta.health || 0) - injury;
       /* hurt on the way: come back with half */
       for (k in src.effects) if (src.effects[k] > 0) delta[k] = Math.round(src.effects[k] / 2);
     }
+    /* loot goes into the stock (half when hurt, no lucky extras) */
+    var loot = {};
+    if (src.loot) {
+      for (k in src.loot) loot[k] = injury ? Math.floor(src.loot[k] / 2) : src.loot[k];
+      if (!injury && src.chance) for (k in src.chance) if (this.rng() < src.chance[k]) loot[k] = (loot[k] || 0) + 1;
+      this.addItems(st, loot);
+    }
     /* raid on the home when nobody guards it */
     var R = N.raid;
     if (R && key !== "guard") {
       var ch = 0; R.chance.forEach(function (c) { if (st.stats.safety < c.below && c.p > ch) ch = c.p; });
       if (fl.dog) ch *= (R.dogMult || 1);
-      if (ch && this.rng() < ch * mult) { raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k]; }
+      ch *= this.builtMult(st, "raidMult");
+      if (ch && this.rng() < ch * mult) {
+        raid = true; for (k in R.loss) delta[k] = (delta[k] || 0) + R.loss[k];
+        if (R.stockLoss && st.stock) { var lost = {}; for (k in st.stock) { var n = Math.floor(st.stock[k] * R.stockLoss); if (n > 0) { lost[k] = n; st.stock[k] -= n; } } raid = lost; }
+      }
     }
     var real = this.applyDelta(st, delta);
     if (act.set) { st.flags = st.flags || {}; Object.keys(act.set).forEach(function (k) { st.flags[k] = act.set[k]; }); }
     st.nightDone = true;
-    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid };
+    st.nightResult = { key: key, place: place ? place.id : null, delta: real, injury: injury, raid: raid, loot: loot, build: key === "build" ? Object.keys(st.built).filter(function (b) { return st.built[b] === st.day; })[0] : null };
     st.memory.push({ day: st.day, hour: 23, id: "NIGHT", arc: "_night", title: act.th, key: "-", text: place ? place.th : act.th, province: st.char.province });
     if (injury) { st.lossLog = st.lossLog || []; st.lossLog.push({ day: st.day, k: "accident", v: injury }); }
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
@@ -2027,7 +2141,12 @@ window.WW3_BALANCE = {
 
   P.nextDay = function (st) {
     if (st.phase === "summary" && this.B.night && !st.nightDone) { this.night(st, this.B.night.defaultKey); if (st.phase !== "night") return; }
-    if (st.phase === "summary" || st.phase === "night") { st.nightDone = false; st.nightResult = null; this.startDay(st); }
+    if (st.phase === "summary" || st.phase === "night") {
+      st.nightDone = false; st.nightResult = null; st.usedToday = {};
+      var T = this.B.stock && this.B.stock.trader;
+      if (T && st.day >= (st.traderDay || 0)) st.traderDay = st.day + this.randInt(T.everyMin, T.everyMax);
+      this.startDay(st);
+    }
   };
 
   /* Days survived = completed days. */
@@ -2414,6 +2533,7 @@ function sceneHTML(ev,hour){
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
   return '<div class="scene"><div class="bg'+(loc?' loc':'')+'" style="background-image:url('+bg+');background-position:'+x+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
+    ((!loc&&B.stock&&st.built&&Object.keys(st.built).length)?'<div class="built" title="ของที่สร้างแล้ว">'+Object.keys(st.built).map(function(k){var b=E.buildDef(k);return b?'<img alt="'+esc(b.th)+'" title="'+esc(b.th)+'" src="'+(A.props[b.prop]||'')+'">':'';}).join("")+'</div>':'')+
     props+'</div>';
 }
 
@@ -2421,6 +2541,27 @@ function pipsHTML(){
   var n=st.queue.length,h="";
   for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
   return '<div class="pips" aria-label="เหตุการณ์วันนี้">'+h+'</div>';
+}
+
+/* stock + build helpers (28 Oct) */
+function propImg(id){return A.props&&A.props[id]?'<img alt="" src="'+A.props[id]+'">':'';}
+function itemChips(obj,neg){var S=B.stock;if(!S||!obj)return "";return Object.keys(obj).filter(function(k){return obj[k];}).map(function(k){var d=E.itemDef(k);return '<span class="chip '+(neg?'down':'up')+' ichip">'+propImg(d.prop)+esc(d.th)+' '+(neg?'−':'+')+obj[k]+'</span>';}).join("");}
+function payHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+cost[k]+' <span class="note">(มี '+have+')</span></span>';}).join(" ");}
+function costHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+have+'/'+cost[k]+'</span>';}).join(" ");}
+function stockBarHTML(){var S=B.stock;if(!S)return "";var main=["food","water","meds","mat","elec","fuel","val"];return '<button class="stockbar" id="stockOpen" aria-label="คลังของ">'+main.map(function(k){var d=E.itemDef(k),n=(st.stock||{})[k]||0;return '<span class="it'+(n?'':' zero')+'" title="'+esc(d.th)+'">'+propImg(d.prop)+'<span class="num">'+n+'</span></span>';}).join("")+'<span class="more">คลัง ›</span></button>';}
+function buildEffectText(b){var t=[];if(b.gives)t.push(Object.keys(b.gives).map(function(k){return E.itemDef(k).th+' +'+b.gives[k];}).join(", ")+' ทุก '+b.every+' วัน'+(b.delay?' (เริ่มหลัง '+b.delay+' วัน)':''));if(b.daily)t.push(Object.keys(b.daily).map(function(k){return STAT[k].th+' +'+b.daily[k];}).join(", ")+' ทุกวัน');if(b.sleep)t.push('นอนพักได้ '+Object.keys(b.sleep).map(function(k){return STAT[k].th+' +'+b.sleep[k];}).join(", "));if(b.raidMult)t.push('โอกาสถูกปล้นเหลือ '+Math.round(b.raidMult*100)+'%');if(b.riskMult)t.push('ออกค้นหาเสี่ยงน้อยลง '+Math.round((1-b.riskMult)*100)+'%');return t.join(" · ");}
+function openStock(){
+  var S=B.stock, canNightNow=st.phase==="summary"&&!st.nightDone;
+  var items=S.items.map(function(d){var n=(st.stock||{})[d.key]||0;return '<div class="srow">'+propImg(d.prop)+'<span><b>'+esc(d.th)+'</b> <span class="num">'+n+'</span>'+(d.use?'<span class="sub">ใช้ 1 ชิ้น: '+Object.keys(d.use).map(function(k){return STAT[k].th+' +'+d.use[k];}).join(", ")+'</span>':'')+'</span>'+(d.use?'<button class="btn" data-use="'+d.key+'"'+(E.canUse(st,d.key)?'':' disabled')+'>'+(d.key==="food"?"กิน":d.key==="water"?"ดื่ม":"ใช้")+'</button>':'<span></span>')+'</div>';}).join("");
+  var builds=S.builds.map(function(b){var done=(st.built||{})[b.key];return '<div class="srow">'+propImg(b.prop)+'<span><b>'+esc(b.th)+'</b>'+(done?' ✓':'')+'<span class="sub">'+esc(buildEffectText(b))+'</span>'+(done?'':'<span class="sub">'+costHTML(b.cost)+'</span>')+'</span>'+(done?'<span class="note">สร้างแล้ว</span>':'<button class="btn" data-build="'+b.key+'"'+(canNightNow&&E.canBuild(st,b.key)?'':' disabled')+'>สร้าง</button>')+'</div>';}).join("");
+  openSheet('<div class="eyebrow">คลังของ</div>'+items+'<p class="sec-h" style="margin:12px 0 0">สร้างของในบ้าน · ใช้เวลาหนึ่งคืน</p>'+(canNightNow?'':'<p class="note" style="margin:0">สร้างได้ตอนสรุปวัน ก่อนเลือกทำตอนกลางคืน</p>')+builds);
+  document.querySelectorAll("#bsheet [data-use]").forEach(function(b){b.addEventListener("click",function(){E.useItem(st,b.dataset.use);cue("tick");plog("use",{note:b.dataset.use});persist();render();openStock();});});
+  document.querySelectorAll("#bsheet [data-build]").forEach(function(b){b.addEventListener("click",function(){closeSheet();doNight("build",b.dataset.build);});});
+}
+function openTrader(){
+  var T=B.stock.trader;
+  openSheet('<div class="eyebrow">'+esc(T.name)+'มาเคาะประตู</div><p class="note" style="margin:4px 0 6px">แลกได้หลายครั้งเฉพาะวันนี้</p>'+T.deals.map(function(d,i){return '<div class="srow">'+propImg(E.itemDef(Object.keys(d.get)[0]).prop)+'<span>ให้ '+payHTML(d.pay)+'<span class="sub">ได้ '+Object.keys(d.get).map(function(k){return E.itemDef(k).th+' '+d.get[k];}).join(", ")+'</span></span><button class="btn" data-deal="'+i+'"'+(E.has(st,d.pay)?'':' disabled')+'>แลก</button></div>';}).join(""));
+  document.querySelectorAll("#bsheet [data-deal]").forEach(function(b){b.addEventListener("click",function(){E.trade(st,+b.dataset.deal);cue("tick");plog("trade",{note:b.dataset.deal});persist();render();openTrader();});});
 }
 
 /* chapters + night helpers (27 Oct) */
@@ -2438,10 +2579,11 @@ function nightText(nr){
   var o;
   if(nr.key==="travel") o={tag:"เดินทาง",h:"เดินทางข้ามจังหวัด",p:"คุณใช้ทั้งคืนเดินทางจนถึง"+(nr.to||st.char.province)};
   else if(nr.key==="scavenge") o=nr.injury?{tag:"ออกค้นหา · "+pl.th,h:"บาดเจ็บระหว่างทาง",p:"คุณพลาดล้มขณะค้น"+pl.th+" ได้ของกลับมาแค่ครึ่งเดียว"}:{tag:"ออกค้นหา · "+pl.th,h:"กลับมาพร้อมของ",p:"คุณค้น"+pl.th+"จนเกือบสว่าง ได้อาหารและน้ำกลับมา"};
+  else if(nr.key==="build"){var bd=E.buildDef(nr.build);o={tag:"สร้างของ",h:"สร้าง"+bd.th+"เสร็จ",p:"คุณใช้ทั้งคืนประกอบ"+bd.th+" ตั้งแต่พรุ่งนี้: "+buildEffectText(bd)};}
   else if(nr.key==="share") o={tag:"แบ่งของให้ต้น",h:"ของไปถึงสองแม่ลูก",p:"คุณแบกข้าวและน้ำไปที่อาคารร้างหลังตลาด แม่ของต้นลุกขึ้นนั่งได้แล้ว"};
   else if(nr.key==="guard") o={tag:"เฝ้าบ้าน",h:"เฝ้าบ้านทั้งคืน",p:"คุณนั่งเฝ้าประตูจนฟ้าสาง ไม่มีใครเข้าใกล้บ้าน"};
   else o={tag:"นอนพัก",h:"นอนพักทั้งคืน",p:"คุณได้นอนเต็มคืน ตื่นมาพร้อมแรงที่กลับมา"};
-  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยอาหารและน้ำไป";
+  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยของในคลังไปครึ่งหนึ่ง";
   else if(st.flags&&st.flags.dog&&nr.key!=="guard"&&nr.key!=="travel") o.p+=" หมาที่บ้านนอนเฝ้าประตูทั้งคืน";
   return o;
 }
@@ -2476,14 +2618,16 @@ function renderGame(){
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
     var warn=[];if(s.accident)warn.push('เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident);if(s.lowReasons.length)warn.push('สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป');
     body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
-      '<div class="chips">'+chips(s.total)+'</div>'+
+      '<div class="chips sumchips">'+chips(s.total)+'</div>'+
       (warn.length?'<p class="note" style="color:var(--bad);margin-top:8px">'+warn.join(' · ')+'</p>':'')+
       chapIntroHTML(s.day)+
-      (B.night?'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p><div class="nopts">'+E.nightActions(st).map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
-      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+      (s.produced&&Object.keys(s.produced).length?'<div class="chips" style="margin-top:6px">'+itemChips(s.produced,false)+'</div>':'')+
+      (B.stock?stockBarHTML():'')+
+      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
+      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+(E.traderHere&&E.traderHere(st)?'<button class="more" id="traderOpen" style="color:var(--good)">'+esc(B.stock.trader.name)+'มาเคาะประตู</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
   } else if(st.phase==="night"){
     var nr=st.nightResult||{}, nt=nightText(nr);
-    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips">'+chips(nr.delta||{})+'</div>'+
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
       '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
   } else if(st.phase==="ending"){
     var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
@@ -2505,6 +2649,8 @@ function renderGame(){
   setTimeout(function(){app.querySelectorAll(".s.flash-up,.s.flash-down").forEach(function(c){c.classList.remove("flash-up","flash-down");var d=c.querySelector(".d");if(d)d.remove();});},2200);
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
+  on("stockOpen",openStock);
+  on("traderOpen",openTrader);
   on("chapIntro",function(){var c=document.getElementById("chapIntro");openSheet('<div class="eyebrow">เปิดบทใหม่</div><p style="margin:0">'+c.innerHTML+'</p>');});
   on("dayLog",function(){var s=st.summary;openSheet('<div class="eyebrow">สรุปวันที่ '+s.day+'</div><ul class="log">'+s.log.map(function(l){return '<li><b>'+esc(l.title)+'</b> → '+esc(l.key)+' · '+esc(l.text)+'</li>';}).join("")+'</ul>');});
   on("travelOpen",function(){
