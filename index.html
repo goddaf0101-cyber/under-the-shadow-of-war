@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="50037f78e5";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="b6cb01d5bd";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -242,7 +242,7 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
   .mtop .pip{width:18px;height:5px}
   .main{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0}
   .main > .dayline{display:none}
-  .scene{flex:1 20 150px;height:auto;min-height:84px;max-height:52vh}
+  .scene{flex:1 20 150px;height:auto;min-height:84px;max-height:min(52vh,290px)}  /* cap (28 Oct): short cards no longer blow the characters up */
   .main > .card{flex:0 0 auto;min-height:0;max-height:calc(100% - 92px);overflow:auto;padding:12px 14px}
   .eyebrow{font-size:11.5px}
   .event h3{font-size:18px;margin:1px 0 4px}
@@ -1445,6 +1445,17 @@ window.WW3_BALANCE = {
   },
 
   /* การเดินทางข้ามจังหวัด — ผู้เล่นเลือกเอง ไม่บังคับ (เอกสาร ข้อ 2.1) [ร่างต้นทุน] */
+  /* ฉากรายเหตุการณ์ (ผู้กำกับอนุมัติ 28 ต.ค.): เหตุการณ์ที่เกิดนอกบ้านจริง ใช้ฉากนี้แทนฉากของหมวด */
+  eventScene: {
+    "R003": "BG02-soi", "R005": "BG02-soi", "R008": "BG08-relief", "R010": "BG04-sala",
+    "R011": "BG03-shops", "R015": "BG03-shops", "R017": "BG08-relief", "R020": "BG05-rural",
+    "R025": "BG08-relief", "R030": "BG04-sala", "R065": "BG02-soi", "R069": "BG08-relief", "R070": "BG04-sala",
+    "R108": "BG04-sala", "R110": "BG04-sala", "R116": "BG02-soi", "R120": "BG05-rural",
+    "R125": "BG04-sala", "R128": "BG04-sala", "R130": "BG04-sala",
+    "R153": "BG08-relief", "R157": "BG08-relief", "R159": "BG04-sala",
+    "R174": "BG03-shops", "R179": "BG02-soi", "R180": "BG04-sala"
+  },
+
   /* ฉากนอกบ้าน (ผู้กำกับให้เพิ่ม 27 ต.ค.): หมวดไหนเกิดที่ไหน · หมวดที่ไม่อยู่ในรายการนี้ = ในบ้านของตัวละคร (BG01 ตามฐานะ) */
   arcScene: {
     "เวชภัณฑ์": "BG06-hospital",
@@ -2329,6 +2340,9 @@ function tint(h){
   if(h<22) return "linear-gradient(180deg,rgba(60,70,120,.62),rgba(30,30,50,.55))";
   return "linear-gradient(180deg,rgba(20,26,60,.82),rgba(10,10,25,.75))";
 }
+/* outdoor scenes are 16:9 photos: size them a little larger than the scene so each event can show a different part (28 Oct) */
+function sizeLoc(){var el=document.querySelector(".scene .bg.loc");if(!el)return;var r=el.getBoundingClientRect();if(!r.width||!r.height)return;var w=Math.max(r.width,r.height*1.778)*1.14;el.style.backgroundSize=Math.round(w)+"px auto";}
+window.addEventListener("resize",function(){try{sizeLoc();}catch(e){}});
 function hash(s){var h=0;for(var i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return Math.abs(h);}
 function chip(k,v){var s=STAT[k];return '<span class="chip num '+(v>0?"up":"down")+'">'+esc(s?s.th:k)+" "+(v>0?"+":"")+v+"</span>";}
 function chips(d){var keys=Object.keys(d);return keys.length?keys.map(function(k){return chip(k,d[k]);}).join(""):'<span class="chip none">ไม่มีการเปลี่ยนแปลงต่อสถานะ</span>';}
@@ -2514,7 +2528,7 @@ function playerSprite(){
 }
 /* where the scene happens: event's own scene, else its arc's scene, else night place, else home (27 Oct) */
 function sceneKey(ev){
-  if(ev) return ev.scene||(B.arcScene||{})[ev.arc]||null;
+  if(ev) return ev.scene||(B.eventScene||{})[ev.id]||(B.arcScene||{})[ev.arc]||null;
   var nr=st.phase==="night"&&st.nightResult;
   if(nr&&nr.place){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return pl&&pl.scene||null;}
   return null;
@@ -2531,7 +2545,7 @@ function sceneHTML(ev,hour){
   var pi=E.petSpriteOf(st.char), pet=(ps&&pi&&A.pets[pi.id])?'<div class="actor pet'+(enter?((sw&&si)?' walkin':' enter-left'):'')+'" style="left:39%;height:'+(84*pi.h).toFixed(1)+'%"><div class="shadow"></div><img class="spr" alt="'+esc(petTh(st.char))+'" src="'+A.pets[pi.id]+'"></div>':"";
   var npc=(ev&&opts.npc&&A.npc[ev.npc])?'<div class="actor'+(enter?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[ev.npc]?' fade'+NPC_CUT[ev.npc]:'')+'" alt="'+esc(ev.role)+'" src="'+A.npc[ev.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(ev.role)+'</span>':"";
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
-  return '<div class="scene"><div class="bg'+(loc?' loc':'')+'" style="background-image:url('+bg+');background-position:'+x+'% '+(loc?'62%':'50%')+'"></div>'+
+  return '<div class="scene"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
     ((!loc&&B.stock&&st.built&&Object.keys(st.built).length)?'<div class="built" title="ของที่สร้างแล้ว">'+Object.keys(st.built).map(function(k){var b=E.buildDef(k);return b?'<img alt="'+esc(b.th)+'" title="'+esc(b.th)+'" src="'+(A.props[b.prop]||'')+'">':'';}).join("")+'</div>':'')+
     props+'</div>';
@@ -2645,7 +2659,7 @@ function renderGame(){
   var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:(st.phase==="night"&&st.nightResult?st.nightResult.delta:{}));
   var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
   app.innerHTML='<div class="game">'+sideHTML()+mtop+'<main class="main">'+head+sceneHTML(ev,hour)+body+'</main></div>';
-  preloadRun(); driveWalkIn(); bindSubmit(); sndMood();
+  preloadRun(); driveWalkIn(); bindSubmit(); sndMood(); sizeLoc();
   setTimeout(function(){app.querySelectorAll(".s.flash-up,.s.flash-down").forEach(function(c){c.classList.remove("flash-up","flash-down");var d=c.querySelector(".d");if(d)d.remove();});},2200);
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
