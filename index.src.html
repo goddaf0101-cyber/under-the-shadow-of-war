@@ -168,6 +168,20 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 .nopt:hover{border-color:var(--accent)}
 .place{display:block;width:100%;text-align:left;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;margin:0 0 8px;cursor:pointer}
 .place b{display:block;margin-bottom:4px}
+/* stock + build (28 Oct) */
+.stockbar{display:flex;flex-wrap:nowrap;align-items:center;gap:2px 8px;width:100%;background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:5px 8px;margin:12px 0 8px;cursor:pointer;font-size:13px;overflow:hidden}
+.stockbar .it{display:inline-flex;align-items:center;gap:2px;white-space:nowrap}
+.stockbar .it.zero{opacity:.4}
+.stockbar img,.srow img,.ichip img{width:20px;height:20px;object-fit:contain}
+.stockbar .more{margin-left:auto;color:var(--accent);white-space:nowrap}
+.srow{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)}
+.srow img{width:26px;height:26px}
+.srow .sub{display:block;font-size:12px;color:var(--muted)}
+.srow .btn{padding:6px 12px;font-size:13px}
+.srow .lack{color:var(--bad)}
+.ichip{display:inline-flex;align-items:center;gap:3px}
+.scene .built{position:absolute;right:8px;top:8px;display:flex;gap:3px;z-index:3}
+.scene .built img{width:26px;height:26px;background:rgba(10,10,9,.55);border-radius:6px;padding:2px}
 .tally{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin:8px 0 0}
 .log{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:6px;font-size:14px}
 .log li{color:var(--muted)}
@@ -247,6 +261,7 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 /* short phones (e.g. SE): trim spacing so the four choices always fit */
 @media (max-width:860px) and (max-height:640px){
   .nopt small{display:none} .nopt{padding:8px 4px}
+  .sumchips{display:none}   /* the stat strip above already shows today's changes */
   .chap{font-size:12px;padding:5px 9px;margin-top:6px;line-height:1.4}
   .chap .chapt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .place{padding:8px 10px;margin-bottom:6px}
@@ -659,6 +674,7 @@ function sceneHTML(ev,hour){
   var props=(ev&&opts.props&&ev.props.length)?'<div class="props" title="Props V24 · ยังไม่อนุมัติให้แสดงในเกม">'+ev.props.map(function(p){return A.props[p]?'<img alt="'+esc(D.propTerms[p]||p)+'" title="'+esc(p+" · "+(D.propTerms[p]||""))+'" src="'+A.props[p]+'">':"";}).join("")+'</div>':"";
   return '<div class="scene"><div class="bg'+(loc?' loc':'')+'" style="background-image:url('+bg+');background-position:'+x+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+tint(hour)+'"></div>'+player+pet+npc+'<div class="vig"></div><div class="foot-band"></div>'+
+    ((!loc&&B.stock&&st.built&&Object.keys(st.built).length)?'<div class="built" title="ของที่สร้างแล้ว">'+Object.keys(st.built).map(function(k){var b=E.buildDef(k);return b?'<img alt="'+esc(b.th)+'" title="'+esc(b.th)+'" src="'+(A.props[b.prop]||'')+'">':'';}).join("")+'</div>':'')+
     props+'</div>';
 }
 
@@ -666,6 +682,27 @@ function pipsHTML(){
   var n=st.queue.length,h="";
   for(var i=0;i<n;i++){var cls=(st.phase==="summary"||st.phase==="dead"||st.phase==="night"||st.phase==="ending"||i<st.qi||(i===st.qi&&st.phase==="result"))?"done":(i===st.qi?"now":"");h+='<span class="pip '+cls+'"></span>';}
   return '<div class="pips" aria-label="เหตุการณ์วันนี้">'+h+'</div>';
+}
+
+/* stock + build helpers (28 Oct) */
+function propImg(id){return A.props&&A.props[id]?'<img alt="" src="'+A.props[id]+'">':'';}
+function itemChips(obj,neg){var S=B.stock;if(!S||!obj)return "";return Object.keys(obj).filter(function(k){return obj[k];}).map(function(k){var d=E.itemDef(k);return '<span class="chip '+(neg?'down':'up')+' ichip">'+propImg(d.prop)+esc(d.th)+' '+(neg?'−':'+')+obj[k]+'</span>';}).join("");}
+function payHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+cost[k]+' <span class="note">(มี '+have+')</span></span>';}).join(" ");}
+function costHTML(cost){return Object.keys(cost).map(function(k){var d=E.itemDef(k),have=(st.stock||{})[k]||0;return '<span class="ichip'+(have<cost[k]?' lack':'')+'">'+propImg(d.prop)+esc(d.th)+' '+have+'/'+cost[k]+'</span>';}).join(" ");}
+function stockBarHTML(){var S=B.stock;if(!S)return "";var main=["food","water","meds","mat","elec","fuel","val"];return '<button class="stockbar" id="stockOpen" aria-label="คลังของ">'+main.map(function(k){var d=E.itemDef(k),n=(st.stock||{})[k]||0;return '<span class="it'+(n?'':' zero')+'" title="'+esc(d.th)+'">'+propImg(d.prop)+'<span class="num">'+n+'</span></span>';}).join("")+'<span class="more">คลัง ›</span></button>';}
+function buildEffectText(b){var t=[];if(b.gives)t.push(Object.keys(b.gives).map(function(k){return E.itemDef(k).th+' +'+b.gives[k];}).join(", ")+' ทุก '+b.every+' วัน'+(b.delay?' (เริ่มหลัง '+b.delay+' วัน)':''));if(b.daily)t.push(Object.keys(b.daily).map(function(k){return STAT[k].th+' +'+b.daily[k];}).join(", ")+' ทุกวัน');if(b.sleep)t.push('นอนพักได้ '+Object.keys(b.sleep).map(function(k){return STAT[k].th+' +'+b.sleep[k];}).join(", "));if(b.raidMult)t.push('โอกาสถูกปล้นเหลือ '+Math.round(b.raidMult*100)+'%');if(b.riskMult)t.push('ออกค้นหาเสี่ยงน้อยลง '+Math.round((1-b.riskMult)*100)+'%');return t.join(" · ");}
+function openStock(){
+  var S=B.stock, canNightNow=st.phase==="summary"&&!st.nightDone;
+  var items=S.items.map(function(d){var n=(st.stock||{})[d.key]||0;return '<div class="srow">'+propImg(d.prop)+'<span><b>'+esc(d.th)+'</b> <span class="num">'+n+'</span>'+(d.use?'<span class="sub">ใช้ 1 ชิ้น: '+Object.keys(d.use).map(function(k){return STAT[k].th+' +'+d.use[k];}).join(", ")+'</span>':'')+'</span>'+(d.use?'<button class="btn" data-use="'+d.key+'"'+(E.canUse(st,d.key)?'':' disabled')+'>'+(d.key==="food"?"กิน":d.key==="water"?"ดื่ม":"ใช้")+'</button>':'<span></span>')+'</div>';}).join("");
+  var builds=S.builds.map(function(b){var done=(st.built||{})[b.key];return '<div class="srow">'+propImg(b.prop)+'<span><b>'+esc(b.th)+'</b>'+(done?' ✓':'')+'<span class="sub">'+esc(buildEffectText(b))+'</span>'+(done?'':'<span class="sub">'+costHTML(b.cost)+'</span>')+'</span>'+(done?'<span class="note">สร้างแล้ว</span>':'<button class="btn" data-build="'+b.key+'"'+(canNightNow&&E.canBuild(st,b.key)?'':' disabled')+'>สร้าง</button>')+'</div>';}).join("");
+  openSheet('<div class="eyebrow">คลังของ</div>'+items+'<p class="sec-h" style="margin:12px 0 0">สร้างของในบ้าน · ใช้เวลาหนึ่งคืน</p>'+(canNightNow?'':'<p class="note" style="margin:0">สร้างได้ตอนสรุปวัน ก่อนเลือกทำตอนกลางคืน</p>')+builds);
+  document.querySelectorAll("#bsheet [data-use]").forEach(function(b){b.addEventListener("click",function(){E.useItem(st,b.dataset.use);cue("tick");plog("use",{note:b.dataset.use});persist();render();openStock();});});
+  document.querySelectorAll("#bsheet [data-build]").forEach(function(b){b.addEventListener("click",function(){closeSheet();doNight("build",b.dataset.build);});});
+}
+function openTrader(){
+  var T=B.stock.trader;
+  openSheet('<div class="eyebrow">'+esc(T.name)+'มาเคาะประตู</div><p class="note" style="margin:4px 0 6px">แลกได้หลายครั้งเฉพาะวันนี้</p>'+T.deals.map(function(d,i){return '<div class="srow">'+propImg(E.itemDef(Object.keys(d.get)[0]).prop)+'<span>ให้ '+payHTML(d.pay)+'<span class="sub">ได้ '+Object.keys(d.get).map(function(k){return E.itemDef(k).th+' '+d.get[k];}).join(", ")+'</span></span><button class="btn" data-deal="'+i+'"'+(E.has(st,d.pay)?'':' disabled')+'>แลก</button></div>';}).join(""));
+  document.querySelectorAll("#bsheet [data-deal]").forEach(function(b){b.addEventListener("click",function(){E.trade(st,+b.dataset.deal);cue("tick");plog("trade",{note:b.dataset.deal});persist();render();openTrader();});});
 }
 
 /* chapters + night helpers (27 Oct) */
@@ -683,10 +720,11 @@ function nightText(nr){
   var o;
   if(nr.key==="travel") o={tag:"เดินทาง",h:"เดินทางข้ามจังหวัด",p:"คุณใช้ทั้งคืนเดินทางจนถึง"+(nr.to||st.char.province)};
   else if(nr.key==="scavenge") o=nr.injury?{tag:"ออกค้นหา · "+pl.th,h:"บาดเจ็บระหว่างทาง",p:"คุณพลาดล้มขณะค้น"+pl.th+" ได้ของกลับมาแค่ครึ่งเดียว"}:{tag:"ออกค้นหา · "+pl.th,h:"กลับมาพร้อมของ",p:"คุณค้น"+pl.th+"จนเกือบสว่าง ได้อาหารและน้ำกลับมา"};
+  else if(nr.key==="build"){var bd=E.buildDef(nr.build);o={tag:"สร้างของ",h:"สร้าง"+bd.th+"เสร็จ",p:"คุณใช้ทั้งคืนประกอบ"+bd.th+" ตั้งแต่พรุ่งนี้: "+buildEffectText(bd)};}
   else if(nr.key==="share") o={tag:"แบ่งของให้ต้น",h:"ของไปถึงสองแม่ลูก",p:"คุณแบกข้าวและน้ำไปที่อาคารร้างหลังตลาด แม่ของต้นลุกขึ้นนั่งได้แล้ว"};
   else if(nr.key==="guard") o={tag:"เฝ้าบ้าน",h:"เฝ้าบ้านทั้งคืน",p:"คุณนั่งเฝ้าประตูจนฟ้าสาง ไม่มีใครเข้าใกล้บ้าน"};
   else o={tag:"นอนพัก",h:"นอนพักทั้งคืน",p:"คุณได้นอนเต็มคืน ตื่นมาพร้อมแรงที่กลับมา"};
-  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยอาหารและน้ำไป";
+  if(nr.raid) o.p+=" แต่ระหว่างคืนมีคนงัดเข้ามาขโมยของในคลังไปครึ่งหนึ่ง";
   else if(st.flags&&st.flags.dog&&nr.key!=="guard"&&nr.key!=="travel") o.p+=" หมาที่บ้านนอนเฝ้าประตูทั้งคืน";
   return o;
 }
@@ -721,14 +759,16 @@ function renderGame(){
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
     var warn=[];if(s.accident)warn.push('เกิดอุบัติเหตุ บาดเจ็บ สุขภาพ −'+s.accident);if(s.lowReasons.length)warn.push('สุขภาพลดลงเพราะ '+s.lowReasons.map(function(k){return STAT[k].th;}).join(", ")+' ต่ำเกินไป');
     body='<article class="card"><div class="eyebrow">สรุปวันที่ '+s.day+(B.night?' · ผ่านไปอีกหนึ่งวัน</div><div style="height:8px"></div>':'</div><h3 style="font-family:var(--f-display);margin:4px 0 10px">ผ่านไปอีกหนึ่งวัน</h3>')+
-      '<div class="chips">'+chips(s.total)+'</div>'+
+      '<div class="chips sumchips">'+chips(s.total)+'</div>'+
       (warn.length?'<p class="note" style="color:var(--bad);margin-top:8px">'+warn.join(' · ')+'</p>':'')+
       chapIntroHTML(s.day)+
-      (B.night?'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p><div class="nopts">'+E.nightActions(st).map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
-      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
+      (s.produced&&Object.keys(s.produced).length?'<div class="chips" style="margin-top:6px">'+itemChips(s.produced,false)+'</div>':'')+
+      (B.stock?stockBarHTML():'')+
+      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small>'+esc(NIGHT_HINT[a.key]||"")+'</small></button>';}).join("")+'</div>':'')+
+      '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+(E.traderHere&&E.traderHere(st)?'<button class="more" id="traderOpen" style="color:var(--good)">'+esc(B.stock.trader.name)+'มาเคาะประตู</button>':'')+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
   } else if(st.phase==="night"){
     var nr=st.nightResult||{}, nt=nightText(nr);
-    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips">'+chips(nr.delta||{})+'</div>'+
+    body='<article class="card event result"><div class="eyebrow">คืนวันที่ '+st.day+' · '+esc(nt.tag)+'</div><h3>'+esc(nt.h)+'</h3><p>'+esc(nt.p)+'</p><div class="chips sumchips">'+chips(nr.delta||{})+'</div><div class="chips" style="margin-top:6px">'+itemChips(nr.loot,false)+(nr.raid&&typeof nr.raid==="object"?itemChips(nr.raid,true):'')+'</div>'+(B.stock?stockBarHTML():'')+
       '<div class="foot"><button class="btn primary" id="nextday">'+nextDayLabel()+'</button></div></article>';
   } else if(st.phase==="ending"){
     var en=st.ending, EN=D.chapters.endings[en.key], tl=D.chapters.endingTail[en.tail], KN=D.chapters.keyNames;
@@ -750,6 +790,8 @@ function renderGame(){
   setTimeout(function(){app.querySelectorAll(".s.flash-up,.s.flash-down").forEach(function(c){c.classList.remove("flash-up","flash-down");var d=c.querySelector(".d");if(d)d.remove();});},2200);
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
+  on("stockOpen",openStock);
+  on("traderOpen",openTrader);
   on("chapIntro",function(){var c=document.getElementById("chapIntro");openSheet('<div class="eyebrow">เปิดบทใหม่</div><p style="margin:0">'+c.innerHTML+'</p>');});
   on("dayLog",function(){var s=st.summary;openSheet('<div class="eyebrow">สรุปวันที่ '+s.day+'</div><ul class="log">'+s.log.map(function(l){return '<li><b>'+esc(l.title)+'</b> → '+esc(l.key)+' · '+esc(l.text)+'</li>';}).join("")+'</ul>');});
   on("travelOpen",function(){

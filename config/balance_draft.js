@@ -109,8 +109,8 @@ window.WW3_BALANCE = {
   /* ผลตัวเลือก (ผู้กำกับอนุมัติแนวทาง 27 ต.ค. รอบ 3 · แนว This War of Mine: ทุกตัวเลือกมีราคา)
      A ช่วยเหลือ: จิตใจ +7 ปลอดภัย +3 แต่เสียค่าหลักของหมวด −2 (หรืออิ่ม −2) พลังงาน −4
      B เก็บไว้เอง: ค่าหลัก +10 ค่ารอง +2 แต่จิตใจ −3 ปลอดภัย −2 พลังงาน −2
-     C ตรวจสอบ: ค่าหลัก +5 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย)
-     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −8 (เหนื่อยมาก)
+     C ตรวจสอบ: ค่าหลัก +4 ค่ารอง +1 พลังงาน −3 (ใช้แรงน้อย) · 28 ต.ค. ปรับจาก +5 หลังเพิ่มคลังของ
+     D ประสานงาน: ค่าหลัก +8 ค่ารอง +2 จิตใจ +2 แต่พลังงาน −10 (เหนื่อยมาก) · 28 ต.ค. ปรับจาก −8 หลังเพิ่มคลังของ
      ค่ารองต่อหมวด: ไฟฟ้า=fullness, การแลกเปลี่ยน=fullness, เกษตร=hydration, งานและทักษะ=hydration, การปกครอง=fullness, น้ำสะอาด=clean, สภาพอากาศ=clean, ที่พัก=safety, ชุมชน=safety, อาหาร=health
      ตัวเลขเดิมก่อนรอบนี้ดูได้ใน git history */
   choiceEffects: {
@@ -129,7 +129,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "clean": 1,
         "energy": -3
       },
@@ -137,7 +137,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "clean": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "อาหาร": {
@@ -155,7 +155,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "health": 1,
         "energy": -3
       },
@@ -163,7 +163,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "health": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ที่พัก": {
@@ -180,7 +180,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "safety": 1,
         "energy": -3
       },
@@ -188,7 +188,7 @@ window.WW3_BALANCE = {
         "clean": 8,
         "safety": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "เวชภัณฑ์": {
@@ -205,13 +205,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "health": 5,
+        "health": 4,
         "energy": -3
       },
       "D": {
         "health": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ครอบครัว": {
@@ -227,12 +227,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "ข่าวสาร": {
@@ -248,13 +248,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ไฟฟ้า": {
@@ -271,14 +271,14 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "fullness": 1,
         "energy": -3
       },
       "D": {
         "mental": 8,
         "fullness": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การเดินทาง": {
@@ -294,13 +294,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ชุมชน": {
@@ -317,7 +317,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "safety": 1,
         "energy": -3
       },
@@ -325,7 +325,7 @@ window.WW3_BALANCE = {
         "clean": 8,
         "safety": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การแลกเปลี่ยน": {
@@ -343,7 +343,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "fullness": 1,
         "energy": -3
       },
@@ -351,7 +351,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "fullness": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "สุขภาพจิต": {
@@ -367,12 +367,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "สภาพอากาศ": {
@@ -390,7 +390,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "hydration": 5,
+        "hydration": 4,
         "clean": 1,
         "energy": -3
       },
@@ -398,7 +398,7 @@ window.WW3_BALANCE = {
         "hydration": 8,
         "clean": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การศึกษา": {
@@ -414,12 +414,12 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "mental": 5,
+        "mental": 4,
         "energy": -3
       },
       "D": {
         "mental": 8,
-        "energy": -8
+        "energy": -10
       }
     },
     "เกษตร": {
@@ -437,7 +437,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "hydration": 1,
         "energy": -3
       },
@@ -445,7 +445,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "hydration": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "สัตว์เลี้ยง": {
@@ -462,13 +462,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "clean": 5,
+        "clean": 4,
         "energy": -3
       },
       "D": {
         "clean": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ความปลอดภัย": {
@@ -484,13 +484,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การปกครอง": {
@@ -507,7 +507,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "fullness": 1,
         "energy": -3
       },
@@ -515,7 +515,7 @@ window.WW3_BALANCE = {
         "safety": 8,
         "fullness": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "งานและทักษะ": {
@@ -533,7 +533,7 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "fullness": 5,
+        "fullness": 4,
         "hydration": 1,
         "energy": -3
       },
@@ -541,7 +541,7 @@ window.WW3_BALANCE = {
         "fullness": 8,
         "hydration": 2,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "ผู้ย้ายถิ่น": {
@@ -557,13 +557,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "safety": 5,
+        "safety": 4,
         "energy": -3
       },
       "D": {
         "safety": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     },
     "การฟื้นตัว": {
@@ -580,13 +580,13 @@ window.WW3_BALANCE = {
         "energy": -2
       },
       "C": {
-        "health": 5,
+        "health": 4,
         "energy": -3
       },
       "D": {
         "health": 8,
         "mental": 2,
-        "energy": -8
+        "energy": -10
       }
     }
   },
@@ -676,17 +676,48 @@ window.WW3_BALANCE = {
     defaultKey: "sleep",
     actions: [
       { key: "scavenge", th: "ออกค้นหา", places: [
-        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { fullness: 6, hydration: 6, clean: 2, energy: -8 }, risk: 0.03 },
-        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, effects: { fullness: 11, hydration: 10, clean: 4, energy: -12, safety: -2 }, risk: 0.10 },
-        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, effects: { fullness: 17, hydration: 15, clean: 6, energy: -16, safety: -4 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
+        /* คลังของ (28 ต.ค.): ออกค้นหาได้ "ของ" เข้าคลัง (loot = แน่นอน, chance = โอกาสได้เพิ่ม 1 ชิ้น) แทนการเพิ่มหลอดทันที · fuel = ใช้น้ำมันในคลัง */
+        { id: "near", th: "บ้านร้างในซอย", scene: "BG02-soi", effects: { clean: 2, energy: -8 }, loot: { food: 1, water: 1, mat: 1 }, chance: { fuel: 0.15, val: 0.15 }, risk: 0.03 },
+        { id: "market", th: "ตลาดที่ถูกทิ้ง", scene: "BG03-shops", needsFuel: true, fuel: 1, effects: { clean: 4, energy: -12, safety: -2 }, loot: { food: 2, water: 1, val: 1 }, chance: { elec: 0.5, mat: 0.5 }, risk: 0.10 },
+        { id: "depot", th: "โกดังริมถนนใหญ่", needsFuel: true, fuel: 1, effects: { clean: 6, energy: -16, safety: -4 }, loot: { food: 3, water: 2, mat: 2 }, chance: { meds: 0.4, fuel: 0.5, elec: 0.3 }, risk: 0.20, injuryMin: 8, injuryMax: 20 }
       ] },
       { key: "guard", th: "เฝ้าบ้าน", effects: { safety: 8, energy: 4 } },
       { key: "sleep", th: "นอนพัก", effects: { energy: 18, mental: 3 } },
       /* เหตุการณ์หักมุม T5 (28 ต.ค.): ถ้าตามต้นไปจนรู้ที่อยู่ จะแบ่งของให้สองแม่ลูกได้ จนกว่าจะช่วยครั้งแรก */
-      { key: "share", th: "แบ่งของให้ต้น", effects: { fullness: -4, hydration: -4, mental: 6, energy: -4 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
+      { key: "share", th: "แบ่งของให้ต้น", effects: { mental: 6, energy: -4 }, pay: { food: 1, water: 1 }, requires: { flag: "tonKnown" }, notFlags: ["tonHelped", "leftSoi"], set: { tonHelped: true } }
     ],
     dogFood: -1,     /* หมาที่รับเลี้ยงใน T6 กินข้าวด้วย: อิ่ม −1 ต่อวัน */
-    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { fullness: -8, hydration: -8, mental: -4 }, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
+    raid: { chance: [{ below: 30, p: 0.25 }, { below: 50, p: 0.08 }], loss: { mental: -4 }, stockLoss: 0.5 /* ถูกปล้น = เสียของในคลังครึ่งหนึ่ง (28 ต.ค.) */, dogMult: 0.3 /* มีหมาเฝ้าบ้าน (T6) โอกาสถูกปล้นเหลือ 30% */ }
+  },
+
+  /* คลังของ + สร้างบ้าน (ผู้กำกับอนุมัติ 28 ต.ค.: ผู้เล่นกดกิน/ดื่มเอง · ไอคอนใช้ภาพ Props · รายการตามเอกสาร) [ตัวเลขร่าง รอจูน] */
+  stock: {
+    items: [
+      { key: "food",  th: "อาหาร",       prop: "PROP_017", use: { fullness: 12 } },
+      { key: "water", th: "น้ำดื่ม",      prop: "PROP_026", use: { hydration: 12 } },
+      { key: "meds",  th: "ยา",          prop: "PROP_010", use: { health: 12 } },
+      { key: "mat",   th: "วัสดุ",        prop: "PROP_018" },
+      { key: "elec",  th: "อะไหล่ไฟฟ้า",  prop: "PROP_027" },
+      { key: "fuel",  th: "น้ำมัน",       prop: "PROP_029" },
+      { key: "val",   th: "ของมีค่า",     prop: "PROP_032" }
+    ],
+    start: { poor: { food: 1, fuel: 1 }, middle: { food: 2, water: 2, fuel: 2 }, wealthy: { food: 3, water: 3, fuel: 2, val: 2 } },
+    /* สร้างได้ครั้งละอย่าง ใช้เวลาหนึ่งคืน (แทนการเลือกทำตอนกลางคืน) · ผลทุกวันจนจบเกม */
+    builds: [
+      { key: "filter", th: "เครื่องกรองน้ำ",         prop: "PROP_012", cost: { mat: 3 },           gives: { water: 1 }, every: 2 },
+      { key: "garden", th: "แปลงผัก",               prop: "PROP_004", cost: { mat: 2, water: 2 }, gives: { food: 1 }, every: 3, delay: 5 },
+      { key: "lock",   th: "กลอนประตูเหล็ก",         prop: "PROP_018", cost: { mat: 3 },           daily: { safety: 1 }, raidMult: 0.5 },
+      { key: "bed",    th: "ที่นอนดี",               prop: "PROP_028", cost: { mat: 2 },           sleep: { energy: 3, mental: 1 } },
+      { key: "bath",   th: "ที่อาบน้ำกับราวตากผ้า",   prop: "PROP_019", cost: { mat: 2 }, daily: { clean: 2 } },
+      { key: "radio",  th: "วิทยุที่ซ่อมแล้ว",        prop: "PROP_015", cost: { elec: 2 },          daily: { mental: 1 }, riskMult: 0.75 },
+      { key: "solar",  th: "แผงโซลาร์",             prop: "PROP_030", cost: { elec: 3, mat: 2 },  daily: { energy: 2, mental: 1 } }
+    ],
+    buildNight: { energy: -6 },
+    /* พ่อค้า "เจ๊เง็ก" มาเคาะประตูทุก 4–6 วัน ตอนสรุปวัน */
+    trader: { name: "เจ๊เง็ก", everyMin: 4, everyMax: 6, firstDay: 4, deals: [
+      { pay: { val: 1 }, get: { food: 2 } }, { pay: { val: 1 }, get: { water: 2 } }, { pay: { val: 1 }, get: { mat: 2 } },
+      { pay: { val: 2 }, get: { meds: 1 } }, { pay: { val: 2 }, get: { fuel: 1 } }, { pay: { val: 2 }, get: { elec: 1 } },
+      { pay: { food: 3 }, get: { val: 1 } }, { pay: { water: 3 }, get: { val: 1 } } ] }
   },
 
   travel: {
