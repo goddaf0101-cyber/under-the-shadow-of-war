@@ -18,6 +18,7 @@ export const dayTH = (now) => new Date(now + TH).toISOString().slice(0, 10);
 /* สร้างตารางอัตโนมัติครั้งแรก (ไม่ต้องรัน SQL เองใน Console) */
 let ready = false;
 export async function ensureSchema(env) {
+  if (!env || !env.DB) { const e = new Error('ยังไม่ได้ผูกฐานข้อมูล D1 ชื่อ DB กับโปรเจกต์ (Settings > Bindings) แล้วกด Retry deployment'); e.code = 'no_db'; throw e; }
   if (ready) return;
   const q = (s) => env.DB.prepare(s).run();
   /* อันดับ: เก็บรอบที่ดีที่สุดของแต่ละเครื่อง */
