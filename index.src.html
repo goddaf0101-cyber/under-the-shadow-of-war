@@ -200,6 +200,9 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
 .note{font-size:12.5px;color:var(--faint)}
 .dead h3{color:var(--bad)}
+/* low energy (28 Oct): the sleep button stands out when energy < 30 */
+.nopt.rec{border-color:var(--warn)!important;background:rgba(214,166,58,.16)!important;box-shadow:0 0 0 1px var(--warn) inset}
+.nopt.rec small{color:var(--warn)!important;font-weight:600}
 .skills{margin-top:10px;display:grid;gap:6px}
 /* new-character screen fits 375x600 with skills (28 Oct) */
 .newc{gap:10px;margin-top:0}.newc .card{padding:12px 14px}
@@ -876,7 +879,7 @@ function renderGame(){
       chapIntroHTML(s.day)+
       (B.stock&&E.traderHere(st)?'<button class="trader" id="traderOpen">'+(A.npc[TRADER_NPC]?'<img alt="" src="'+A.npc[TRADER_NPC]+'">':'')+'<span><b>'+esc(B.stock.trader.name)+'มาเคาะประตู</b><small>แลกของได้เฉพาะวันนี้</small></span><span class="go">ดูของ ›</span></button>':'')+
       (B.stock?stockBarHTML():'')+
-      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard";return '<button class="nopt" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
+      (B.night?(B.stock?'':'<p class="sec-h" style="margin:12px 0 6px">คืนนี้จะทำอะไร</p>')+'<div class="nopts">'+E.nightActions(st).map(function(a){var g=a.key==="guard",tired=a.key==="sleep"&&st.stats.energy<30;return '<button class="nopt'+(tired?' rec':'')+'" data-n="'+a.key+'">'+esc(a.th)+'<small'+(g?' class="keep"':'')+'>'+esc(g?'เสี่ยงถูกปล้น '+Math.round(E.raidChance(st)*100)+'%':tired?'พลังงานต่ำ ควรพัก':(NIGHT_HINT[a.key]||""))+'</small></button>';}).join("")+'</div>':'')+
       '<div class="foot" style="justify-content:space-between;align-items:center"><span class="row" style="gap:12px"><button class="more" id="dayLog">สิ่งที่เลือกวันนี้</button>'+(B.travel.enabled?'<button class="more" id="travelOpen">'+(st.travelledToday?'เดินทางแล้ววันนี้':'ย้ายจังหวัด')+'</button>':'')+""+'</span>'+(B.night?'':'<button class="btn primary" id="nextday">'+nextDayLabel()+'</button>')+'</div></article>';
   } else if(st.phase==="night"&&E.encounterPending(st)){
     var en0=E.encounterDef(st.nightResult.enc), pl0=nightPlace(st.nightResult);
