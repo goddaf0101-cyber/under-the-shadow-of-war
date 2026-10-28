@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="ebcd41f5ce";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="ac835dd51e";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1098,7 +1098,8 @@ window.WW3_BALANCE = {
        (วิธีวนนี้เป็นร่าง เอกสารห้ามสมมติวิธีวน — รอผู้กำกับอนุมัติหรือแก้) */
   schedule: {
     baseWeight: 1,
-    needWeight: 2.5,            // น้ำหนักเพิ่ม = needWeight × (1 - ค่าสถานะหลัก/100)
+    needWeight: 1,              // น้ำหนักเพิ่ม = needWeight × (1 - ค่าสถานะหลัก/100) · 28 ต.ค. ลดจาก 2.5 (เรื่องน้ำมาติด ๆ กันตอนน้ำต่ำ)
+    arcGapDays: 1,              // 28 ต.ค.: หมวดที่เพิ่งมาเมื่อวาน ห้ามมาซ้ำวันนี้ (ถ้ายังมีหมวดอื่นเหลือ)
     lockedUntilDay: { "การฟื้นตัว": 21 },
     loopAfterArcComplete: true,
     arcCooldownDays: 15
@@ -2089,15 +2090,19 @@ window.WW3_BALANCE = {
     var tw = this.dueTwist(st);
     if (tw) { chosen.push(tw.id); st.twistsDone[tw.id] = "queued"; }
     pool.forEach(function (a) { vptr[a] = st.arcs[a].ptr; });
+    /* variety (28 Oct): an arc seen in the last cooldown days waits, unless nothing else is left */
+    var cd = this.B.schedule.arcGapDays || 0, last = st.arcLast = st.arcLast || {};
+    var fresh = function (a) { return !cd || last[a] == null || st.day - last[a] > cd; };
     while (chosen.length < n) {
-      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
+      var cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0 && fresh(a); });
+      if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length && used.indexOf(a) < 0; });
       if (!cand.length) cand = pool.filter(function (a) { return vptr[a] < self.arcEvents[a].length; });
       if (!cand.length) break;
       var ws = cand.map(function (a) { return self.arcWeight(st, a); });
       var tot = ws.reduce(function (x, y) { return x + y; }, 0), r = this.rng() * tot, i = 0;
       for (; i < ws.length - 1; i++) { r -= ws[i]; if (r <= 0) break; }
       var a = cand[i];
-      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a);
+      chosen.push(this.arcEvents[a][vptr[a]].id); used.push(a); last[a] = st.day;
       vptr[a] = this.nextIdx(st, a, vptr[a] + 1);
     }
     var hours = this.rollHours(chosen.length);
