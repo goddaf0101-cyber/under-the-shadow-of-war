@@ -9,7 +9,7 @@ console.log('life-mismatch',scanBad);
 const {chromium}=require('playwright');(async()=>{const b=await chromium.launch();const er=[],bad=[];let n=0;
 const ids=WW3_DATA.events.map(e=>e.id);const ONLY=process.argv[2];
 for(const [w,h] of [[375,600]]){const p=await b.newPage({viewport:{width:w,height:h}});p.on('pageerror',e=>er.push(e.message));
- await p.goto('file://'+ROOT+'/dist/test.html');await p.click('#new');await p.click('#go');
+ await p.goto('file://'+ROOT+'/dist/test.html');await p.evaluate(()=>{try{localStorage.setItem("ww3ts.intro.v1","true");localStorage.setItem("ww3ts.tut.v1",JSON.stringify({event:1,summary:1,trader:1}));}catch(e){}});await p.click('#new');await p.click('#go');
  for(const id of ids)for(const path of ['P1']){
   await p.evaluate(([id,path])=>{const W=window.__ww3,st=W.state;const ev=window.WW3_DATA.events.find(e=>e.id===id);st.char.family='มีลูกเล็ก';st.alive=true;Object.keys(st.stats).forEach(k=>st.stats[k]=80);const a=st.arcs[ev.arc];a.ptr=W.engine.arcEvents[ev.arc].findIndex(x=>x.id===id);a.path=path;st.memory=[{day:1,hour:9,id:'X',arc:ev.arc,title:'เหตุการณ์ก่อนหน้า',key:'B',text:'ชวนบ้านใกล้กันนับน้ำที่มีแล้วแบ่งกัน'}];st.queue=[{id,hour:10},{id,hour:11}];st.qi=0;st.phase='event';st.lastResult=null;W.render();},[id,path]);
   const m=await p.evaluate(()=>{const c=document.querySelector('.main > .card');return {t:document.querySelector('.card h3').textContent,o:c.scrollHeight-c.clientHeight,pg:document.documentElement.scrollHeight-innerHeight}});

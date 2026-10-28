@@ -8,7 +8,7 @@ const mock=`window.claude={use:function(n){
   if(n==="user")return Promise.resolve({id:()=>Promise.resolve("me1")});return Promise.resolve(null);}};`;
 for(const withMock of [false,true]){const p=await b.newPage({viewport:{width:390,height:664}});p.on('pageerror',e=>er.push(e.message));
  if(withMock) await p.addInitScript(mock);
- await p.goto('file://'+ROOT+'/dist/test.html');await p.waitForTimeout(300);
+ await p.goto('file://'+ROOT+'/dist/test.html');await p.evaluate(()=>{try{localStorage.setItem("ww3ts.intro.v1","true");localStorage.setItem("ww3ts.tut.v1",JSON.stringify({event:1,summary:1,trader:1}));}catch(e){}});await p.waitForTimeout(300);
  const t1=await p.textContent('[data-online-board]');
  await p.click('#new');await p.click('#go');
  await p.evaluate(()=>{const s=window.__ww3.state;s.stats.health=3;s.stats.hydration=0;});
