@@ -853,7 +853,7 @@ function exploreHTML(){
   var spots=ex.spots.map(function(id){var sp=E.exploreSpot(ex.place,id),done=ex.searched[id];
     return '<button class="spot'+(done?' done':'')+'" data-spot="'+id+'"'+(done||ex.ended?' disabled':'')+'><b>'+esc(sp.th)+'</b><small>'+(done?(Object.keys(done).length?Object.keys(done).map(function(k){return esc(E.itemDef(k).th)+' +'+done[k];}).join(" · "):'ว่างเปล่า'):'แตะเพื่อค้น')+'</small></button>';}).join("");
   var carry=Object.keys(ex.loot).filter(function(k){return ex.loot[k];});
-  return '<article class="card event explore"><div class="eyebrow">คืนวันที่ '+st.day+' · ออกค้นหา · '+esc(pl.th)+' · ต้นแบบ</div>'+
+  return '<article class="card event explore"><div class="eyebrow">คืนวันที่ '+st.day+' · ออกค้นหา · '+esc(pl.th)+'</div>'+
     '<div class="noise '+lvl+'"><span>เสียง</span><div class="nbar"><i style="width:'+pct+'%"></i></div><b class="num">'+pct+'%</b></div>'+msg+
     '<div class="spots">'+spots+'</div>'+
     '<div class="chips" style="margin-top:6px">'+(carry.length?itemChips(ex.loot,false):'<span class="chip none">ยังไม่ได้อะไร</span>')+'</div>'+
@@ -969,8 +969,10 @@ function renderGame(){
   app.querySelectorAll(".nopt").forEach(function(b){b.addEventListener("click",function(){
     var k=b.dataset.n, act=E.nightActions(st).filter(function(a){return a.key===k;})[0];
     if(act.places){
-      openSheet('<div class="eyebrow">ออกค้นหาคืนนี้ · เลือกที่จะไป</div><p class="note" style="margin:4px 0 10px">ยิ่งไกลยิ่งได้มาก แต่เสี่ยงบาดเจ็บมากขึ้น ถ้าบาดเจ็บจะได้ของกลับมาครึ่งเดียว</p>'+act.places.map(function(p){var open=E.placeOpen(st,p),rk=p.risk*E.difficulty(st.day)*((st.flags&&st.flags.safeRoute&&st.chapter===3)?0.5:1);return '<button class="place" data-p="'+p.id+'"'+(open?'':' disabled style="opacity:.45"')+'><b>'+esc(p.th)+(open?' · เสี่ยงบาดเจ็บ <span class="num">'+Math.round(rk*100)+'%</span>':' · ไม่มีน้ำมันไปถึง')+'</b><span class="chips">'+chips(p.effects)+'</span></button>';}).join(""));
-      document.querySelectorAll("#bsheet .place:not([disabled])").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();if(opts.test&&B.night.explore){E.exploreStart(st,pb.dataset.p);persist();render();focusMain();}else doNight(k,pb.dataset.p);});});
+      openSheet('<div class="eyebrow">ออกค้นหาคืนนี้ · เลือกที่จะไป</div><p class="note" style="margin:4px 0 10px">'+(B.night.explore?'ค้นได้ทีละจุด ยิ่งค้นยิ่งเสียงดัง ถ้าเสียงเต็มจะถูกเจอ บาดเจ็บ และทิ้งของครึ่งหนึ่ง กลับบ้านได้ทุกเมื่อ':'ยิ่งไกลยิ่งได้มาก แต่เสี่ยงบาดเจ็บมากขึ้น ถ้าบาดเจ็บจะได้ของกลับมาครึ่งเดียว')+'</p>'+act.places.map(function(p){var open=E.placeOpen(st,p),rk=p.risk*E.difficulty(st.day)*((st.flags&&st.flags.safeRoute&&st.chapter===3)?0.5:1),XP=B.night.explore&&B.night.explore.places[p.id];
+        var info=XP?' · เสียงดังขึ้น'+(XP.noiseMult>=1.1?'เร็ว':XP.noiseMult>=0.8?'ปานกลาง':'ช้า')+' · ของ'+(p.id==="depot"?'เยอะ':p.id==="market"?'ปานกลาง':'น้อย'):' · เสี่ยงบาดเจ็บ <span class="num">'+Math.round(rk*100)+'%</span>';
+        return '<button class="place" data-p="'+p.id+'"'+(open?'':' disabled style="opacity:.45"')+'><b>'+esc(p.th)+(open?info:' · ไม่มีน้ำมันไปถึง')+'</b>'+(p.fuel?'<span class="note">ใช้น้ำมัน '+p.fuel+'</span>':'')+'</button>';}).join(""));
+      document.querySelectorAll("#bsheet .place:not([disabled])").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();if(B.night.explore){E.exploreStart(st,pb.dataset.p);persist();render();focusMain();}else doNight(k,pb.dataset.p);});});
     } else doNight(k,null);
   });});
   on("home",function(){view="title";render();});
