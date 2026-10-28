@@ -7,7 +7,9 @@ import base64, os, json, shutil, hashlib
 from PIL import Image, ImageDraw
 R=os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))+'/'
 INL=['data/events.js','data/life_variants.js','data/branches.js','data/chapters.js','data/twists.js','online/config.js','config/balance_draft.js','engine.js']
-KINDS=['npc','bg','props','player','pets','walk']
+KINDS=['npc','bg','props','player','pets','walk','vo']   # vo = optional recorded narration (intro_1.mp3 …); empty folder = device TTS
+MIME={'webp':'image/webp','mp3':'audio/mpeg','m4a':'audio/mp4','ogg':'audio/ogg'}
+def ls(k): d=R+'assets/'+k; return sorted(f for f in os.listdir(d) if not f.startswith('.')) if os.path.isdir(d) else []
 def source():
     s=open(R+'index.src.html',encoding='utf-8').read()
     for f in INL: s=s.replace('/*INLINE:%s*/'%f, open(R+f,encoding='utf-8').read().replace('</script','<\\/script'))
@@ -15,9 +17,9 @@ def source():
 def assets(mode):
     A={k:{} for k in KINDS}
     for k in KINDS:
-        for f in sorted(os.listdir(R+'assets/'+k)):
+        for f in ls(k):
             key=f.rsplit('.',1)[0]
-            A[k][key]=('data:image/webp;base64,'+base64.b64encode(open(R+'assets/%s/%s'%(k,f),'rb').read()).decode()) if mode=='inline' else 'assets/%s/%s'%(k,f)
+            A[k][key]=('data:'+MIME[f.rsplit('.',1)[1]]+';base64,'+base64.b64encode(open(R+'assets/%s/%s'%(k,f),'rb').read()).decode()) if mode=='inline' else 'assets/%s/%s'%(k,f)
     return A
 os.makedirs(R+'dist/shots',exist_ok=True)
 single=source().replace('/*INLINE:ASSETS*/',json.dumps(assets('inline')))
@@ -29,7 +31,7 @@ W=R+'web/'; shutil.rmtree(W,ignore_errors=True); os.makedirs(W+'icons')
 files=[]
 for k in KINDS:
     os.makedirs(W+'assets/'+k)
-    for f in sorted(os.listdir(R+'assets/'+k)):
+    for f in ls(k):
         shutil.copy(R+'assets/%s/%s'%(k,f),W+'assets/%s/%s'%(k,f))
         if k!='props': files.append('assets/%s/%s'%(k,f))
 s=source().replace('/*INLINE:ASSETS*/',json.dumps(assets('files')))

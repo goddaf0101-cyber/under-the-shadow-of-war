@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 for (const [n,vp] of [['se',{width:375,height:600}],['ip',{width:390,height:664}],['max',{width:430,height:760}],['tall',{width:461,height:820}],['desk',{width:1280,height:860}]]){
  const p=await b.newPage({viewport:vp});p.on('pageerror',e=>er.push(n+': '+e.message));
  await p.goto('file://'+ROOT+'/dist/test.html');
- await p.evaluate(()=>{try{localStorage.clear()}catch(e){}}); await p.reload();
+ await p.evaluate(()=>{try{localStorage.clear()}catch(e){}}); await p.reload();await p.evaluate(()=>{try{localStorage.setItem("ww3ts.intro.v1","true");localStorage.setItem("ww3ts.tut.v1",JSON.stringify({event:1,summary:1,trader:1}));}catch(e){}});
  await p.click('#new');await p.click('#go');await p.waitForTimeout(300);
  const m=async(tag)=>{const r=await p.evaluate(()=>{const c=document.querySelector('.main > .card');return {page:document.documentElement.scrollHeight-innerHeight, cardOverflow:c?c.scrollHeight-c.clientHeight:0, scene:document.querySelector('.scene').getBoundingClientRect().height|0, hscroll:document.documentElement.scrollWidth>innerWidth};});console.log(n,tag,JSON.stringify(r));};
  await m('event'); await p.screenshot({path:`${ROOT}/dist/shots/fit-${n}-event.png`});

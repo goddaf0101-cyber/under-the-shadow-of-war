@@ -3,7 +3,7 @@ const { chromium } = require('playwright');
 (async()=>{const b=await chromium.launch();
 for (const [n,vp] of [['se',{width:375,height:600}]]){
  const p=await b.newPage({viewport:vp});
- await p.goto('file://'+ROOT+'/dist/test.html'); await p.click('#new'); await p.click('#go');
+ await p.goto('file://'+ROOT+'/dist/test.html');await p.evaluate(()=>{try{localStorage.setItem("ww3ts.intro.v1","true");localStorage.setItem("ww3ts.tut.v1",JSON.stringify({event:1,summary:1,trader:1}));}catch(e){}}); await p.click('#new'); await p.click('#go');
  const res=await p.evaluate(async()=>{const W=window.__ww3,st=W.state,out=[];
    const ids=W.engine.D.events.map(e=>e.id);
    for(const id of ids){ st.phase='event'; st.qi=0; st.queue=[{id,hour:10}]; document.querySelector('#again'); 
