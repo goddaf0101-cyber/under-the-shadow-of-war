@@ -200,6 +200,20 @@ table.board tr.me td{background:rgba(214,166,58,.12)}
 select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);border-radius:8px;padding:8px 10px;font:inherit;max-width:100%}
 .note{font-size:12.5px;color:var(--faint)}
 .dead h3{color:var(--bad)}
+/* explore prototype (28 Oct) */
+.explore .noise{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin:4px 0 0;font-size:13px}
+.explore .nbar{height:10px;border-radius:6px;background:var(--bar-track);overflow:hidden}
+.explore .nbar i{display:block;height:100%;background:var(--good);transition:width .4s ease}
+.explore .noise.warn .nbar i{background:var(--warn)}.explore .noise.bad .nbar i{background:var(--bad)}
+.explore .noise.bad b{color:var(--bad)}
+.exmsg{margin:0 0 6px;font-size:13px;color:var(--muted)}.exmsg.warn{color:var(--warn)}.exmsg.bad{color:var(--bad);font-weight:600}
+.spots{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.spot{background:var(--panel-2);border:1px solid var(--line-2);border-radius:10px;padding:6px 9px;text-align:left;cursor:pointer;display:grid;gap:1px}
+.spot b{font-size:14px}.spot small{font-size:12px;color:var(--muted)}
+.spot:not([disabled]):hover{border-color:var(--accent)}
+.spot.done{opacity:.7;border-style:dashed}.spot.done small{color:var(--good)}
+.spot[disabled]:not(.done){opacity:.45}
+.explore .foot{margin-top:6px}.explore .chips{margin-top:4px!important}
 /* low energy (28 Oct): the sleep button stands out when energy < 30 */
 .nopt.rec{border-color:var(--warn)!important;background:rgba(214,166,58,.16)!important;box-shadow:0 0 0 1px var(--warn) inset}
 .nopt.rec small{color:var(--warn)!important;font-weight:600}
@@ -745,6 +759,7 @@ function sceneKey(ev){
   return (B.frontScene||{})[t]||null;
 }
 function sceneKey0(ev){
+  if(!ev&&st.explore){var a0=B.night.actions.filter(function(a){return a.key==="scavenge";})[0],p0=a0&&a0.places.filter(function(p){return p.id===st.explore.place;})[0];return p0&&p0.scene||null;}
   if(ev) return ev.scene||(B.eventScene||{})[ev.id]||(B.arcScene||{})[ev.arc]||null;
   var nr=st.phase==="night"&&st.nightResult;
   if(nr){var act=B.night.actions.filter(function(a){return a.key===nr.key;})[0],pl=nr.place&&act&&act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];return (pl&&pl.scene)||(act&&act.scene)||null;}
@@ -755,6 +770,7 @@ function sceneHTML(ev,hour){
   var lk=sceneKey(ev), loc=!!(lk&&A.bg[lk]);
   var bg=loc?A.bg[lk]:A.bg[B.character.tiers[st.char.tier].bg];
   var x=loc?50:(ev?hash(ev.id)%100:50);
+  var exX=(!ev&&st.explore&&st.explore.last)?[12,38,62,88][st.explore.spots.indexOf(st.explore.last)]:null;
   var ps=playerSprite();
   var enter=ev&&lastEnterKey!==(st.day+"-"+st.qi+"-"+ev.id); if(ev) lastEnterKey=st.day+"-"+st.qi+"-"+ev.id;
   var sk=sideKey(), sw=sk&&A.walk[sk+"_walk"], si=sk&&A.walk[sk+"_idle"];
@@ -767,7 +783,7 @@ function sceneHTML(ev,hour){
   var dead=st.phase==="dead", nre=!ev&&st.phase==="night"&&st.nightResult&&st.nightResult.enc&&E.encounterDef(st.nightResult.enc);
   if(nre&&opts.npc&&A.npc[nre.npc]) npc='<div class="actor'+(E.encounterPending(st)?' enter-right':'')+'" style="left:74%"><div class="shadow"></div><img class="spr'+(NPC_CUT[nre.npc]?' fade'+NPC_CUT[nre.npc]:'')+'" alt="'+esc(nre.role)+'" src="'+A.npc[nre.npc]+'"></div><span class="who-tag" style="left:74%">คุณพบ · '+esc(nre.role)+'</span>';
   if(dead){ player=graveHTML(); npc=""; }
-  return '<div class="scene'+(dead?' rip':'')+'"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(loc?(ev?hash(ev.id)%100:50):x)+'% '+(loc?'62%':'50%')+'"></div>'+
+  return '<div class="scene'+(dead?' rip':'')+'"><div class="bg'+(loc?' loc':'')+'"'+(loc?' data-x="'+(ev?hash(ev.id)%100:50)+'"':'')+' style="background-image:url('+bg+');background-position:'+(exX!=null?exX:(loc?(ev?hash(ev.id)%100:50):x))+'% '+(loc?'62%':'50%')+'"></div>'+
     '<div class="tint" style="background:'+((loc&&(B.litScene||[]).indexOf(lk)>=0)?'linear-gradient(180deg,rgba(10,12,30,.12),rgba(10,10,20,.22))':tint(hour))+'"></div>'+player+pet+npc+trader+'<div class="vig"></div><div class="foot-band"></div>'+
     ((!loc&&B.stock&&st.built)?Object.keys(st.built).map(function(k){var b=E.buildDef(k),x=BUILT_X[k];if(!b||x==null||!A.props[b.prop])return "";var fresh=st.phase==="night"&&st.nightResult&&st.nightResult.build===k;return '<img class="bitem'+(fresh?' new':'')+(/^BUILD_/.test(b.prop)?' wide':'')+'" alt="'+esc(b.th)+'" title="'+esc(b.th)+'" style="left:'+x+'%" src="'+A.props[b.prop]+'">';}).join(""):'')+
     props+'</div>';
@@ -829,11 +845,26 @@ function chapIntroHTML(day){
 }
 function isFinalNight(){var C=D.chapters;if(!C||st.chapter<C.list.length)return false;return !E.availableArcs(st).length;}
 function nextDayLabel(){return isFinalNight()?"ดูบทสรุปชีวิต":"เช้าวันที่ "+(st.day+1);}
+/* explore (28 Oct prototype, ?test=1 only) */
+function exploreHTML(){
+  var ex=st.explore, X=B.night.explore, a0=B.night.actions.filter(function(a){return a.key==="scavenge";})[0], pl=a0.places.filter(function(p){return p.id===ex.place;})[0];
+  var pct=Math.round(ex.noise/(X.noiseMax||100)*100), lvl=pct>=80?"bad":pct>=55?"warn":"ok";
+  var msg=ex.caught?'<p class="exmsg bad">ถูกเจอ! คุณวิ่งหนีจนบาดเจ็บ และทิ้งของไปครึ่งหนึ่ง</p>':pct>=80?'<p class="exmsg bad">มีคนกำลังเดินมาทางนี้</p>':pct>=55?'<p class="exmsg warn">ได้ยินเสียงฝีเท้าอยู่ไม่ไกล</p>':'<p class="exmsg">ยังเงียบอยู่ ค้นได้อีก</p>';
+  var spots=ex.spots.map(function(id){var sp=E.exploreSpot(ex.place,id),done=ex.searched[id];
+    return '<button class="spot'+(done?' done':'')+'" data-spot="'+id+'"'+(done||ex.ended?' disabled':'')+'><b>'+esc(sp.th)+'</b><small>'+(done?(Object.keys(done).length?Object.keys(done).map(function(k){return esc(E.itemDef(k).th)+' +'+done[k];}).join(" · "):'ว่างเปล่า'):'แตะเพื่อค้น')+'</small></button>';}).join("");
+  var carry=Object.keys(ex.loot).filter(function(k){return ex.loot[k];});
+  return '<article class="card event explore"><div class="eyebrow">คืนวันที่ '+st.day+' · ออกค้นหา · '+esc(pl.th)+' · ต้นแบบ</div>'+
+    '<div class="noise '+lvl+'"><span>เสียง</span><div class="nbar"><i style="width:'+pct+'%"></i></div><b class="num">'+pct+'%</b></div>'+msg+
+    '<div class="spots">'+spots+'</div>'+
+    '<div class="chips" style="margin-top:6px">'+(carry.length?itemChips(ex.loot,false):'<span class="chip none">ยังไม่ได้อะไร</span>')+'</div>'+
+    '<div class="foot"><button class="btn primary" id="exLeave">กลับบ้าน</button></div></article>';
+}
 function nightPlace(nr){var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{};return act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];}
 function nightText(nr){
   var act=(B.night.actions.filter(function(a){return a.key===nr.key;})[0])||{}, pl=act.places&&act.places.filter(function(p){return p.id===nr.place;})[0];
   var o;
   if(nr.key==="travel") o={tag:"เดินทาง",h:"เดินทางข้ามจังหวัด",p:"คุณใช้ทั้งคืนเดินทางจนถึง"+(nr.to||st.char.province)};
+  else if(nr.key==="scavenge"&&nr.explore){var ns=Object.keys(nr.explore.searched).map(function(id){return E.exploreSpot(nr.place,id).th;});o={tag:"ออกค้นหา · "+pl.th,h:nr.explore.caught?"ถูกเจอระหว่างค้น":"กลับมาพร้อมของ",p:"คุณค้น "+ns.length+" จุด: "+ns.join(" ")+(nr.explore.caught?" แต่ถูกเจอ ต้องวิ่งหนีจนบาดเจ็บ และทิ้งของไปครึ่งหนึ่ง":" แล้วกลับก่อนมีใครมาเจอ")};}
   else if(nr.key==="scavenge") o=nr.injury?{tag:"ออกค้นหา · "+pl.th,h:"บาดเจ็บระหว่างทาง",p:"คุณพลาดล้มขณะค้น"+pl.th+" ได้ของกลับมาแค่ครึ่งเดียว"}:{tag:"ออกค้นหา · "+pl.th,h:"กลับมาพร้อมของ",p:"คุณค้น"+pl.th+"จนเกือบสว่าง ได้อาหารและน้ำกลับมา"};
   else if(nr.key==="build"){var bd=E.buildDef(nr.build);o={tag:"สร้างของ",h:"สร้าง"+bd.th+"เสร็จ",p:"คุณใช้ทั้งคืนประกอบ"+bd.th+" ตอนนี้ตั้งอยู่ในบ้านแล้ว ตั้งแต่พรุ่งนี้: "+buildEffectText(bd),img:A.props[bd.prop]};}
   else if(nr.key==="share") o={tag:"แบ่งของให้ต้น",h:"ของไปถึงสองแม่ลูก",p:"คุณแบกข้าวและน้ำไปที่อาคารร้างหลังตลาด แม่ของต้นลุกขึ้นนั่งได้แล้ว"};
@@ -869,6 +900,8 @@ function renderGame(){
     body='<article class="card event result"><div class="eyebrow">ผลการตัดสินใจ · '+esc(ev.title)+'</div><h3>'+esc(r.key)+' · '+esc(r.text)+'</h3>'+
       '<p>'+esc(r.result)+(r.resultFull&&r.resultFull!==r.result?' <button class="more" id="fullResult">อ่านเต็ม</button>':'')+'</p><div class="chips">'+chips(r.delta)+'</div>'+
       '<div class="foot"><button class="btn primary" id="next">'+(st.qi+1<st.queue.length?"เหตุการณ์ถัดไป":"จบวัน")+'</button></div></article>';
+  } else if(st.phase==="summary"&&st.explore){
+    body=exploreHTML();
   } else if(st.phase==="summary"){
     var s=st.summary;
     var provs=B.character.provinces.filter(function(p){return p!==st.char.province;});
@@ -914,6 +947,8 @@ function renderGame(){
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
   on("stockOpen",openStock);
+  app.querySelectorAll(".spot:not([disabled])").forEach(function(b){b.addEventListener("click",function(){var r=E.exploreSearch(st,b.dataset.spot);cue(r&&r.caught?"hurt":"tick");plog("explore",{note:b.dataset.spot+(r&&r.caught?" caught -"+r.caught:"")});persist();render();});});
+  on("exLeave",function(){E.exploreEnd(st);plog("night",{note:"explore "+(st.nightResult&&st.nightResult.place)});if(st.phase==="dead"){cue("death");recordDeath();}else cue("tick");persist();render();focusMain();});
   on("traderOpen",openTrader);
   on("chapIntro",function(){var c=document.getElementById("chapIntro");openSheet('<div class="eyebrow">เปิดบทใหม่</div><p style="margin:0">'+c.innerHTML+'</p>');});
   on("dayLog",function(){var s=st.summary;openSheet('<div class="eyebrow">สรุปวันที่ '+s.day+'</div><ul class="log">'+s.log.map(function(l){return '<li><b>'+esc(l.title)+'</b> → '+esc(l.key)+' · '+esc(l.text)+'</li>';}).join("")+'</ul>');});
@@ -935,7 +970,7 @@ function renderGame(){
     var k=b.dataset.n, act=E.nightActions(st).filter(function(a){return a.key===k;})[0];
     if(act.places){
       openSheet('<div class="eyebrow">ออกค้นหาคืนนี้ · เลือกที่จะไป</div><p class="note" style="margin:4px 0 10px">ยิ่งไกลยิ่งได้มาก แต่เสี่ยงบาดเจ็บมากขึ้น ถ้าบาดเจ็บจะได้ของกลับมาครึ่งเดียว</p>'+act.places.map(function(p){var open=E.placeOpen(st,p),rk=p.risk*E.difficulty(st.day)*((st.flags&&st.flags.safeRoute&&st.chapter===3)?0.5:1);return '<button class="place" data-p="'+p.id+'"'+(open?'':' disabled style="opacity:.45"')+'><b>'+esc(p.th)+(open?' · เสี่ยงบาดเจ็บ <span class="num">'+Math.round(rk*100)+'%</span>':' · ไม่มีน้ำมันไปถึง')+'</b><span class="chips">'+chips(p.effects)+'</span></button>';}).join(""));
-      document.querySelectorAll("#bsheet .place:not([disabled])").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();doNight(k,pb.dataset.p);});});
+      document.querySelectorAll("#bsheet .place:not([disabled])").forEach(function(pb){pb.addEventListener("click",function(){closeSheet();if(opts.test&&B.night.explore){E.exploreStart(st,pb.dataset.p);persist();render();focusMain();}else doNight(k,pb.dataset.p);});});
     } else doNight(k,null);
   });});
   on("home",function(){view="title";render();});

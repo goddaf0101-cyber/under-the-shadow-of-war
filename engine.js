@@ -610,17 +610,20 @@
     var place = act.places ? act.places.filter(function (p) { return p.id === placeId; })[0] : null;
     if (act.places && (!place || !this.placeOpen(st, place))) return null;
     var fl = st.flags || {};
+    var EX = (key === "scavenge" && place && st.explore && st.explore.place === place.id) ? st.explore : null;
     var fuelSaved = false;
-    if (place && place.fuel && this.B.stock) { if (this.rng() < this.trait(st, "fuelSaveChance")) fuelSaved = true; else st.stock.fuel -= place.fuel; }
+    if (place && place.fuel && this.B.stock && !EX) { if (this.rng() < this.trait(st, "fuelSaveChance")) fuelSaved = true; else st.stock.fuel -= place.fuel; }
     if (act.pay) this.pay(st, act.pay);
     var src = place || act, mult = this.difficulty(st.day), delta = {}, k;
     for (k in src.effects) delta[k] = src.effects[k];
+    if (EX) delta.energy = EX.energy;
     var injury = 0, raid = false;
     var riskM = ((fl.safeRoute && st.chapter === 3) ? 0.5 : 1) * this.builtMult(st, "riskMult") * this.trait(st, "riskMult") * (place && place.id === "near" ? this.trait(st, "riskNearMult") : 1);
     if (key === "sleep" && this.trait(st, "sleepEnergy")) delta.energy = (delta.energy || 0) + this.trait(st, "sleepEnergy");
     if (key === "guard" && this.trait(st, "guardEnergy")) delta.energy = (delta.energy || 0) + this.trait(st, "guardEnergy");
     if (key === "sleep") { var self0 = this; Object.keys(st.built || {}).forEach(function (bk) { var b = self0.buildDef(bk); if (b && b.sleep) for (var x in b.sleep) delta[x] = (delta[x] || 0) + b.sleep[x]; }); }
-    if (src.risk && this.rng() < src.risk * mult * riskM) {
+    if (EX) { injury = EX.caught || 0; if (injury) delta.health = (delta.health || 0) - injury; }
+    else if (src.risk && this.rng() < src.risk * mult * riskM) {
       injury = this.randInt(src.injuryMin || 5, src.injuryMax || 15);
       delta.health = (delta.health || 0) - injury;
       /* hurt on the way: come back with half */
@@ -628,7 +631,8 @@
     }
     /* loot goes into the stock (half when hurt, no lucky extras) */
     var loot = {};
-    if (src.loot) {
+    if (EX) { for (k in EX.loot) loot[k] = EX.loot[k]; this.addItems(st, loot); }
+    else if (src.loot) {
       for (k in src.loot) loot[k] = injury ? Math.floor(src.loot[k] / 2) : src.loot[k];
       if (!injury && src.chance) for (k in src.chance) if (this.rng() < src.chance[k]) loot[k] = (loot[k] || 0) + 1;
       if (!injury && key === "scavenge") { var lx = this.trait(st, "lootExtra"); for (k in lx) loot[k] = (loot[k] || 0) + lx[k]; }
@@ -660,6 +664,45 @@
     if (st.stats.health <= 0) { st.alive = false; st.phase = "dead"; st.deathDay = st.day; st.deathCause = injury ? "accident" : this.deathCause(st); }
     else st.phase = "night";
     return st.nightResult;
+  };
+
+  /* ---------- explore (28 Oct prototype, test mode only): search spots one by one, noise rises, leave any time ---------- */
+  P.exploreStart = function (st, placeId) {
+    var X = this.B.night.explore, act = this.nightActions(st).filter(function (a) { return a.key === "scavenge"; })[0];
+    if (!X || !act || !this.canNight(st) || st.explore) return null;
+    var place = act.places.filter(function (p) { return p.id === placeId; })[0];
+    if (!place || !this.placeOpen(st, place)) return null;
+    if (place.fuel && this.B.stock && !(this.rng() < this.trait(st, "fuelSaveChance"))) st.stock.fuel -= place.fuel;
+    var pool = (X.spots[placeId] || []).slice(), pick = [];
+    while (pool.length && pick.length < (X.show || 4)) pick.push(pool.splice(Math.floor(this.rng() * pool.length), 1)[0].id);
+    var P0 = X.places[placeId] || {};
+    st.explore = { place: placeId, spots: pick, searched: {}, noise: 0, loot: {}, energy: -(P0.travel || 0), caught: 0, ended: false, last: null };
+    return st.explore;
+  };
+  P.exploreSpot = function (placeId, id) { return ((this.B.night.explore.spots[placeId]) || []).filter(function (s) { return s.id === id; })[0] || null; };
+  P.exploreSearch = function (st, spotId) {
+    var ex = st.explore; if (!ex || ex.ended || ex.searched[spotId] || ex.spots.indexOf(spotId) < 0) return null;
+    var X = this.B.night.explore, P0 = X.places[ex.place] || {}, sp = this.exploreSpot(ex.place, spotId), got = {}, k;
+    ex.energy -= (P0.search || 3);
+    var nm = (P0.noiseMult || 1) * this.builtMult(st, "riskMult") * this.trait(st, "riskMult") * (ex.place === "near" ? this.trait(st, "riskNearMult") : 1) * this.difficulty(st.day);
+    var add = Math.round((sp.noise + this.randInt(0, X.noiseJitter || 10)) * nm);
+    ex.noise = Math.min(X.noiseMax || 100, ex.noise + add);
+    for (k in sp.loot) { var n = this.randInt(sp.loot[k][0], sp.loot[k][1]); if (n > 0) got[k] = n; }
+    for (k in got) ex.loot[k] = (ex.loot[k] || 0) + got[k];
+    ex.searched[spotId] = got; ex.last = spotId;
+    if (ex.noise >= (X.noiseMax || 100)) {
+      /* caught: hurt while running, half of what you carried is dropped */
+      ex.caught = this.randInt(P0.injuryMin || 5, P0.injuryMax || 15); ex.ended = true; ex.dropped = {};
+      for (k in ex.loot) { var d = Math.ceil(ex.loot[k] / 2); if (d) { ex.dropped[k] = d; ex.loot[k] -= d; } }
+    }
+    return { got: got, add: add, caught: ex.caught };
+  };
+  P.exploreEnd = function (st) {
+    var ex = st.explore; if (!ex) return null;
+    var r = this.night(st, "scavenge", ex.place);
+    if (r) { r.explore = { searched: ex.searched, spots: ex.spots, caught: ex.caught, dropped: ex.dropped || null, noise: ex.noise }; }
+    st.explore = null;
+    return r;
   };
 
   /* ---------- night encounters (28 Oct) ---------- */
