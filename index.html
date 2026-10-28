@@ -1,4 +1,4 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="8a4aefc8b5";</script><title>WW3 Thailand Survival</title>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#141412"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="description" content="เกมเอาชีวิตรอดแบบเล่าเรื่อง ประเทศไทยในสงครามโลกครั้งที่ 3"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-192.png"><style>html,body{margin:0;background:#141412}</style><script>window.WW3_BUILD="bb7532fbb8";</script><title>WW3 Thailand Survival</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -307,6 +307,34 @@ select{background:var(--panel-2);color:var(--fg);border:1px solid var(--line-2);
 .updbar span{white-space:nowrap}
 .updbar button{flex:none;white-space:nowrap;background:#d6a63a;color:#141413;border:0;border-radius:7px;padding:7px 12px;font:600 14px "IBM Plex Sans Thai",sans-serif;cursor:pointer}
 .updbar .updx{background:transparent;color:var(--fg);padding:7px 6px}
+/* ---------- opening film (28 Oct): full-screen slides, slow pan, narration captions ---------- */
+.intro{position:fixed;inset:0;z-index:60;background:#000;color:#f3efe4;overflow:hidden;cursor:pointer}
+.intro .ibg{position:absolute;inset:-6%;background-size:cover;background-position:center;opacity:0;transition:opacity 1.4s ease;filter:saturate(.75) brightness(.62)}
+.intro .ibg.on{opacity:1;animation:ipan 16s linear forwards}
+@keyframes ipan{from{transform:scale(1.02) translateX(-2%)}to{transform:scale(1.12) translateX(2%)}}
+.intro .ishade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.25) 55%,rgba(0,0,0,.88) 100%)}
+.intro .icap{position:absolute;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));padding:0 max(20px,env(safe-area-inset-left,0px));max-width:720px;margin:0 auto}
+.intro .icap .ey{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;color:var(--accent);margin-bottom:8px}
+.intro .icap p{font-family:var(--f-display);font-size:clamp(19px,5vw,28px);line-height:1.45;margin:0;text-wrap:pretty;text-shadow:0 2px 12px rgba(0,0,0,.8)}
+.intro .icap p span{opacity:0;transition:opacity .9s ease}
+.intro .icap p span.on{opacity:1}
+.intro .ibar{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:12px max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px))}
+.intro .idots{display:flex;gap:6px;flex:1}
+.intro .idots i{width:22px;height:3px;border-radius:2px;background:rgba(255,255,255,.22)}
+.intro .idots i.on{background:var(--accent)}
+.intro .ibar button{background:rgba(20,20,18,.6);border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer}
+.intro .ihint{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;font-size:12px;color:rgba(255,255,255,.55)}
+@media (prefers-reduced-motion:reduce){.intro .ibg.on{animation:none}}
+/* ---------- how-to-play coach marks (28 Oct) ---------- */
+.coach{position:fixed;inset:0;z-index:55}
+.coach .ring{position:fixed;border:2px solid var(--accent);border-radius:12px;box-shadow:0 0 0 9999px rgba(8,8,6,.72);transition:all .25s ease;pointer-events:none}
+.coach .tip{position:fixed;left:12px;right:12px;max-width:420px;margin:0 auto;background:var(--panel);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.coach .tip .ey{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.08em;color:var(--accent)}
+.coach .tip h4{font-family:var(--f-display);font-size:17px;margin:2px 0 4px}
+.coach .tip p{margin:0;font-size:14px;line-height:1.55;color:var(--fg)}
+.coach .tip .row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px}
+.coach .tip .btn{padding:7px 16px}
+.coach .tip .skip{background:none;border:0;color:var(--muted);font-size:13px;cursor:pointer;padding:6px 0}
 </style>
 
 <div class="wrap" id="app"></div>
@@ -2201,7 +2229,7 @@ window.WW3_BALANCE = {
   if (typeof module !== "undefined") module.exports = Engine;
 })(typeof window !== "undefined" ? window : globalThis);
 </script>
-<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp"}, "props": {"PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}};</script>
+<script>window.WW3_ASSETS={"npc": {"NPC_01": "assets/npc/NPC_01.webp", "NPC_02": "assets/npc/NPC_02.webp", "NPC_03": "assets/npc/NPC_03.webp", "NPC_04": "assets/npc/NPC_04.webp", "NPC_05": "assets/npc/NPC_05.webp", "NPC_06": "assets/npc/NPC_06.webp", "NPC_07": "assets/npc/NPC_07.webp", "NPC_08": "assets/npc/NPC_08.webp", "NPC_09": "assets/npc/NPC_09.webp", "NPC_10": "assets/npc/NPC_10.webp", "NPC_11": "assets/npc/NPC_11.webp", "NPC_12": "assets/npc/NPC_12.webp", "NPC_13": "assets/npc/NPC_13.webp", "NPC_14": "assets/npc/NPC_14.webp", "NPC_15": "assets/npc/NPC_15.webp", "NPC_16": "assets/npc/NPC_16.webp", "NPC_17": "assets/npc/NPC_17.webp", "NPC_18": "assets/npc/NPC_18.webp", "NPC_19": "assets/npc/NPC_19.webp"}, "bg": {"BG01-A": "assets/bg/BG01-A.webp", "BG01-B": "assets/bg/BG01-B.webp", "BG01-C": "assets/bg/BG01-C.webp", "BG02-soi": "assets/bg/BG02-soi.webp", "BG03-shops": "assets/bg/BG03-shops.webp", "BG04-sala": "assets/bg/BG04-sala.webp", "BG05-rural": "assets/bg/BG05-rural.webp", "BG06-hospital": "assets/bg/BG06-hospital.webp", "BG07-checkpoint": "assets/bg/BG07-checkpoint.webp", "BG08-relief": "assets/bg/BG08-relief.webp"}, "props": {"PROP_001": "assets/props/PROP_001.webp", "PROP_002": "assets/props/PROP_002.webp", "PROP_003": "assets/props/PROP_003.webp", "PROP_004": "assets/props/PROP_004.webp", "PROP_005": "assets/props/PROP_005.webp", "PROP_006": "assets/props/PROP_006.webp", "PROP_007": "assets/props/PROP_007.webp", "PROP_008": "assets/props/PROP_008.webp", "PROP_009": "assets/props/PROP_009.webp", "PROP_010": "assets/props/PROP_010.webp", "PROP_011": "assets/props/PROP_011.webp", "PROP_012": "assets/props/PROP_012.webp", "PROP_013": "assets/props/PROP_013.webp", "PROP_014": "assets/props/PROP_014.webp", "PROP_015": "assets/props/PROP_015.webp", "PROP_016": "assets/props/PROP_016.webp", "PROP_017": "assets/props/PROP_017.webp", "PROP_018": "assets/props/PROP_018.webp", "PROP_019": "assets/props/PROP_019.webp", "PROP_020": "assets/props/PROP_020.webp", "PROP_021": "assets/props/PROP_021.webp", "PROP_022": "assets/props/PROP_022.webp", "PROP_023": "assets/props/PROP_023.webp", "PROP_024": "assets/props/PROP_024.webp", "PROP_025": "assets/props/PROP_025.webp", "PROP_026": "assets/props/PROP_026.webp", "PROP_027": "assets/props/PROP_027.webp", "PROP_028": "assets/props/PROP_028.webp", "PROP_029": "assets/props/PROP_029.webp", "PROP_030": "assets/props/PROP_030.webp", "PROP_031": "assets/props/PROP_031.webp", "PROP_032": "assets/props/PROP_032.webp", "PROP_033": "assets/props/PROP_033.webp"}, "player": {"female": "assets/player/female.webp", "male_middle": "assets/player/male_middle.webp", "male_poor": "assets/player/male_poor.webp", "male_wealthy": "assets/player/male_wealthy.webp"}, "pets": {"cat_01": "assets/pets/cat_01.webp", "cat_02": "assets/pets/cat_02.webp", "cat_03": "assets/pets/cat_03.webp", "cat_04": "assets/pets/cat_04.webp", "cat_05": "assets/pets/cat_05.webp", "cat_06": "assets/pets/cat_06.webp", "cat_07": "assets/pets/cat_07.webp", "cat_08": "assets/pets/cat_08.webp", "cat_09": "assets/pets/cat_09.webp", "cat_10": "assets/pets/cat_10.webp", "dog_01": "assets/pets/dog_01.webp", "dog_02": "assets/pets/dog_02.webp", "dog_03": "assets/pets/dog_03.webp", "dog_04": "assets/pets/dog_04.webp", "dog_05": "assets/pets/dog_05.webp", "dog_06": "assets/pets/dog_06.webp", "dog_07": "assets/pets/dog_07.webp", "dog_08": "assets/pets/dog_08.webp", "dog_09": "assets/pets/dog_09.webp", "dog_10": "assets/pets/dog_10.webp"}, "walk": {"female_idle": "assets/walk/female_idle.webp", "female_walk": "assets/walk/female_walk.webp", "male_middle_idle": "assets/walk/male_middle_idle.webp", "male_middle_walk": "assets/walk/male_middle_walk.webp", "male_poor_idle": "assets/walk/male_poor_idle.webp", "male_poor_walk": "assets/walk/male_poor_walk.webp", "male_wealthy_idle": "assets/walk/male_wealthy_idle.webp", "male_wealthy_walk": "assets/walk/male_wealthy_walk.webp"}, "vo": {}};</script>
 <script>
 (function(){
 "use strict";
@@ -2280,7 +2308,8 @@ var MUS={bus:null,pad:null,mel:null,lp:null,next:0,chord:0,noteAt:0,mode:"",time
 var MUS_CHORDS=[[110,130.81,164.81],[87.31,110,130.81],[73.42,87.31,110],[82.41,103.83,123.47]];   /* Am · F · Dm · E */
 var MUS_SCALE=[220,261.63,293.66,329.63,392,440,523.25,587.33,659.25];                              /* A-minor pentatonic */
 var MUS_MOOD={menu:{pad:0.050,mel:0.040,rate:0.45,oct:1,cut:900},day:{pad:0.050,mel:0.045,rate:0.55,oct:1,cut:1000},
-  night:{pad:0.042,mel:0.032,rate:0.32,oct:0.5,cut:650},low:{pad:0.040,mel:0,rate:0,oct:0.5,cut:380},dead:{pad:0,mel:0,rate:0,oct:0.5,cut:300}};
+  night:{pad:0.042,mel:0.032,rate:0.32,oct:0.5,cut:650},low:{pad:0.040,mel:0,rate:0,oct:0.5,cut:380},dead:{pad:0,mel:0,rate:0,oct:0.5,cut:300},
+  intro:{pad:0.058,mel:0.030,rate:0.30,oct:0.5,cut:620}};   /* opening film (28 Oct): low and slow under the narration */
 function musInit(){
   var c=SND.ctx; if(!c||MUS.bus) return;
   MUS.bus=c.createGain(); MUS.bus.gain.value=1; MUS.bus.connect(SND.master);
@@ -2471,14 +2500,15 @@ function renderTitle(){
     '<p>คุณคือคนธรรมดาคนหนึ่ง ใช้ชีวิตให้รอดท่ามกลางสงคราม 4 บท กลางวันตัดสินใจ กลางคืนเลือกว่าจะออกค้นหา เฝ้าบ้าน หรือพักผ่อน ทุกการตัดสินใจจะถูกจดจำ และพาคุณไปสู่ตอนจบของตัวเอง</p>'+
     '<div class="row">'+(ok?'<button class="btn primary" id="cont">เล่นต่อ · วันที่ <span class="num">'+saved.day+'</span> · '+esc(saved.char.name)+'</button>':'')+
     '<button class="btn '+(ok?"":"primary")+'" id="new">เริ่มชีวิตใหม่</button>'+
-    (opts.test?'<button class="btn ghost" id="draft">ค่าร่างที่รออนุมัติ</button>':'')+sndBtn().replace('class="sndbtn"','class="btn ghost sndbtn"')+'</div>'+
+    (load(INTRO_KEY,false)?'<button class="btn ghost" id="introAgain">ดูฉากเปิดเกม</button>':'')+(opts.test?'<button class="btn ghost" id="draft">ค่าร่างที่รออนุมัติ</button>':'')+sndBtn().replace('class="sndbtn"','class="btn ghost sndbtn"')+'</div>'+
     (storageOK?'':'<p class="note">เบราว์เซอร์นี้ไม่อนุญาตให้บันทึก ความคืบหน้าจะหายเมื่อปิดหน้า</p>')+
     '<div class="card"><p class="sec-h">อันดับออนไลน์ · รอดนานที่สุด</p><div data-online-board="20">'+onlineBoardHTML(20)+'</div></div>'+
     '<div class="card"><p class="sec-h">สถิติวันที่รอดชีวิต (เครื่องนี้)</p>'+boardHTML()+'</div>'+
     '<p class="note">ต้นแบบที่เล่นได้ · ตัวเลขสมดุลทั้งหมดเป็นร่างรออนุมัติ · บทฉบับกระชับ V5.0 (ร่างรอทีมบทตรวจ) · ภาพ NPC V10 / BG01</p>'+
   '</section>';
   if(ok) on("cont",function(){st=saved;view="game";render();});
-  on("new",function(){pendingChar=E.rollCharacter();view="newchar";render();});
+  on("new",function(){function go(){pendingChar=E.rollCharacter();view="newchar";render();} if(load(INTRO_KEY,false)) go(); else playIntro(go);});
+  on("introAgain",function(){playIntro(function(){sndMood();});});
   on("draft",function(){showDraft=true;render();});
 }
 
@@ -2520,7 +2550,7 @@ function sideHTML(){
     '<div class="card"><p class="sec-h">ความทรงจำ</p><div class="mem">'+
       (mem.length?mem.map(function(m){return '<div>วันที่ <span class="num">'+m.day+'</span> · <b>'+esc(m.title)+'</b><br>'+esc(m.text)+'</div>';}).join(""):'<span class="note">ยังไม่มีการตัดสินใจ</span>')+
     '</div></div>'+
-    '<div class="row"><button class="btn" id="home">หน้าแรก</button>'+(opts.test?'<button class="btn ghost" id="draft">ค่าร่าง</button>':'')+'</div>'+
+    '<div class="row"><button class="btn" id="home">หน้าแรก</button><button class="btn" id="tutBtn">วิธีเล่น</button>'+(opts.test?'<button class="btn ghost" id="draft">ค่าร่าง</button>':'')+'</div>'+
     '<p class="note">บันทึกอัตโนมัติทุกการเลือก การออกจากเกมเป็นการพักเท่านั้น</p></aside>';
 }
 
@@ -2687,7 +2717,7 @@ function renderGame(){
   var flash=st.phase==="result"&&st.lastResult?st.lastResult.delta:(st.phase==="summary"&&st.summary?st.summary.total:(st.phase==="night"&&st.nightResult?st.nightResult.delta:{}));
   var mtop='<div class="mtop">'+head+'<div class="wmini"><div class="badge">'+esc(st.char.name.charAt(0))+'</div><span><b>'+esc(st.char.name)+'</b> · '+esc(st.char.occupation)+'</span>'+sndBtn()+'<button id="charSheet">ตัวละคร ›</button></div>'+stripHTML(st.stats,flash)+'</div>';
   app.innerHTML='<div class="game">'+sideHTML()+mtop+'<main class="main">'+head+sceneHTML(ev,hour)+body+'</main></div>';
-  preloadRun(); driveWalkIn(); bindSubmit(); sndMood(); sizeLoc();
+  preloadRun(); driveWalkIn(); bindSubmit(); sndMood(); sizeLoc(); tutMaybe();
   setTimeout(function(){app.querySelectorAll(".s.flash-up,.s.flash-down").forEach(function(c){c.classList.remove("flash-up","flash-down");var d=c.querySelector(".d");if(d)d.remove();});},2200);
   on("fullScene",function(){openSheet('<div class="eyebrow">'+esc(ev.arc)+' · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(ev.title)+'</h3><p>'+esc(ev.sf)+'</p>');});
   on("fullResult",function(){var r=st.lastResult;openSheet('<div class="eyebrow">ผลการตัดสินใจ · ข้อความเต็ม</div><h3 style="font-family:var(--f-display);margin:0">'+esc(r.key)+' · '+esc(r.text)+'</h3><p>'+esc(r.resultFull)+'</p>');});
@@ -2715,6 +2745,7 @@ function renderGame(){
     } else doNight(k,null);
   });});
   on("home",function(){view="title";render();});
+  on("tutBtn",tutReplay);
   on("home2",function(){view="title";render();});
   on("again",function(){pendingChar=E.rollCharacter();view="newchar";render();});
   on("draft",function(){showDraft=true;render();});
@@ -2733,6 +2764,7 @@ function openSheet(html,isChar){
   sc.addEventListener("click",closeSheet);document.getElementById("closeSheet").addEventListener("click",closeSheet);
   if(isChar){var h=sh.querySelector("#home"),d=sh.querySelector("#draft");
     if(h)h.addEventListener("click",function(){closeSheet();view="title";render();});
+    var tb=sh.querySelector("#tutBtn"); if(tb)tb.addEventListener("click",tutReplay);
     if(d)d.addEventListener("click",function(){closeSheet();showDraft=true;render();});}
 }
 function closeSheet(){["bscrim","bsheet"].forEach(function(id){var e=document.getElementById(id);if(e)e.remove();});}
@@ -2746,6 +2778,111 @@ function recordDeath(){
   submitOnline({name:st.char.name,occ:st.char.occupation,province:st.char.province,days:E.daysSurvived(st),cause:cz,at:Date.now()});
   try{localStorage.removeItem(SAVE_KEY);}catch(e){}
 }
+
+/* ---------------- opening film (director approved 28 Oct · narration text = Claude draft, pending script team) ----------------
+   Plays once before the first new life; replay from the title. Tap = next slide, "ข้าม" = skip.
+   Voice: recorded files assets/vo/intro_1 … intro_5 (mp3/m4a/ogg) when present, else the device's Thai text-to-speech,
+   else captions only. Music: the existing synthesized score in its "intro" mood, ducked under the voice. */
+var INTRO=[
+  {bg:"BG03-shops",ey:"ก่อนหน้านี้",t:["ข่าวสงครามเคยเป็นเรื่องไกลตัว","จนวันหนึ่ง ความขัดแย้งลุกลามไปทั่วโลก","และมาถึงประเทศไทย"]},
+  {bg:"BG02-soi",ey:"คืนแรก",t:["คืนนั้นไฟดับทั้งเมือง","สัญญาณโทรศัพท์หายไป","ไม่มีใครรู้ว่ามันจะกลับมาเมื่อไร"]},
+  {bg:"BG07-checkpoint",ey:"สัปดาห์ต่อมา",t:["ถนนถูกปิด ร้านค้าว่างเปล่า","ความช่วยเหลือมาไม่ถึงทุกที่","ทุกคนต้องพึ่งตัวเอง"]},
+  {bg:"BG01-B",ey:"ตอนนี้",t:["คุณเป็นคนธรรมดาคนหนึ่ง","มีแค่บ้านหลังนี้ ของที่เหลืออยู่","และการตัดสินใจของตัวเอง"]},
+  {bg:"BG08-relief",ey:"สิ่งที่ต้องทำ",t:["กลางวัน เลือกว่าจะรับมือกับเรื่องตรงหน้าอย่างไร","กลางคืน เลือกว่าจะออกหาของ เฝ้าบ้าน หรือพักผ่อน","อยู่ให้รอดครบ 4 บท แล้วดูว่าชีวิตจะพาคุณไปถึงไหน"]}
+];
+var INTRO_KEY="ww3ts.intro.v1";
+function thVoice(){try{var v=speechSynthesis.getVoices();return v.filter(function(x){return /^th/i.test(x.lang);})[0]||null;}catch(e){return null;}}
+function playIntro(done){
+  var i=-1, timers=[], audio=null, ended=false, ov=document.createElement("div");
+  ov.className="intro"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-label","ฉากเปิดเกม");
+  ov.innerHTML=INTRO.map(function(s,k){return '<div class="ibg" data-i="'+k+'" style="background-image:url('+(A.bg[s.bg]||"")+')"></div>';}).join("")+
+    '<div class="ishade"></div><div class="ihint">แตะเพื่อไปต่อ</div><div class="icap"><div class="ey"></div><p></p></div>'+
+    '<div class="ibar"><div class="idots">'+INTRO.map(function(){return '<i></i>';}).join("")+'</div><button id="introSkip">ข้าม ›</button></div>';
+  document.body.appendChild(ov);
+  if(SND.on){ if(!SND.ctx) sndInit(); if(SND.ctx){ SND.ctx.resume&&SND.ctx.resume(); musSet("intro"); sndSet("wind",0.12); sndSet("crick",0); sndSet("rain",0); sndSet("drone",0.04,3); } }
+  function duck(on){ if(MUS.bus&&SND.ctx) MUS.bus.gain.setTargetAtTime(on?0.45:1,SND.ctx.currentTime,0.5); }
+  function stopVoice(){ timers.forEach(clearTimeout); timers=[]; try{speechSynthesis.cancel();}catch(e){} if(audio){audio.onended=audio.onerror=null;audio.pause();audio=null;} duck(false); }
+  function finish(){ if(ended) return; ended=true; stopVoice(); try{save(INTRO_KEY,true);}catch(e){} ov.style.transition="opacity .6s"; ov.style.opacity="0"; setTimeout(function(){ov.remove();},620); if(SND.ctx) sndSet("drone",0); done&&done(); }
+  function show(n){
+    stopVoice(); i=n; if(i>=INTRO.length){finish();return;}
+    var s=INTRO[i], cap=ov.querySelector(".icap p"), full=s.t.join(" ");
+    ov.querySelectorAll(".ibg").forEach(function(b){b.classList.toggle("on",+b.dataset.i===i);});
+    ov.querySelectorAll(".idots i").forEach(function(d,k){d.classList.toggle("on",k<=i);});
+    ov.querySelector(".icap .ey").textContent=s.ey;
+    cap.innerHTML=s.t.map(function(l){return '<span>'+esc(l)+' </span>';}).join("");
+    var spans=cap.querySelectorAll("span"), est=Math.max(4500,full.length*95), at=600, tot=full.length;
+    s.t.forEach(function(l,k){ timers.push(setTimeout(function(){spans[k].classList.add("on");},at)); at+=est*(l.length/tot); });
+    function next(){ timers.push(setTimeout(function(){show(i+1);},1400)); }
+    var file=A.vo&&(A.vo["intro_"+(i+1)]);
+    if(SND.on&&file){ audio=new Audio(file); audio.onended=next; audio.onerror=function(){timers.push(setTimeout(next,est));}; duck(true); audio.play().catch(function(){timers.push(setTimeout(next,est));}); return; }
+    var v=SND.on&&window.speechSynthesis&&thVoice();
+    if(v){ try{ var u=new SpeechSynthesisUtterance(full); u.voice=v; u.lang=v.lang; u.rate=0.92; u.pitch=0.95;
+      var fired=false; u.onend=function(){ if(!fired){fired=true;duck(false);next();} }; u.onerror=u.onend;
+      duck(true); speechSynthesis.speak(u);
+      timers.push(setTimeout(function(){ if(!fired){fired=true;try{speechSynthesis.cancel();}catch(e){}next();} },est*2.2+4000));   /* safety if the engine never reports the end */
+      return; }catch(e){} }
+    timers.push(setTimeout(function(){show(i+1);},est+1400));
+  }
+  ov.addEventListener("click",function(e){ if(e.target.closest("#introSkip")){finish();return;} show(i+1); });
+  /* Thai voices may load a moment after the page; wait briefly so the first slide is spoken too */
+  var started=false; function go(){ if(started||ended) return; started=true; show(0); }
+  try{ if(window.speechSynthesis&&!speechSynthesis.getVoices().length){ speechSynthesis.onvoiceschanged=go; setTimeout(go,700); } else go(); }catch(e){ go(); }
+}
+
+/* ---------------- how to play: coach marks (director approved 28 Oct · text = Claude draft) ----------------
+   Each stage runs once the first time that screen appears: event → the day screen, summary → the end-of-day screen,
+   trader → the first visit by the trader. "วิธีเล่น" in the character panel replays the stage for the current screen. */
+var TUT_KEY="ww3ts.tut.v1", TUT=load(TUT_KEY,{}), tutOn=false;
+function tutSteps(){ var lt=B.healthRules.lowThreshold; return {
+  event:[
+    {sel:[".mtop .strip",".side .stats"],ey:"ค่าสถานะ",h:"ชีวิตของคุณอยู่ที่ตัวเลขเหล่านี้",p:"สุขภาพ ความอิ่ม น้ำ พลังงาน จิตใจ ความปลอดภัย ความสะอาด ส่วนใหญ่ลดลงทุกวัน ถ้าค่าไหนต่ำกว่า "+lt+" สุขภาพจะลด สุขภาพหมดคือจบชีวิตรอบนี้"},
+    {sel:[".main .scene"],ey:"ฉาก",h:"คุณอยู่ที่ไหน เจอใคร",p:"ฉากจะเปลี่ยนตามที่เกิดเหตุ ของที่คุณสร้างจะไปตั้งอยู่ในฉากบ้าน"},
+    {sel:[".card.event .scene-text",".card.event"],ey:"เหตุการณ์",h:"วันละ "+B.day.eventsPerDay+" เรื่อง",p:"อ่านสถานการณ์ก่อนเลือก ข้อความยาวแตะ “อ่านเต็ม” จุดด้านบนบอกว่าวันนี้เหลืออีกกี่เรื่อง"},
+    {sel:[".card.event .choices"],ey:"ทางเลือก",h:"เลือกได้ทางเดียว",p:"ทุกทางได้อย่างหนึ่ง เสียอย่างหนึ่ง ผลจะขึ้นหลังเลือก และเกมจะจำการตัดสินใจไว้จนถึงตอนจบ"},
+    {sel:["#charSheet",".side .row"],ey:"ตัวละคร",h:"ข้อมูล บ้าน และความทรงจำ",p:"ดูประวัติตัวละคร ของที่สร้างไว้ และสิ่งที่เคยเลือก ปุ่ม “วิธีเล่น” อยู่ในนี้ เกมบันทึกเองทุกครั้งที่เลือก ปิดแล้วกลับมาเล่นต่อได้"}
+  ],
+  summary:[
+    {sel:[".main > article.card"],ey:"สรุปวัน",h:"ผ่านไปอีกหนึ่งวัน",p:"ดูว่าค่าไหนเปลี่ยนไปเท่าไรทั้งวัน ถ้ามีอะไรต่ำเกินไปจะมีคำเตือนสีแดง"},
+    {sel:["#stockOpen"],ey:"คลังของ",h:"ของที่คุณมี",p:"อาหาร น้ำ ยา วัสดุ อะไหล่ไฟฟ้า น้ำมัน ของมีค่า แตะเพื่อกิน ดื่ม ใช้ยา หรือสร้างของในบ้าน เช่น เครื่องกรองน้ำ แปลงผัก กลอนประตู"},
+    {sel:[".nopts"],ey:"กลางคืน",h:"คืนนี้ทำได้ 1 อย่าง",p:"ออกค้นหา ได้ของแต่เสี่ยงบาดเจ็บ · เฝ้าบ้าน กันโจร ยิ่งของในคลังเยอะยิ่งเสี่ยงถูกปล้น · นอนพัก พลังงานฟื้น · การสร้างของก็ใช้เวลาทั้งคืน"},
+    {sel:["#traderOpen"],ey:"แม่ค้าเร่",h:B.stock?B.stock.trader.name+"มาเคาะประตู":"",p:"แวะมาทุก "+(B.stock?B.stock.trader.everyMin+"–"+B.stock.trader.everyMax:"")+" วัน เอาของที่เหลือหรือของมีค่ามาแลกของจำเป็นได้ เฉพาะวันที่เธอมา"}
+  ],
+  trader:[]
+};}
+function tutStage(){ if(view!=="game"||!st) return null; if(st.phase==="event") return "event"; if(st.phase==="summary") return (TUT.summary&&E.traderHere(st))?"trader":"summary"; return null; }
+function tutMaybe(){ TUT=load(TUT_KEY,TUT)||{}; var s=tutStage(); if(!s||TUT[s]||tutOn||document.querySelector(".intro")) return; setTimeout(function(){ if(tutStage()===s&&!TUT[s]) runTut(s); },400); }
+function runTut(stage){
+  var all=tutSteps(), steps=stage==="trader"?all.summary.slice(-1):all[stage];
+  steps=steps.filter(function(s){return tutEl(s);}); if(!steps.length) return;
+  tutOn=true; closeSheet();
+  var k=0, co=document.createElement("div"); co.className="coach"; co.setAttribute("role","dialog"); co.setAttribute("aria-label","วิธีเล่น");
+  co.innerHTML='<div class="ring"></div><div class="tip"><div class="ey"></div><h4></h4><p></p><div class="row"><button class="skip">ข้ามคำแนะนำ</button><button class="btn primary nx"></button></div></div>';
+  document.body.appendChild(co);
+  function done(){ TUT[stage]=1; if(stage==="summary"&&E.traderHere(st)) TUT.trader=1; save(TUT_KEY,TUT); co.remove(); tutOn=false; window.removeEventListener("resize",place); }
+  function place(){
+    var s=steps[k], el=tutEl(s); if(!el){ return; }
+    var r=el.getBoundingClientRect(), ring=co.querySelector(".ring"), tip=co.querySelector(".tip"), vh=innerHeight, pad=4;
+    var top=Math.max(2,r.top-pad), bot=Math.min(vh-2,r.bottom+pad);
+    ring.style.left=Math.max(2,r.left-pad)+"px"; ring.style.top=top+"px"; ring.style.width=(Math.min(innerWidth-2,r.right+pad)-Math.max(2,r.left-pad))+"px"; ring.style.height=(bot-top)+"px";
+    var th=tip.offsetHeight;
+    if(vh-bot>=th+12) {tip.style.top=(bot+8)+"px";tip.style.bottom="auto";}
+    else if(top>=th+12) {tip.style.top=(top-th-8)+"px";tip.style.bottom="auto";}
+    else {tip.style.top="auto";tip.style.bottom="10px";}
+  }
+  function show(){
+    var s=steps[k], el=tutEl(s); if(el&&el.scrollIntoView){var r=el.getBoundingClientRect();if(r.top<0||r.bottom>innerHeight)el.scrollIntoView({block:"center"});}
+    co.querySelector(".ey").textContent="วิธีเล่น · "+s.ey+" · "+(k+1)+"/"+steps.length;
+    co.querySelector("h4").textContent=s.h; co.querySelector("p").textContent=s.p;
+    co.querySelector(".nx").textContent=k+1<steps.length?"ต่อไป":"เข้าใจแล้ว";
+    place(); cue("tick");
+  }
+  co.querySelector(".nx").addEventListener("click",function(){ k++; if(k>=steps.length) done(); else show(); });
+  co.querySelector(".skip").addEventListener("click",done);
+  window.addEventListener("resize",place);
+  show();
+}
+function tutEl(s){ for(var i=0;i<s.sel.length;i++){ var el=document.querySelector(s.sel[i]); if(el){var r=el.getBoundingClientRect(); if(r.width>0&&r.height>0) return el;} } return null; }
+function tutReplay(){ var s=tutStage()||"event"; if(s==="trader") s="summary"; closeSheet(); setTimeout(function(){runTut(s);},150); }
 
 /* ---------------- draft review panel ---------------- */
 function renderDraft(){
